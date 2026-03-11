@@ -1,5 +1,6 @@
 /// Validation Constants for DistrictDirect App
 /// Contains regex patterns, rules, and error messages for form validation
+library;
 
 class ValidationConstants {
   // Rwanda Phone Number Validation

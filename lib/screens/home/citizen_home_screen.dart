@@ -1,124 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
-
-/// Citizen Home Screen
-/// Personal dashboard showing user's own reports and status tracking
+import '../../models/report_model.dart';
+import '../../state/citizen_home_provider.dart';
 
 class CitizenHomeScreen extends StatefulWidget {
-  const CitizenHomeScreen({Key? key}) : super(key: key);
+  const CitizenHomeScreen({super.key});
 
   @override
   State<CitizenHomeScreen> createState() => _CitizenHomeScreenState();
 }
 
 class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
-  int _selectedNavIndex = 0;
+  static const _filters = ['Kirehe District', 'Sector', 'Cell'];
 
-  // Mock data — replace with real API data
-  final String _userName = 'Amahoro';
-  final List<_ReportItem> _reports = [
-    _ReportItem(
-      id: 'DD-2024-0041',
-      title: 'Broken Pipe on Main Street',
-      category: 'Water',
-      categoryIcon: Icons.water_drop_outlined,
-      status: ReportStatus.inProgress,
-      submittedDate: 'Feb 28, 2024',
-      lastUpdate: '2 hours ago',
-    ),
-    _ReportItem(
-      id: 'DD-2024-0038',
-      title: 'Street Light Failure – Sector 4',
-      category: 'Electricity',
-      categoryIcon: Icons.lightbulb_outline,
-      status: ReportStatus.inReview,
-      submittedDate: 'Feb 25, 2024',
-      lastUpdate: '1 day ago',
-    ),
-    _ReportItem(
-      id: 'DD-2024-0031',
-      title: 'Pothole Near Primary School',
-      category: 'Roads',
-      categoryIcon: Icons.add_road_outlined,
-      status: ReportStatus.resolved,
-      submittedDate: 'Feb 10, 2024',
-      lastUpdate: '5 days ago',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Load feed after first frame so the provider is fully attached
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CitizenHomeProvider>().loadFeed();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    _buildGreetingBanner(),
-                    const SizedBox(height: 28),
-                    _buildReportButton(),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader(),
-                    const SizedBox(height: 16),
-                    if (_reports.isEmpty)
-                      _buildEmptyState()
-                    else
-                      ..._reports.map((r) => _buildReportCard(r)).toList(),
-                    const SizedBox(height: 32),
-                  ],
+    return Consumer<CitizenHomeProvider>(
+      builder: (context, provider, _) {
+        return Scaffold(
+          backgroundColor: AppColors.backgroundGrey,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                    children: [
+                      _buildReportButton(),
+                      const SizedBox(height: 20),
+                      _buildFilterRow(provider),
+                      const SizedBox(height: 24),
+                      _buildFeedHeader(),
+                      const SizedBox(height: 12),
+                      _buildFeedBody(provider),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(),
+          ),
+          bottomNavigationBar: _buildBottomNav(provider),
+        );
+      },
     );
   }
 
-  // ─── Header ────────────────────────────────────────────────────────────────
+  // Header
 
   Widget _buildHeader() {
     return Container(
       color: AppColors.backgroundWhite,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
         children: [
-          // App name
-          Text(
-            'DistrictDirect',
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.primaryBlue,
-              letterSpacing: -0.3,
-            ),
+          const CircleAvatar(
+            backgroundColor: AppColors.primaryBlue,
+            radius: 20,
+            child: Icon(Icons.person, color: AppColors.textWhite, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('MURAHO, JEAN', style: AppTextStyles.captionBold),
+              Text('DistrictDirect', style: AppTextStyles.h3),
+            ],
           ),
           const Spacer(),
-          // Notification bell
+          // Notification bell with unread dot
           Stack(
             children: [
               IconButton(
                 icon: const Icon(
-                  Icons.notifications_outlined,
+                  Icons.notifications_none,
                   color: AppColors.textPrimary,
                   size: 26,
                 ),
-                onPressed: () {
-                  // TODO: Navigate to notifications
-                },
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                onPressed: () {}, // TODO: Open notifications screen
               ),
               Positioned(
-                top: 0,
-                right: 0,
+                right: 8,
+                top: 8,
                 child: Container(
                   width: 8,
                   height: 8,
@@ -135,416 +109,363 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
     );
   }
 
-  // ─── Greeting Banner ───────────────────────────────────────────────────────
-
-  Widget _buildGreetingBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.12),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Muraho, $_userName 👋', style: AppTextStyles.h3),
-                const SizedBox(height: 4),
-                Text(
-                  'You have ${_reports.where((r) => r.status != ReportStatus.resolved).length} active reports',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Summary pill
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${_reports.length} Total',
-              style: AppTextStyles.buttonSmall.copyWith(fontSize: 13),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Report Button ─────────────────────────────────────────────────────────
+  // Report Button
 
   Widget _buildReportButton() {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 54,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // TODO: Navigate to report issue flow
-        },
-        icon: const Icon(Icons.add, color: AppColors.textWhite, size: 22),
-        label: Text('Report a New Issue', style: AppTextStyles.button),
+        onPressed: () {}, // TODO: Navigate to report form
+        icon: const Icon(Icons.add_circle_outline, color: AppColors.textWhite),
+        label: Text('REPORT NEW ISSUE', style: AppTextStyles.button),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryBlue,
-          foregroundColor: AppColors.textWhite,
-          elevation: 0,
+          elevation: 2,
+          shadowColor: AppColors.primaryBlue.withOpacity(0.4),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
     );
   }
 
-  // ─── Section Header ────────────────────────────────────────────────────────
+  // Filter Chips
 
-  Widget _buildSectionHeader() {
+  Widget _buildFilterRow(CitizenHomeProvider provider) {
     return Row(
+      children: List.generate(_filters.length, (i) {
+        final active = i == provider.selectedFilterIndex;
+        return Expanded(
+          flex: i == 0 ? 2 : 1,
+          child: GestureDetector(
+            onTap: () => provider.setFilterIndex(i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: EdgeInsets.only(right: i < _filters.length - 1 ? 8 : 0),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: active
+                    ? AppColors.primaryBlue
+                    : AppColors.backgroundWhite,
+                borderRadius: BorderRadius.circular(20),
+                border: active
+                    ? null
+                    : Border.all(color: AppColors.inputBorder),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    i == 0
+                        ? Icons.location_on_outlined
+                        : i == 1
+                        ? Icons.domain_outlined
+                        : Icons.grid_view_outlined,
+                    size: 14,
+                    color: active
+                        ? AppColors.textWhite
+                        : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      _filters[i],
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: active
+                            ? AppColors.textWhite
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Feed Header
+
+  Widget _buildFeedHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('My Reports', style: AppTextStyles.h4),
-        const Spacer(),
-        GestureDetector(
-          onTap: () {
-            // TODO: Navigate to full reports list
-          },
-          child: Text('View all', style: AppTextStyles.link),
+        Text('District Feed', style: AppTextStyles.h3),
+        TextButton.icon(
+          onPressed: () {}, // TODO: Navigate to map screen
+          icon: const Icon(
+            Icons.map_outlined,
+            size: 16,
+            color: AppColors.primaryBlue,
+          ),
+          label: Text(
+            'View Map',
+            style: AppTextStyles.link.copyWith(decoration: TextDecoration.none),
+          ),
         ),
       ],
     );
   }
 
-  // ─── Report Card ───────────────────────────────────────────────────────────
+  // Feed Body: loading / error / data
 
-  Widget _buildReportCard(_ReportItem report) {
-    final statusConfig = _statusConfig(report.status);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.inputBorder, width: 1),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          // TODO: Navigate to report detail screen
-        },
+  Widget _buildFeedBody(CitizenHomeProvider provider) {
+    if (provider.isLoading) {
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(color: AppColors.primaryBlue),
+        ),
+      );
+    }
+
+    if (provider.errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top row: category + status badge
-              Row(
-                children: [
-                  // Category chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          report.categoryIcon,
-                          size: 13,
-                          color: AppColors.primaryBlue,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          report.category,
-                          style: AppTextStyles.badge.copyWith(
-                            color: AppColors.primaryBlue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusConfig.bgColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: statusConfig.dotColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          statusConfig.label,
-                          style: AppTextStyles.badge.copyWith(
-                            color: statusConfig.textColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 40),
               const SizedBox(height: 12),
-              // Title
               Text(
-                report.title,
+                provider.errorMessage!,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: AppColors.textSecondary,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 6),
-              // Tracking ID
-              Text(
-                'Tracking ID: ${report.id}',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Divider
-              const Divider(color: AppColors.divider, height: 1),
-              const SizedBox(height: 12),
-              // Bottom row: submitted date + last update
-              Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 13,
-                    color: AppColors.textTertiary,
-                  ),
-                  const SizedBox(width: 5),
-                  Text(report.submittedDate, style: AppTextStyles.caption),
-                  const Spacer(),
-                  Icon(
-                    Icons.access_time,
-                    size: 13,
-                    color: AppColors.textTertiary,
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Updated ${report.lastUpdate}',
-                    style: AppTextStyles.caption,
-                  ),
-                ],
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: provider.loadFeed,
+                child: const Text('Retry'),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  // ─── Empty State ───────────────────────────────────────────────────────────
-
-  Widget _buildEmptyState() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundGrey,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.inbox_outlined, size: 48, color: AppColors.textTertiary),
-          const SizedBox(height: 16),
-          Text(
-            'No reports yet',
+    if (provider.feedItems.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Text(
+            'No reports yet in your area.',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+        ),
+      );
+    }
+
+    return Column(children: provider.feedItems.map(_buildFeedCard).toList());
+  }
+
+  // Feed Card
+
+  Widget _buildFeedCard(ReportItem item) {
+    final statusColor = item.status == ReportStatus.resolved
+        ? AppColors.success
+        : item.status == ReportStatus.inProgress
+        ? AppColors.warning
+        : AppColors.info;
+
+    final statusLabel = item.status == ReportStatus.resolved
+        ? 'RESOLVED'
+        : item.status == ReportStatus.inProgress
+        ? 'IN PROGRESS'
+        : 'REPORTED';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBlue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(item.icon, color: AppColors.primaryBlue, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          item.category,
+                          style: AppTextStyles.badge.copyWith(
+                            color: AppColors.primaryBlue,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        _buildStatusBadge(statusLabel, statusColor),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(item.title, style: AppTextStyles.h4),
+                    const SizedBox(height: 2),
+                    Text(item.timeLocation, style: AppTextStyles.caption),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
-            'Tap the button above to report your first issue.',
-            style: AppTextStyles.caption,
-            textAlign: TextAlign.center,
+            item.description,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildActionChip(Icons.thumb_up_outlined, item.likes.toString()),
+              const SizedBox(width: 10),
+              _buildActionChip(
+                Icons.chat_bubble_outline,
+                item.comments.toString(),
+              ),
+              const Spacer(),
+              OutlinedButton(
+                onPressed: () {}, // TODO: Navigate to detail screen
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primaryBlue,
+                  side: const BorderSide(color: AppColors.primaryBlue),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Details',
+                  style: AppTextStyles.buttonSmall.copyWith(
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ─── Bottom Navigation ────────────────────────────────────────────────────
-
-  Widget _buildBottomNav() {
-    const items = [
-      _NavItem(Icons.home_outlined, Icons.home, 'Home'),
-      _NavItem(Icons.list_alt_outlined, Icons.list_alt, 'My Reports'),
-      _NavItem(Icons.add_circle_outline, Icons.add_circle, 'Report'),
-      _NavItem(Icons.person_outline, Icons.person, 'Profile'),
-    ];
-
+  Widget _buildStatusBadge(String label, Color color) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundWhite,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            children: List.generate(items.length, (i) {
-              final item = items[i];
-              final isSelected = _selectedNavIndex == i;
-              // Make centre "Report" button accent
-              final isReport = i == 2;
-
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() => _selectedNavIndex = i);
-                    // TODO: Handle navigation
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isSelected ? item.activeIcon : item.icon,
-                        size: isReport ? 30 : 24,
-                        color: isReport
-                            ? AppColors.primaryBlue
-                            : isSelected
-                            ? AppColors.primaryBlue
-                            : AppColors.textTertiary,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.label,
-                        style: AppTextStyles.badge.copyWith(
-                          color: isReport
-                              ? AppColors.primaryBlue
-                              : isSelected
-                              ? AppColors.primaryBlue
-                              : AppColors.textTertiary,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-        ),
+          const SizedBox(width: 4),
+          Text(label, style: AppTextStyles.badge.copyWith(color: color)),
+        ],
       ),
     );
   }
 
-  // ─── Status Config Helper ──────────────────────────────────────────────────
-
-  _StatusConfig _statusConfig(ReportStatus status) {
-    switch (status) {
-      case ReportStatus.submitted:
-        return _StatusConfig(
-          label: 'Submitted',
-          bgColor: AppColors.info.withOpacity(0.1),
-          dotColor: AppColors.info,
-          textColor: AppColors.info,
-        );
-      case ReportStatus.inReview:
-        return _StatusConfig(
-          label: 'In Review',
-          bgColor: AppColors.warning.withOpacity(0.12),
-          dotColor: AppColors.warning,
-          textColor: const Color(0xFF996600),
-        );
-      case ReportStatus.inProgress:
-        return _StatusConfig(
-          label: 'In Progress',
-          bgColor: AppColors.primaryBlue.withOpacity(0.08),
-          dotColor: AppColors.primaryBlue,
-          textColor: AppColors.primaryBlue,
-        );
-      case ReportStatus.resolved:
-        return _StatusConfig(
-          label: 'Resolved',
-          bgColor: AppColors.success.withOpacity(0.1),
-          dotColor: AppColors.success,
-          textColor: AppColors.success,
-        );
-    }
+  Widget _buildActionChip(IconData icon, String count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.primaryBlue),
+          const SizedBox(width: 5),
+          Text(
+            count,
+            style: AppTextStyles.captionBold.copyWith(
+              color: AppColors.primaryBlue,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-}
 
-// ─── Supporting Types ─────────────────────────────────────────────────────────
+  // Bottom Navigation
 
-enum ReportStatus { submitted, inReview, inProgress, resolved }
-
-class _ReportItem {
-  final String id;
-  final String title;
-  final String category;
-  final IconData categoryIcon;
-  final ReportStatus status;
-  final String submittedDate;
-  final String lastUpdate;
-
-  const _ReportItem({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.categoryIcon,
-    required this.status,
-    required this.submittedDate,
-    required this.lastUpdate,
-  });
-}
-
-class _StatusConfig {
-  final String label;
-  final Color bgColor;
-  final Color dotColor;
-  final Color textColor;
-
-  const _StatusConfig({
-    required this.label,
-    required this.bgColor,
-    required this.dotColor,
-    required this.textColor,
-  });
-}
-
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-
-  const _NavItem(this.icon, this.activeIcon, this.label);
+  Widget _buildBottomNav(CitizenHomeProvider provider) {
+    return BottomNavigationBar(
+      currentIndex: provider.selectedNavIndex,
+      onTap: provider.setNavIndex,
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: AppColors.backgroundWhite,
+      selectedItemColor: AppColors.primaryBlue,
+      unselectedItemColor: AppColors.textTertiary,
+      selectedLabelStyle: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+      ),
+      unselectedLabelStyle: const TextStyle(fontSize: 10),
+      elevation: 12,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'HOME',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map_outlined),
+          activeIcon: Icon(Icons.map),
+          label: 'MAP',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment_outlined),
+          activeIcon: Icon(Icons.assignment),
+          label: 'REPORTS',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: 'PROFILE',
+        ),
+      ],
+    );
+  }
 }

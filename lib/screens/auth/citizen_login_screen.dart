@@ -10,7 +10,7 @@ import 'otp_verification_screen.dart';
 /// Login page for regular citizens with Rwanda landscape background
 
 class CitizenLoginScreen extends StatefulWidget {
-  const CitizenLoginScreen({Key? key}) : super(key: key);
+  const CitizenLoginScreen({super.key});
 
   @override
   State<CitizenLoginScreen> createState() => _CitizenLoginScreenState();

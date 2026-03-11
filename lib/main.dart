@@ -1,56 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'screens/auth/citizen_login_screen.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'constants/app_colors.dart';
+import 'state/citizen_home_provider.dart';
+import 'state/admin_dashboard_provider.dart';
 
 void main() {
-  // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ),
   );
-
   runApp(const DistrictDirectApp());
 }
 
 class DistrictDirectApp extends StatelessWidget {
-  const DistrictDirectApp({Key? key}) : super(key: key);
+  const DistrictDirectApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'DistrictDirect Rwanda',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: AppColors.primaryBlue,
-        scaffoldBackgroundColor: AppColors.backgroundWhite,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryBlue,
-          primary: AppColors.primaryBlue,
-          secondary: AppColors.teal,
+    return MultiProvider(
+      providers: [
+        // Citizen home state: feed, filters, nav index
+        ChangeNotifierProvider(create: (_) => CitizenHomeProvider()),
+        // Admin dashboard state: stats, inbox, chart, tabs
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider()),
+      ],
+      child: MaterialApp(
+        title: 'DistrictDirect Rwanda',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: AppColors.primaryBlue,
+          scaffoldBackgroundColor: AppColors.backgroundWhite,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primaryBlue,
+            primary: AppColors.primaryBlue,
+            secondary: AppColors.teal,
+          ),
+          useMaterial3: true,
+          fontFamily: 'Roboto',
         ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const RoleSelectionScreen(),
+          '/citizen-login': (context) => const CitizenLoginScreen(),
+          '/admin-login': (context) => const AdminLoginScreen(),
+        },
       ),
-      // Initial route
-      initialRoute: '/',
-      // Define routes
-      routes: {
-        '/': (context) => const RoleSelectionScreen(),
-        '/citizen-login': (context) => const CitizenLoginScreen(),
-        '/admin-login': (context) => const AdminLoginScreen(),
-      },
     );
   }
 }
 
-/// Role Selection Screen
-/// Allows user to choose between Citizen and Admin login
 class RoleSelectionScreen extends StatelessWidget {
-  const RoleSelectionScreen({Key? key}) : super(key: key);
+  const RoleSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +63,11 @@ class RoleSelectionScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1a237e), // Dark blue
-              Color(0xFF0d47a1), // Medium dark blue
-            ],
+            colors: [Color(0xFF1a237e), Color(0xFF0d47a1)],
           ),
         ),
         child: SafeArea(
@@ -79,7 +81,7 @@ class RoleSelectionScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 20),
-                  // Logo Section
+                  // App logo
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -100,7 +102,6 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Title
                   const Text(
                     'DistrictDirect',
                     style: TextStyle(
@@ -120,123 +121,26 @@ class RoleSelectionScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 36),
-                  // Citizen Login Button
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.textWhite,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/citizen-login');
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 20.0,
-                            horizontal: 16.0,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.person,
-                                size: 42,
-                                color: AppColors.primaryBlue,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Citizen Login',
-                                style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryBlue,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Access your local district services',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                  // Citizen card
+                  _buildRoleCard(
+                    context,
+                    icon: Icons.person,
+                    iconColor: AppColors.primaryBlue,
+                    title: 'Citizen Login',
+                    subtitle: 'Access your local district services',
+                    route: '/citizen-login',
                   ),
                   const SizedBox(height: 20),
-                  // Admin Login Button
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.textWhite,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context, '/admin-login');
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 20.0,
-                            horizontal: 16.0,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.admin_panel_settings,
-                                size: 42,
-                                color: AppColors.teal,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Admin Login',
-                                style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.teal,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'For empowering local district officials portal',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                  // Admin card
+                  _buildRoleCard(
+                    context,
+                    icon: Icons.admin_panel_settings,
+                    iconColor: AppColors.teal,
+                    title: 'Admin Login',
+                    subtitle: 'For empowering local district officials',
+                    route: '/admin-login',
                   ),
                   const SizedBox(height: 36),
-                  // Footer
                   const Text(
                     '© 2024 Government of Rwanda',
                     style: TextStyle(
@@ -248,6 +152,66 @@ class RoleSelectionScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleCard(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String route,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.textWhite,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(context, route),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 20.0,
+              horizontal: 16.0,
+            ),
+            child: Column(
+              children: [
+                Icon(icon, size: 42, color: iconColor),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: iconColor,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
