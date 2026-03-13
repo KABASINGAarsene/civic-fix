@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
-import '../../models/report_model.dart';
+import '../../models/dashboard_models.dart';
 import '../../state/citizen_home_provider.dart';
+import './citizen_reports_details.dart';
 
 class CitizenHomeScreen extends StatefulWidget {
   const CitizenHomeScreen({super.key});
@@ -265,7 +266,33 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
       );
     }
 
-    return Column(children: provider.feedItems.map(_buildFeedCard).toList());
+    return Column(
+      children: provider.feedItems
+          .map(
+            (item) => InkWell(
+              onTap: () => _navigateToDetails(item),
+              child: _buildFeedCard(item),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  // Navigation Helper
+  void _navigateToDetails(ReportItem item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportDetailScreen(
+          report: ReportDetailData.fromReportItem(
+            item,
+            location: item.timeLocation,
+            submittedDate: '2 days ago',
+            lastUpdate: '1 hour ago',
+          ),
+        ),
+      ),
+    );
   }
 
   // Feed Card
@@ -356,7 +383,7 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
               ),
               const Spacer(),
               OutlinedButton(
-                onPressed: () {}, // TODO: Navigate to detail screen
+                onPressed: () => _navigateToDetails(item),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primaryBlue,
                   side: const BorderSide(color: AppColors.primaryBlue),

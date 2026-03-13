@@ -3,8 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
-import '../../models/admin_stat_model.dart';
-import '../../models/priority_issue_model.dart';
+import '../../models/dashboard_models.dart';
 import '../../state/admin_dashboard_provider.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -15,9 +14,7 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  // ── Admin dark palette ────────────────────────────────────────────────────
-  // Defined once here and passed down to sub-widgets so nothing is hardcoded
-  // in multiple places.
+  // Admin dark palette
   static const Color _bg = Color(0xFF0F172A);
   static const Color _card = Color(0xFF1E293B);
   static const Color _textMuted = Color(0xFF94A3B8);
@@ -66,7 +63,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Header ────────────────────────────────────────────────────────────────
+  // Header
 
   Widget _buildHeader() {
     return SliverToBoxAdapter(
@@ -143,7 +140,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Category Tabs ─────────────────────────────────────────────────────────
+  // Category Tabs
 
   Widget _buildCategoryTabs(AdminDashboardProvider provider) {
     return SliverToBoxAdapter(
@@ -182,7 +179,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── KPI Stats Grid ────────────────────────────────────────────────────────
+  // KPI Stats Grid
 
   Widget _buildStatGrid(AdminDashboardProvider provider) {
     if (provider.statsLoading) {
@@ -214,7 +211,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Section Header ────────────────────────────────────────────────────────
+  // Section Header
 
   Widget _buildSectionHeader(String title, String action) {
     return SliverToBoxAdapter(
@@ -241,7 +238,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Priority Inbox ────────────────────────────────────────────────────────
+  // Priority Inbox
 
   Widget _buildPriorityInbox(AdminDashboardProvider provider) {
     if (provider.inboxLoading) {
@@ -273,7 +270,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Bar Chart ─────────────────────────────────────────────────────────────
+  // Bar Chart
 
   Widget _buildBarChart(AdminDashboardProvider provider) {
     if (provider.chartLoading) {
@@ -408,7 +405,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Hotspot Card ──────────────────────────────────────────────────────────
+  // Hotspot Card
 
   Widget _buildHotspotCard() {
     return SliverToBoxAdapter(
@@ -464,7 +461,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Error tile helper ─────────────────────────────────────────────────────
+  // Error tile helper
 
   Widget _buildErrorTile(String message) {
     return Padding(
@@ -491,7 +488,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ── Bottom Navigation ─────────────────────────────────────────────────────
+  // Bottom Navigation
 
   Widget _buildBottomNav(AdminDashboardProvider provider) {
     return BottomNavigationBar(
@@ -538,7 +535,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 }
 
-// ── Extracted stateless sub-widgets ───────────────────────────────────────
+// Extracted stateless sub-widgets
 
 /// KPI stat card for the 2×2 grid
 class _AdminStatCard extends StatelessWidget {

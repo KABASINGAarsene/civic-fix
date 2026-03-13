@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/admin_stat_model.dart';
-import '../models/priority_issue_model.dart';
-import '../models/chart_data_model.dart';
+import '../models/dashboard_models.dart';
 
 class AdminDashboardProvider extends ChangeNotifier {
   int _selectedTab = 0;
