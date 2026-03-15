@@ -1,3 +1,4 @@
+import 'package:district_direct/screens/home/citizen_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
@@ -9,7 +10,7 @@ import 'otp_verification_screen.dart';
 /// Login page for regular citizens with Rwanda landscape background
 
 class CitizenLoginScreen extends StatefulWidget {
-  const CitizenLoginScreen({Key? key}) : super(key: key);
+  const CitizenLoginScreen({super.key});
 
   @override
   State<CitizenLoginScreen> createState() => _CitizenLoginScreenState();
@@ -51,13 +52,10 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         _isLoading = false;
       });
 
-      // TODO: Navigate to citizen dashboard
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: AppColors.success,
-          ),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const CitizenHomeScreen()),
         );
       }
     }

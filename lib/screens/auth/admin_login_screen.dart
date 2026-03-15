@@ -4,12 +4,13 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
 import 'otp_verification_screen.dart';
+import '../home/admin_home_screen.dart';
 
 /// Admin Login Screen
 /// Login page for district officials with city illustration background
 
 class AdminLoginScreen extends StatefulWidget {
-  const AdminLoginScreen({Key? key}) : super(key: key);
+  const AdminLoginScreen({super.key});
 
   @override
   State<AdminLoginScreen> createState() => _AdminLoginScreenState();
@@ -51,11 +52,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
       // TODO: Navigate to admin dashboard
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: AppColors.success,
-          ),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
         );
       }
     }

@@ -13,11 +13,11 @@ class OTPVerificationScreen extends StatefulWidget {
   final bool isAdmin;
 
   const OTPVerificationScreen({
-    Key? key,
+    super.key,
     required this.email,
     required this.phoneNumber,
     this.isAdmin = false,
-  }) : super(key: key);
+  });
 
   @override
   State<OTPVerificationScreen> createState() => _OTPVerificationScreenState();
