@@ -24,10 +24,12 @@ class CitizenHomeProvider extends ChangeNotifier {
   // Feed Data State
 
   List<ReportItem> _feedItems = [];
+  List<ReportItem> _myReportedItems = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   List<ReportItem> get feedItems => _feedItems;
+  List<ReportItem> get myReportedItems => _myReportedItems;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -68,6 +70,133 @@ class CitizenHomeProvider extends ChangeNotifier {
     //     .doc(reportId)
     //     .update({'likes': FieldValue.increment(1)});
     notifyListeners();
+  }
+
+  /// Submit a new citizen issue and add it to the top of the local feed.
+  Future<void> submitIssue({
+    required List<String> categories,
+    String? description,
+    required bool hasAudioDescription,
+    required String address,
+    required List<String> attachedMedia,
+    required String priorityLabel,
+    required bool isAnonymous,
+  }) async {
+    // TODO: Send this payload to Firestore/API so admins receive the report.
+    final firstCategory = categories.isNotEmpty ? categories.first : 'General';
+    final icon = _iconForCategory(firstCategory);
+    final details = description?.trim().isNotEmpty == true
+        ? description!.trim()
+        : 'Audio description attached by citizen.';
+
+    final mediaSummary = attachedMedia.isEmpty
+        ? 'No media attached'
+        : '${attachedMedia.length} media attachment(s)';
+
+    final identity = isAnonymous ? 'Anonymous' : 'Citizen';
+
+    final report = ReportItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: '$firstCategory issue reported',
+      description:
+          '$details\nPriority: $priorityLabel • $mediaSummary • Reporter: $identity${hasAudioDescription ? ' • Audio included' : ''}',
+      category: categories.join(' • ').toUpperCase(),
+      timeLocation: 'Just now • $address',
+      status: ReportStatus.submitted,
+      icon: icon,
+      likes: 0,
+      comments: 0,
+      address: address,
+      priorityLabel: priorityLabel,
+      isAnonymous: isAnonymous,
+      hasAudioDescription: hasAudioDescription,
+      attachedMedia: attachedMedia,
+    );
+
+    _feedItems = [report, ..._feedItems];
+    _myReportedItems = [report, ..._myReportedItems];
+    notifyListeners();
+  }
+
+  /// Update an existing citizen-submitted issue while it is still in Submitted status.
+  Future<bool> updateSubmittedIssue({
+    required String issueId,
+    required List<String> categories,
+    String? description,
+    required bool hasAudioDescription,
+    required String address,
+    required List<String> attachedMedia,
+    required String priorityLabel,
+    required bool isAnonymous,
+  }) async {
+    final index = _myReportedItems.indexWhere((item) => item.id == issueId);
+    if (index == -1) {
+      return false;
+    }
+
+    final existing = _myReportedItems[index];
+    if (existing.status != ReportStatus.submitted) {
+      return false;
+    }
+
+    final firstCategory = categories.isNotEmpty ? categories.first : 'General';
+    final icon = _iconForCategory(firstCategory);
+    final details = description?.trim().isNotEmpty == true
+        ? description!.trim()
+        : 'Audio description attached by citizen.';
+
+    final mediaSummary = attachedMedia.isEmpty
+        ? 'No media attached'
+        : '${attachedMedia.length} media attachment(s)';
+
+    final identity = isAnonymous ? 'Anonymous' : 'Citizen';
+
+    final updated = ReportItem(
+      id: existing.id,
+      title: '$firstCategory issue reported',
+      description:
+          '$details\nPriority: $priorityLabel • $mediaSummary • Reporter: $identity${hasAudioDescription ? ' • Audio included' : ''}',
+      category: categories.join(' • ').toUpperCase(),
+      timeLocation: 'Updated just now • $address',
+      status: existing.status,
+      icon: icon,
+      likes: existing.likes,
+      comments: existing.comments,
+      address: address,
+      priorityLabel: priorityLabel,
+      isAnonymous: isAnonymous,
+      hasAudioDescription: hasAudioDescription,
+      attachedMedia: attachedMedia,
+    );
+
+    _myReportedItems[index] = updated;
+
+    final feedIndex = _feedItems.indexWhere((item) => item.id == issueId);
+    if (feedIndex != -1) {
+      _feedItems[feedIndex] = updated;
+    }
+
+    notifyListeners();
+    return true;
+  }
+
+  IconData _iconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'infrastructure':
+        return Icons.construction;
+      case 'health':
+        return Icons.local_hospital_outlined;
+      case 'security':
+        return Icons.security;
+      case 'land':
+        return Icons.landscape_outlined;
+      case 'justice':
+        return Icons.gavel_outlined;
+      case 'education':
+        return Icons.school_outlined;
+      default:
+        return Icons.report_problem_outlined;
+    }
   }
 
   // Placeholder data

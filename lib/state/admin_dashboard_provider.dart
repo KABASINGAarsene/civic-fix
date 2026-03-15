@@ -103,6 +103,34 @@ class AdminDashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Add a newly submitted citizen report to the admin inbox.
+  void addSubmittedIssue({
+    required String title,
+    required String subtitle,
+    required String priorityLabel,
+  }) {
+    final tag = priorityLabel.toUpperCase();
+
+    final tagColor = switch (tag) {
+      'HIGH' => const Color(0xFFDC3545),
+      'MEDIUM' => const Color(0xFF17A2B8),
+      _ => const Color(0xFFFFC107),
+    };
+
+    final issue = PriorityIssue(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      subtitle: subtitle,
+      tag: tag,
+      tagColor: tagColor,
+      icon: Icons.flag_outlined,
+      upvotes: 0,
+    );
+
+    _inbox = [issue, ..._inbox];
+    notifyListeners();
+  }
+
   // Chart Data State
 
   List<MonthData> _chartData = [];

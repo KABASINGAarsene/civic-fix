@@ -7,7 +7,7 @@ import '../../models/dashboard_models.dart';
 class ReportDetailScreen extends StatefulWidget {
   final ReportDetailData report;
 
-  const ReportDetailScreen({Key? key, required this.report}) : super(key: key);
+  const ReportDetailScreen({super.key, required this.report});
 
   @override
   State<ReportDetailScreen> createState() => _ReportDetailScreenState();

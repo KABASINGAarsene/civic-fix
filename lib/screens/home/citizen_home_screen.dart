@@ -5,6 +5,7 @@ import '../../constants/app_text_styles.dart';
 import '../../models/dashboard_models.dart';
 import '../../state/citizen_home_provider.dart';
 import './citizen_reports_details.dart';
+import '../report_issue_screen.dart';
 
 class CitizenHomeScreen extends StatefulWidget {
   const CitizenHomeScreen({super.key});
@@ -35,20 +36,7 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
             child: Column(
               children: [
                 _buildHeader(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                    children: [
-                      _buildReportButton(),
-                      const SizedBox(height: 20),
-                      _buildFilterRow(provider),
-                      const SizedBox(height: 24),
-                      _buildFeedHeader(),
-                      const SizedBox(height: 12),
-                      _buildFeedBody(provider),
-                    ],
-                  ),
-                ),
+                Expanded(child: _buildTabContent(provider)),
               ],
             ),
           ),
@@ -117,7 +105,12 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
       width: double.infinity,
       height: 54,
       child: ElevatedButton.icon(
-        onPressed: () {}, // TODO: Navigate to report form
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ReportIssueScreen()),
+          );
+        },
         icon: const Icon(Icons.add_circle_outline, color: AppColors.textWhite),
         label: Text('REPORT NEW ISSUE', style: AppTextStyles.button),
         style: ElevatedButton.styleFrom(
@@ -214,6 +207,133 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
     );
   }
 
+  Widget _buildTabContent(CitizenHomeProvider provider) {
+    switch (provider.selectedNavIndex) {
+      case 0:
+        return _buildHomeTabContent(provider);
+      case 2:
+        return _buildMyReportsTabContent(provider);
+      case 1:
+        return _buildPlaceholderTab(
+          title: 'Map',
+          message: 'Map view is coming soon.',
+          icon: Icons.map_outlined,
+        );
+      case 3:
+        return _buildPlaceholderTab(
+          title: 'Profile',
+          message: 'Profile section is coming soon.',
+          icon: Icons.person_outline,
+        );
+      default:
+        return _buildHomeTabContent(provider);
+    }
+  }
+
+  Widget _buildHomeTabContent(CitizenHomeProvider provider) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      children: [
+        _buildReportButton(),
+        const SizedBox(height: 20),
+        _buildFilterRow(provider),
+        const SizedBox(height: 24),
+        _buildFeedHeader(),
+        const SizedBox(height: 12),
+        _buildFeedBody(provider),
+      ],
+    );
+  }
+
+  Widget _buildMyReportsTabContent(CitizenHomeProvider provider) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      children: [
+        Align(
+          alignment: Alignment.topRight,
+          child: FloatingActionButton.extended(
+            heroTag: 'myReportsFab',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ReportIssueScreen()),
+              );
+            },
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('REPORT NEW ISSUE'),
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.textWhite,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Text('My Reports', style: AppTextStyles.h3),
+        const SizedBox(height: 12),
+        _buildMyReportsBody(provider),
+      ],
+    );
+  }
+
+  Widget _buildMyReportsBody(CitizenHomeProvider provider) {
+    if (provider.myReportedItems.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.inputBorder),
+        ),
+        child: Text(
+          'You have not submitted any issue yet.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: provider.myReportedItems
+          .map(
+            (item) => InkWell(
+              onTap: () => _navigateToDetails(item),
+              child: _buildFeedCard(
+                item,
+                showUpdateAction: item.status == ReportStatus.submitted,
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildPlaceholderTab({
+    required String title,
+    required String message,
+    required IconData icon,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 42, color: AppColors.textSecondary),
+            const SizedBox(height: 10),
+            Text(title, style: AppTextStyles.h4),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Feed Body: loading / error / data
 
   Widget _buildFeedBody(CitizenHomeProvider provider) {
@@ -297,17 +417,21 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
 
   // Feed Card
 
-  Widget _buildFeedCard(ReportItem item) {
+  Widget _buildFeedCard(ReportItem item, {bool showUpdateAction = false}) {
     final statusColor = item.status == ReportStatus.resolved
         ? AppColors.success
         : item.status == ReportStatus.inProgress
         ? AppColors.warning
+        : item.status == ReportStatus.submitted
+        ? AppColors.info
         : AppColors.info;
 
     final statusLabel = item.status == ReportStatus.resolved
         ? 'RESOLVED'
         : item.status == ReportStatus.inProgress
         ? 'IN PROGRESS'
+        : item.status == ReportStatus.submitted
+        ? 'SUBMITTED'
         : 'REPORTED';
 
     return Container(
@@ -404,6 +528,39 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
                   ),
                 ),
               ),
+              if (showUpdateAction) ...[
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReportIssueScreen(editingIssue: item),
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.tealDark,
+                    side: const BorderSide(color: AppColors.teal),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: Text(
+                    'Update',
+                    style: AppTextStyles.buttonSmall.copyWith(
+                      color: AppColors.tealDark,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -485,7 +642,7 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
         BottomNavigationBarItem(
           icon: Icon(Icons.assignment_outlined),
           activeIcon: Icon(Icons.assignment),
-          label: 'REPORTS',
+          label: 'My reports',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),

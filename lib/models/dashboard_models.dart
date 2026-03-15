@@ -17,6 +17,11 @@ class ReportItem {
   final IconData icon;
   final int likes;
   final int comments;
+  final String address;
+  final String priorityLabel;
+  final bool isAnonymous;
+  final bool hasAudioDescription;
+  final List<String> attachedMedia;
 
   const ReportItem({
     required this.id,
@@ -28,6 +33,11 @@ class ReportItem {
     required this.icon,
     required this.likes,
     required this.comments,
+    this.address = '',
+    this.priorityLabel = 'Low',
+    this.isAnonymous = false,
+    this.hasAudioDescription = false,
+    this.attachedMedia = const [],
   });
 }
 
