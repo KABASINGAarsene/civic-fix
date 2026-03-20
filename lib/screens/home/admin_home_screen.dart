@@ -264,6 +264,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  void _handleSectionAction(String action) {
+    switch (action) {
+      case 'Sort by Urgency':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Sorting Priority Inbox by urgency...'),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        break;
+      case 'View All':
+        context.read<AdminDashboardProvider>().setNavIndex(1);
+        break;
+      case 'Open Map':
+        context.read<AdminDashboardProvider>().setNavIndex(2);
+        break;
+    }
+  }
+
   // Section Header
 
   Widget _buildSectionHeader(String title, String action) {
@@ -279,7 +300,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
             if (action.isNotEmpty)
               GestureDetector(
-                onTap: () {}, // TODO: Handle section action
+                onTap: () => _handleSectionAction(action),
                 child: Text(
                   action,
                   style: AppTextStyles.captionBold.copyWith(color: _blue),

@@ -89,7 +89,72 @@ class _AdminIssuesContentState extends State<AdminIssuesContent>
         children: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.textWhite, size: 24),
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: _card,
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20))),
+                builder: (_) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                    left: 16,
+                    right: 16,
+                    top: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                                color: _textMuted.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(2))),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        autofocus: true,
+                        style: const TextStyle(
+                            color: AppColors.textWhite, fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: 'Search issues, locations, or ticket IDs...',
+                          hintStyle:
+                              TextStyle(color: _textMuted, fontSize: 14),
+                          prefixIcon: Icon(Icons.search,
+                              color: _textMuted, size: 20),
+                          filled: true,
+                          fillColor: const Color(0xFF0F172A),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onSubmitted: (query) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  query.isEmpty
+                                      ? 'Enter a search term'
+                                      : 'Searching for "$query"...'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           const Expanded(
             child: Text(

@@ -94,6 +94,100 @@ class _OfficerChatScreenState extends State<OfficerChatScreen> {
     return '$h:$m';
   }
 
+  void _showCaseLog(BuildContext context) {
+    final events = [
+      ('09:15 AM', 'Citizen submitted report', Icons.flag_outlined, AppColors.primaryBlue),
+      ('09:30 AM', 'Report verified by system', Icons.check_circle_outline, AppColors.success),
+      ('09:30 AM', '${widget.officerName} assigned to case', Icons.person_outline, AppColors.primaryBlue),
+      ('10:00 AM', 'Officer dispatched to location', Icons.directions_car_outlined, AppColors.warning),
+      ('10:45 AM', 'Field team completed repairs', Icons.build_outlined, AppColors.success),
+      ('10:46 AM', 'Resolution photo uploaded', Icons.photo_camera_outlined, AppColors.success),
+    ];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.4,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (_, controller) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Text('Case Log & History',
+                style: AppTextStyles.h4),
+            Text('Ticket #${widget.ticketId}',
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textSecondary)),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                controller: controller,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: events.length,
+                itemBuilder: (_, i) {
+                  final e = events[i];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: e.$4.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(e.$3, color: e.$4, size: 17),
+                            ),
+                            if (i < events.length - 1)
+                              Container(
+                                  width: 1,
+                                  height: 20,
+                                  color: Colors.grey.shade200),
+                          ],
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 6),
+                              Text(e.$2,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                      fontWeight: FontWeight.w500)),
+                              const SizedBox(height: 2),
+                              Text(e.$1,
+                                  style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.textTertiary)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,7 +225,7 @@ class _OfficerChatScreenState extends State<OfficerChatScreen> {
           _buildInputBar(),
           // Case log link
           GestureDetector(
-            onTap: () {},
+            onTap: () => _showCaseLog(context),
             child: Container(
               color: AppColors.backgroundWhite,
               padding: const EdgeInsets.only(bottom: 12, top: 4),
@@ -194,7 +288,30 @@ class _OfficerChatScreenState extends State<OfficerChatScreen> {
             IconButton(
               icon: const Icon(Icons.phone_outlined,
                   color: AppColors.primaryBlue, size: 22),
-              onPressed: () {},
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Call ${widget.officerName}'),
+                    content: Text(
+                        'Initiating call to ${widget.officerName} – ${widget.department}...'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.phone, size: 16),
+                        label: const Text('Call'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

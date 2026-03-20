@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
+import '../shared/notifications_screen.dart';
 
 class AdminFieldMapContent extends StatefulWidget {
   const AdminFieldMapContent({super.key});
@@ -211,7 +212,64 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
         children: [
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.white, size: 22),
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) => SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.filter_list),
+                        title: const Text('Filter by Priority'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Priority filter coming soon'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.layers_outlined),
+                        title: const Text('Toggle Map Layers'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Map layers toggle coming soon'),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.download_outlined),
+                        title: const Text('Export Map Data'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Exporting map data...'),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           const Expanded(
             child: Text(
@@ -229,7 +287,12 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
               IconButton(
                 icon: const Icon(Icons.notifications_none,
                     color: Colors.white, size: 22),
-                onPressed: () {},
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationsScreen(isAdmin: true),
+                  ),
+                ),
               ),
               Positioned(
                 right: 8,
@@ -446,15 +509,28 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
                 ),
               ),
               const SizedBox(width: 10),
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: _card,
-                  borderRadius: BorderRadius.circular(10),
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Getting directions to ${_markers[_selectedMarker].label}...'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: _card,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.directions,
+                      color: AppColors.textWhite, size: 22),
                 ),
-                child: const Icon(Icons.directions,
-                    color: AppColors.textWhite, size: 22),
               ),
             ],
           ),
