@@ -8,6 +8,8 @@ import '../../state/admin_dashboard_provider.dart';
 import '../admin/admin_issues_content.dart';
 import '../admin/admin_field_map_content.dart';
 import '../admin/admin_analytics_content.dart';
+import '../admin/admin_profile_content.dart';
+import '../shared/notifications_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -63,7 +65,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 3:
         return const AdminAnalyticsContent();
       case 4:
-        return _buildSettingsPlaceholder();
+        return const AdminProfileContent();
       default:
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -152,7 +154,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     color: AppColors.textWhite,
                     size: 24,
                   ),
-                  onPressed: () {}, // TODO: Open notifications
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const NotificationsScreen(isAdmin: true),
+                      ),
+                    );
+                  }
                 ),
                 Positioned(
                   right: 8,
