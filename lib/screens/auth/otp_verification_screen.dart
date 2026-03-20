@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
+import '../home/citizen_home_screen.dart';
+import '../home/admin_home_screen.dart';
 
 /// OTP Verification Screen
 /// Screen for verifying email/phone with 6-digit OTP code
@@ -85,7 +87,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Verification code sent to ${widget.email}'),
+          content: Text('Verification code sent to +250 ${widget.phoneNumber}'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -118,7 +120,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       _isLoading = false;
     });
 
-    // TODO: Navigate to dashboard on success
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -127,8 +128,14 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         ),
       );
 
-      // For now, just pop back - later navigate to dashboard
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => widget.isAdmin
+              ? const AdminDashboardScreen()
+              : const CitizenHomeScreen(),
+        ),
+        (route) => false,
+      );
     }
   }
 
@@ -240,7 +247,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.email_outlined,
+                  Icons.phone_android_outlined,
                   size: 64,
                   color: AppColors.primaryBlue,
                 ),
@@ -248,7 +255,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               const SizedBox(height: 32),
               // Title
               Text(
-                'Check your email',
+                'Check your SMS',
                 style: AppTextStyles.h2,
                 textAlign: TextAlign.center,
               ),
@@ -261,9 +268,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     color: AppColors.textSecondary,
                   ),
                   children: [
-                    const TextSpan(text: 'We sent a verification code to\n'),
+                    const TextSpan(text: 'We sent a 6-digit code to\n'),
                     TextSpan(
-                      text: widget.email,
+                      text: widget.phoneNumber.isNotEmpty
+                          ? '+250 ${widget.phoneNumber}'
+                          : widget.email,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
@@ -322,7 +331,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Check your spam folder if you don\'t see the email',
+                        'The SMS may take a minute to arrive. Check that your phone has signal.',
                         style: AppTextStyles.caption,
                       ),
                     ),
