@@ -8,6 +8,7 @@ import './citizen_reports_details.dart';
 import '../report_issue_screen.dart';
 import '../citizen/citizen_map_content.dart';
 import '../citizen/citizen_profile_content.dart';
+import '../shared/notifications_screen.dart';
 
 class CitizenHomeScreen extends StatefulWidget {
   const CitizenHomeScreen({super.key});
@@ -79,7 +80,15 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
                   color: AppColors.textPrimary,
                   size: 26,
                 ),
-                onPressed: () {}, // TODO: Open notifications screen
+                onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const NotificationsScreen(isAdmin: false),
+                      ),
+                    );
+                  }
               ),
               Positioned(
                 right: 8,
