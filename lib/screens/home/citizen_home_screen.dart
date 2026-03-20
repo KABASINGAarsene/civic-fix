@@ -6,6 +6,8 @@ import '../../models/dashboard_models.dart';
 import '../../state/citizen_home_provider.dart';
 import './citizen_reports_details.dart';
 import '../report_issue_screen.dart';
+import '../citizen/citizen_map_content.dart';
+import '../citizen/citizen_profile_content.dart';
 
 class CitizenHomeScreen extends StatefulWidget {
   const CitizenHomeScreen({super.key});
@@ -192,7 +194,8 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
       children: [
         Text('District Feed', style: AppTextStyles.h3),
         TextButton.icon(
-          onPressed: () {}, // TODO: Navigate to map screen
+          onPressed: () =>
+              context.read<CitizenHomeProvider>().setNavIndex(1),
           icon: const Icon(
             Icons.map_outlined,
             size: 16,
@@ -214,17 +217,9 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
       case 2:
         return _buildMyReportsTabContent(provider);
       case 1:
-        return _buildPlaceholderTab(
-          title: 'Map',
-          message: 'Map view is coming soon.',
-          icon: Icons.map_outlined,
-        );
+        return const CitizenMapContent();
       case 3:
-        return _buildPlaceholderTab(
-          title: 'Profile',
-          message: 'Profile section is coming soon.',
-          icon: Icons.person_outline,
-        );
+        return const CitizenProfileContent();
       default:
         return _buildHomeTabContent(provider);
     }
@@ -400,15 +395,20 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
 
   // Navigation Helper
   void _navigateToDetails(ReportItem item) {
+    // Simulate an assigned officer for in-progress reports
+    final assignedTo = item.status == ReportStatus.inProgress
+        ? 'Officer Jean Pierre'
+        : null;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ReportDetailScreen(
           report: ReportDetailData.fromReportItem(
             item,
-            location: item.timeLocation,
+            location: item.address.isNotEmpty ? item.address : item.timeLocation,
             submittedDate: '2 days ago',
             lastUpdate: '1 hour ago',
+            assignedTo: assignedTo,
           ),
         ),
       ),

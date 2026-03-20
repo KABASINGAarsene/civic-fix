@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../models/dashboard_models.dart';
+import './officer_chat_screen.dart';
 
 class ReportDetailScreen extends StatefulWidget {
   final ReportDetailData report;
@@ -85,6 +86,12 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                           'Assigned To',
                           widget.report.assignedTo ?? 'Awaiting assignment',
                         ),
+                        if (widget.report.assignedTo != null &&
+                            widget.report.assignedTo!.isNotEmpty &&
+                            widget.report.assignedTo != 'Awaiting assignment') ...[
+                          const SizedBox(height: 20),
+                          _buildChatButton(),
+                        ],
                         const SizedBox(height: 32),
                         _buildHelpCard(),
                         const SizedBox(height: 32),
@@ -591,6 +598,42 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  // Chat with Officer Button
+
+  Widget _buildChatButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OfficerChatScreen(
+                officerName: widget.report.assignedTo!,
+                department: '${widget.report.category} • Rwanda',
+                ticketId: widget.report.trackingId,
+                issueTitle: widget.report.title,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.chat_outlined, color: Colors.white, size: 18),
+        label: Text(
+          'Chat with ${widget.report.assignedTo}',
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryBlue,
+          elevation: 0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
     );
   }
 

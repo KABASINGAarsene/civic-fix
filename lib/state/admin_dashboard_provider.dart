@@ -172,8 +172,34 @@ class AdminDashboardProvider extends ChangeNotifier {
     }
   }
 
+  // Issues Management State
+
+  List<AdminIssue> _allIssues = [];
+  bool _issuesLoading = false;
+  String? _issuesError;
+
+  List<AdminIssue> get allIssues => _allIssues;
+  bool get issuesLoading => _issuesLoading;
+  String? get issuesError => _issuesError;
+
+  Future<void> loadIssues() async {
+    _issuesLoading = true;
+    _issuesError = null;
+    notifyListeners();
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 400));
+      _allIssues = _placeholderIssues;
+    } catch (e) {
+      _issuesError = 'Failed to load issues.';
+    } finally {
+      _issuesLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> loadAll() async {
-    await Future.wait([loadStats(), loadInbox(), loadChartData()]);
+    await Future.wait([loadStats(), loadInbox(), loadChartData(), loadIssues()]);
   }
 
   // Placeholder data
@@ -240,6 +266,100 @@ class AdminDashboardProvider extends ChangeNotifier {
       tagColor: const Color(0xFF17A2B8),
       icon: Icons.school_outlined,
       upvotes: 28,
+    ),
+  ];
+
+  static final List<AdminIssue> _placeholderIssues = [
+    // Submitted
+    AdminIssue(
+      id: 'DD-2045',
+      title: 'Land cracking – drought damage',
+      location: 'Kirehe / Gatore Cell',
+      timeAgo: '4h ago',
+      priorityLabel: 'HIGH PRIORITY',
+      priorityColor: Color(0xFFDC3545),
+      priorityScore: 85,
+      category: 'Infrastructure',
+      status: 'submitted',
+    ),
+    AdminIssue(
+      id: 'DD-2046',
+      title: 'Broken water pipe overflow',
+      location: 'Nyagatare / Gatunda',
+      timeAgo: '6h ago',
+      priorityLabel: 'MEDIUM PRIORITY',
+      priorityColor: Color(0xFFFFC107),
+      priorityScore: 72,
+      category: 'Infrastructure',
+      status: 'submitted',
+    ),
+    AdminIssue(
+      id: 'DD-2047',
+      title: 'Street light outage – main road',
+      location: 'Musanze / Busogo Sector',
+      timeAgo: '10h ago',
+      priorityLabel: 'HIGH PRIORITY',
+      priorityColor: Color(0xFFDC3545),
+      priorityScore: 91,
+      category: 'Infrastructure',
+      status: 'submitted',
+    ),
+    AdminIssue(
+      id: 'DD-2048',
+      title: 'Waste collection point overflow',
+      location: 'Huye / Ngoma Sector',
+      timeAgo: '14h ago',
+      priorityLabel: 'LOW PRIORITY',
+      priorityColor: Color(0xFF17A2B8),
+      priorityScore: 45,
+      category: 'Infrastructure',
+      status: 'submitted',
+    ),
+    // In Progress
+    AdminIssue(
+      id: 'DD-2040',
+      title: 'Road pothole – arterial road',
+      location: 'Gasabo / Kimironko',
+      timeAgo: '1d ago',
+      priorityLabel: 'HIGH PRIORITY',
+      priorityColor: Color(0xFFDC3545),
+      priorityScore: 88,
+      category: 'Infrastructure',
+      status: 'inProgress',
+    ),
+    AdminIssue(
+      id: 'DD-2041',
+      title: 'Blocked drainage channel',
+      location: 'Kicukiro / Gahanga',
+      timeAgo: '2d ago',
+      priorityLabel: 'MEDIUM PRIORITY',
+      priorityColor: Color(0xFFFFC107),
+      priorityScore: 60,
+      category: 'Infrastructure',
+      status: 'inProgress',
+    ),
+    // Resolved
+    AdminIssue(
+      id: 'DD-2035',
+      title: 'Broken streetlight – sector 3',
+      location: 'Kirehe / Nasho Cell',
+      timeAgo: '3d ago',
+      priorityLabel: 'LOW PRIORITY',
+      priorityColor: Color(0xFF17A2B8),
+      priorityScore: 40,
+      category: 'Infrastructure',
+      status: 'resolved',
+    ),
+    AdminIssue(
+      id: 'DD-2036',
+      title: 'Water pipe leak – community tap',
+      location: 'Nyagatare / Rwimiyaga',
+      timeAgo: '4d ago',
+      priorityLabel: 'MEDIUM PRIORITY',
+      priorityColor: Color(0xFFFFC107),
+      priorityScore: 68,
+      category: 'Infrastructure',
+      status: 'resolved',
     ),
   ];
 

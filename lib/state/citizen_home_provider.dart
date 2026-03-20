@@ -227,6 +227,20 @@ class CitizenHomeProvider extends ChangeNotifier {
       comments: 3,
     ),
     ReportItem(
+      id: 'DD-2024-001',
+      title: 'Broken Water Pipe – Gasabo',
+      description:
+          'Water pipe is leaking near the main junction causing flooding on the road.',
+      category: 'INFRASTRUCTURE',
+      timeLocation: '1d ago • Gasabo District',
+      status: ReportStatus.inProgress,
+      icon: Icons.plumbing,
+      likes: 22,
+      comments: 5,
+      address: 'KG 201 St, Kigali',
+      priorityLabel: 'High',
+    ),
+    ReportItem(
       id: '3',
       title: 'Pothole on Kigali Road',
       description:

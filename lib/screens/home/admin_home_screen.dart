@@ -5,6 +5,9 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../models/dashboard_models.dart';
 import '../../state/admin_dashboard_provider.dart';
+import '../admin/admin_issues_content.dart';
+import '../admin/admin_field_map_content.dart';
+import '../admin/admin_analytics_content.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -42,24 +45,64 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           backgroundColor: _bg,
           bottomNavigationBar: _buildBottomNav(provider),
           body: SafeArea(
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildHeader(),
-                _buildCategoryTabs(provider),
-                _buildStatGrid(provider),
-                _buildSectionHeader('Priority Inbox', 'Sort by Urgency'),
-                _buildPriorityInbox(provider),
-                _buildSectionHeader('Monthly Performance', 'View All'),
-                _buildBarChart(provider),
-                _buildSectionHeader('District Hotspots', 'Open Map'),
-                _buildHotspotCard(),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            ),
+            child: _buildBody(provider),
           ),
         );
       },
+    );
+  }
+
+  // Tab body switcher
+
+  Widget _buildBody(AdminDashboardProvider provider) {
+    switch (provider.selectedNavIndex) {
+      case 1:
+        return const AdminIssuesContent();
+      case 2:
+        return const AdminFieldMapContent();
+      case 3:
+        return const AdminAnalyticsContent();
+      case 4:
+        return _buildSettingsPlaceholder();
+      default:
+        return CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildHeader(),
+            _buildCategoryTabs(provider),
+            _buildStatGrid(provider),
+            _buildSectionHeader('Priority Inbox', 'Sort by Urgency'),
+            _buildPriorityInbox(provider),
+            _buildSectionHeader('Monthly Performance', 'View All'),
+            _buildBarChart(provider),
+            _buildSectionHeader('District Hotspots', 'Open Map'),
+            _buildHotspotCard(),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        );
+    }
+  }
+
+  Widget _buildSettingsPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.settings_outlined,
+              size: 42, color: Color(0xFF94A3B8)),
+          const SizedBox(height: 10),
+          Text(
+            'Settings',
+            style: AppTextStyles.h4.copyWith(color: AppColors.textWhite),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Admin settings coming soon.',
+            style: AppTextStyles.bodyMedium
+                .copyWith(color: const Color(0xFF94A3B8)),
+          ),
+        ],
+      ),
     );
   }
 

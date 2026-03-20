@@ -151,3 +151,47 @@ class MonthData {
 
   const MonthData(this.month, this.resolved, this.received);
 }
+
+// --- Admin Issue model (Issues Management & Ticket Detail screens) ---
+
+class AdminIssue {
+  final String id;
+  final String title;
+  final String location;
+  final String timeAgo;
+  final String priorityLabel; // 'HIGH PRIORITY', 'MEDIUM PRIORITY', 'LOW PRIORITY'
+  final Color priorityColor;
+  final int priorityScore; // 0–100
+  final String category;
+  final String status; // 'submitted', 'inProgress', 'resolved'
+
+  const AdminIssue({
+    required this.id,
+    required this.title,
+    required this.location,
+    required this.timeAgo,
+    required this.priorityLabel,
+    required this.priorityColor,
+    required this.priorityScore,
+    required this.category,
+    required this.status,
+  });
+}
+
+// --- Chat Message model (Officer-Citizen chat screen) ---
+
+class ChatMessage {
+  final String id;
+  final String text;
+  final bool isOfficer; // true = officer bubble (left), false = citizen (right)
+  final String time;
+  final bool hasImage;
+
+  const ChatMessage({
+    required this.id,
+    required this.text,
+    required this.isOfficer,
+    required this.time,
+    this.hasImage = false,
+  });
+}
