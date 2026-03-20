@@ -4,11 +4,12 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/app_colors.dart';
-import '../../constants/app_text_styles.dart';
-import '../../models/dashboard_models.dart';
-import '../../state/admin_dashboard_provider.dart';
-import '../../state/citizen_home_provider.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
+import '../models/dashboard_models.dart';
+import '../state/admin_dashboard_provider.dart';
+import '../state/citizen_home_provider.dart';
+import 'report/report_confirmation_screen.dart';
 
 class ReportIssueScreen extends StatefulWidget {
   final ReportItem? editingIssue;
@@ -601,17 +602,24 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
       _isSubmitting = false;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isEditMode
-              ? 'Issue updated successfully.'
-              : 'Issue submitted to admin successfully.',
+    if (_isEditMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Issue updated successfully.')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => ReportConfirmationScreen(
+            trackingId: 'DD-${DateTime.now().millisecondsSinceEpoch % 10000}',
+            category: _selectedCategories.join(' • '),
+            location: _addressController.text.trim(),
+            priority: _priorityLabel,
+            isAnonymous: _isAnonymous,
+          ),
         ),
-      ),
-    );
-
-    Navigator.of(context).pop();
+      );
+    }
   }
 
   InputDecoration _inputDecoration({String? hintText, Widget? prefixIcon}) {
