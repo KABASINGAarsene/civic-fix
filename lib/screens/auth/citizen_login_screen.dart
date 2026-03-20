@@ -5,6 +5,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
 import 'otp_verification_screen.dart';
+import 'how_it_works_screen.dart';
 
 /// Citizen Login Screen
 /// Login page for regular citizens with Rwanda landscape background
@@ -735,6 +736,25 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               const SizedBox(height: 16),
                               // Info Card
                               _buildInfoCard(),
+                              const SizedBox(height: 20),
+                              // How it works link
+                              Center(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const HowItWorksScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'How it works',
+                                    style: AppTextStyles.link,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
