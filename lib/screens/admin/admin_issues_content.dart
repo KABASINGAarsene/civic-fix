@@ -263,12 +263,20 @@ class _AdminIssuesContentState extends State<AdminIssuesContent>
 
   Widget _buildIssueCard(BuildContext context, AdminIssue issue) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => AdminTicketDetailScreen(issue: issue),
-        ),
-      ),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AdminTicketDetailScreen(issue: issue),
+          ),
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        await context.read<AdminDashboardProvider>().loadAll();
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(

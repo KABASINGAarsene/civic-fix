@@ -271,35 +271,42 @@ class _ReportConfirmationScreenState extends State<ReportConfirmationScreen>
           ),
           const SizedBox(height: 8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.trackingId,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryBlue,
-                  letterSpacing: 1,
+              Flexible(
+                child: Text(
+                  widget.trackingId,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryBlue,
+                    letterSpacing: 1,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Spacer(),
-              GestureDetector(
-                onTap: _copyTrackingId,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.copy, color: Colors.white, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Copy',
-                        style: AppTextStyles.buttonSmall.copyWith(fontSize: 12),
-                      ),
-                    ],
+              const SizedBox(width: 12),
+              Flexible(
+                flex: 0,
+                child: GestureDetector(
+                  onTap: _copyTrackingId,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.copy, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Copy',
+                          style: AppTextStyles.buttonSmall.copyWith(fontSize: 12),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

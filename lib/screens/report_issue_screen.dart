@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:record/record.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../models/dashboard_models.dart';
-import '../state/admin_dashboard_provider.dart';
 import '../state/citizen_home_provider.dart';
 import 'report/report_confirmation_screen.dart';
 
@@ -40,13 +44,15 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
   bool _useAudioDescription = false;
   bool _isRecordingAudio = false;
   bool _hasAudioRecording = false;
+  String? _audioFilePath;
+  String? _audioFileName;
   bool _isAnonymous = false;
   bool _isSubmitting = false;
+  Duration _recordingDuration = Duration.zero;
+  Timer? _recordingTicker;
+  final AudioRecorder _audioRecorder = AudioRecorder();
 
   double _priorityValue = 1;
-
-  Timer? _recordingTicker;
-  Duration _recordingDuration = Duration.zero;
 
   bool get _isEditMode => widget.editingIssue != null;
   bool get _canEditSubmittedIssue =>
@@ -71,7 +77,9 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
       );
 
     _useAudioDescription = issue.hasAudioDescription;
-    _hasAudioRecording = issue.hasAudioDescription;
+    _audioFilePath = issue.audioPath ?? _firstAudioPath(issue.attachedMedia);
+    _audioFileName = _audioFilePath?.split(RegExp(r'[\\/]')).last;
+    _hasAudioRecording = issue.hasAudioDescription && (_audioFilePath?.isNotEmpty == true);
     _isAnonymous = issue.isAnonymous;
     _addressController.text = issue.address;
     _priorityValue = _priorityFromLabel(issue.priorityLabel);
@@ -83,7 +91,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
     _attachedMedia
       ..clear()
       ..addAll(
-        issue.attachedMedia.map((path) {
+        issue.attachedMedia.where((path) => !_isAudioPath(path)).map((path) {
           final isVideo = _isVideoPath(path);
           final fileName = path.split(RegExp(r'[\\/]')).last;
           return _AttachedMedia(
@@ -98,6 +106,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
   @override
   void dispose() {
     _recordingTicker?.cancel();
+    _audioRecorder.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
     super.dispose();
@@ -233,7 +242,12 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
               }
               setState(() {
                 _useAudioDescription = false;
-                _stopAudioRecording();
+                _isRecordingAudio = false;
+                _recordingTicker?.cancel();
+                _hasAudioRecording = false;
+                _audioFilePath = null;
+                _audioFileName = null;
+                _recordingDuration = Duration.zero;
               });
             },
           ),
@@ -295,17 +309,20 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
           Row(
             children: [
               Icon(
-                _isRecordingAudio ? Icons.mic : Icons.mic_none,
+                _isRecordingAudio ? Icons.mic : Icons.audiotrack,
                 color: _isRecordingAudio ? AppColors.error : AppColors.textSecondary,
               ),
               const SizedBox(width: 8),
-              Text(
-                _isRecordingAudio
-                    ? 'Recording... ${_formatDuration(_recordingDuration)}'
-                    : _hasAudioRecording
-                    ? 'Audio saved (${_formatDuration(_recordingDuration)})'
-                    : 'No audio recorded yet',
-                style: AppTextStyles.bodyMedium,
+              Expanded(
+                child: Text(
+                  _isRecordingAudio
+                      ? 'Recording... ${_formatDuration(_recordingDuration)}'
+                      : _hasAudioRecording
+                      ? 'Audio recorded: ${_audioFileName ?? 'voice_note.m4a'}'
+                      : 'No audio recorded yet',
+                  style: AppTextStyles.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -314,9 +331,11 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isRecordingAudio ? null : _startAudioRecording,
+                  onPressed: _canEditSubmittedIssue && !_isRecordingAudio
+                      ? _startAudioRecording
+                      : null,
                   icon: const Icon(Icons.fiber_manual_record),
-                  label: const Text('Start'),
+                  label: const Text('Start Recording'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.error,
                     foregroundColor: AppColors.textWhite,
@@ -326,16 +345,29 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _isRecordingAudio ? _stopAudioRecording : null,
-                  icon: const Icon(Icons.stop),
-                  label: const Text('Stop'),
+                  onPressed: _canEditSubmittedIssue
+                      ? (_isRecordingAudio
+                          ? _stopAudioRecording
+                          : _hasAudioRecording
+                              ? () {
+                                  setState(() {
+                                    _hasAudioRecording = false;
+                                    _audioFilePath = null;
+                                    _audioFileName = null;
+                                    _recordingDuration = Duration.zero;
+                                  });
+                                }
+                              : null)
+                      : null,
+                  icon: Icon(_isRecordingAudio ? Icons.stop : Icons.delete_outline),
+                  label: Text(_isRecordingAudio ? 'Stop' : 'Remove'),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            'Audio recording is captured for submission and review by admin.',
+            'Record audio directly. It will be uploaded and shared with admin.',
             style: AppTextStyles.caption,
           ),
         ],
@@ -538,9 +570,16 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
       return;
     }
 
-    if (_useAudioDescription && !_hasAudioRecording) {
+    if (_useAudioDescription && (_audioFilePath == null || _audioFilePath!.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please record and save audio description.')),
+        const SnackBar(content: Text('Please record an audio description.')),
+      );
+      return;
+    }
+
+    if (_isRecordingAudio) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please stop recording before submitting.')),
       );
       return;
     }
@@ -556,6 +595,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         description:
             _useAudioDescription ? null : _descriptionController.text.trim(),
         hasAudioDescription: _useAudioDescription,
+        audioPath: _audioFilePath,
         address: _addressController.text.trim(),
         attachedMedia: _attachedMedia.map((media) => media.path).toList(),
         priorityLabel: _priorityLabel,
@@ -576,22 +616,51 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         return;
       }
     } else {
-      await context.read<CitizenHomeProvider>().submitIssue(
+      final submittedReport = await context.read<CitizenHomeProvider>().submitIssue(
         categories: _selectedCategories.toList(),
         description:
             _useAudioDescription ? null : _descriptionController.text.trim(),
         hasAudioDescription: _useAudioDescription,
+        audioPath: _audioFilePath,
         address: _addressController.text.trim(),
         attachedMedia: _attachedMedia.map((media) => media.path).toList(),
         priorityLabel: _priorityLabel,
         isAnonymous: _isAnonymous,
       );
 
-      context.read<AdminDashboardProvider>().addSubmittedIssue(
-        title: '${_selectedCategories.first} issue reported',
-        subtitle: 'Just now • ${_addressController.text.trim()}',
-        priorityLabel: _priorityLabel,
+      if (submittedReport == null && mounted) {
+        final errorText = context.read<CitizenHomeProvider>().errorMessage;
+        setState(() {
+          _isSubmitting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorText ?? 'Could not submit issue. Please retry.'),
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => ReportConfirmationScreen(
+            trackingId: submittedReport!.id,
+            category: _selectedCategories.join(' • '),
+            location: _addressController.text.trim(),
+            priority: _priorityLabel,
+            isAnonymous: _isAnonymous,
+          ),
+        ),
       );
+      return;
     }
 
     if (!mounted) {
@@ -607,18 +676,6 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         const SnackBar(content: Text('Issue updated successfully.')),
       );
       Navigator.of(context).pop();
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ReportConfirmationScreen(
-            trackingId: 'DD-${DateTime.now().millisecondsSinceEpoch % 10000}',
-            category: _selectedCategories.join(' • '),
-            location: _addressController.text.trim(),
-            priority: _priorityLabel,
-            isAnonymous: _isAnonymous,
-          ),
-        ),
-      );
     }
   }
 
@@ -644,37 +701,109 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
     );
   }
 
-  void _startAudioRecording() {
-    setState(() {
-      _isRecordingAudio = true;
-      _hasAudioRecording = false;
-      _recordingDuration = Duration.zero;
-    });
+  Future<void> _startAudioRecording() async {
+    try {
+      if (_requiresMicrophonePermission()) {
+        var hasPermission = false;
+        try {
+          hasPermission = await _audioRecorder.hasPermission();
+        } on MissingPluginException {
+          // Some targets/plugins do not expose explicit permission APIs.
+          hasPermission = true;
+        }
 
-    _recordingTicker?.cancel();
-    _recordingTicker = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted || !_isRecordingAudio) {
-        timer.cancel();
-        return;
+        if (!hasPermission) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Microphone permission is required.')),
+          );
+          return;
+        }
       }
 
-      setState(() {
-        _recordingDuration += const Duration(seconds: 1);
+      final encoder = _recordEncoderForPlatform();
+      final extension = _recordExtensionForEncoder(encoder);
+        final filePath = kIsWeb
+          ? 'report_audio_${DateTime.now().millisecondsSinceEpoch}.$extension'
+          : '${(await getTemporaryDirectory()).path}/report_audio_${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+      final config = RecordConfig(
+        encoder: encoder,
+        bitRate: 128000,
+        sampleRate: 44100,
+      );
+
+      try {
+        await _audioRecorder.start(config, path: filePath);
+      } catch (_) {
+        // Fallback for platforms/devices with limited encoder support.
+        await _audioRecorder.start(const RecordConfig(), path: filePath);
+      }
+
+      _recordingTicker?.cancel();
+      _recordingTicker = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted || !_isRecordingAudio) {
+          timer.cancel();
+          return;
+        }
+        setState(() {
+          _recordingDuration += const Duration(seconds: 1);
+        });
       });
-    });
+
+      setState(() {
+        _isRecordingAudio = true;
+        _recordingDuration = Duration.zero;
+      });
+    } on MissingPluginException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Audio recording is not available on this run target. Run on Android or iOS device/emulator.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not start audio recording: $error')),
+      );
+    }
   }
 
-  void _stopAudioRecording() {
-    if (!_isRecordingAudio) {
-      return;
+  Future<void> _stopAudioRecording() async {
+    try {
+      _recordingTicker?.cancel();
+      final path = await _audioRecorder.stop();
+
+      setState(() {
+        _isRecordingAudio = false;
+        _audioFilePath = path;
+        _audioFileName = path?.split(RegExp(r'[\\/]')).last;
+        _hasAudioRecording = path != null && path.isNotEmpty;
+      });
+    } on MissingPluginException {
+      if (!mounted) return;
+      setState(() {
+        _isRecordingAudio = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Audio recording is not available on this run target. Run on Android or iOS device/emulator.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isRecordingAudio = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not stop audio recording.')),
+      );
     }
-
-    _recordingTicker?.cancel();
-
-    setState(() {
-      _isRecordingAudio = false;
-      _hasAudioRecording = _recordingDuration.inSeconds > 0;
-    });
   }
 
   Future<void> _pickMedia({required _MediaType type}) async {
@@ -696,23 +825,38 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         return;
       }
 
-      var addedCount = 0;
+      final pending = <_AttachedMedia>[];
+
+      for (final selectedFile in selectedFiles) {
+        String resolvedPath;
+
+        if (selectedFile.path.isNotEmpty) {
+          resolvedPath = selectedFile.path;
+        } else {
+          final bytes = await selectedFile.readAsBytes();
+          if (bytes.isEmpty) {
+            continue;
+          }
+
+          final mimeType = type == _MediaType.picture ? 'image/jpeg' : 'video/mp4';
+          resolvedPath = 'data:$mimeType;base64,${base64Encode(bytes)}';
+        }
+
+        pending.add(
+          _AttachedMedia(
+            type: type,
+            label: selectedFile.name,
+            path: resolvedPath,
+          ),
+        );
+      }
+
+      if (pending.isEmpty) {
+        return;
+      }
 
       setState(() {
-        for (final selectedFile in selectedFiles) {
-          final resolvedPath = selectedFile.path.isNotEmpty
-              ? selectedFile.path
-              : selectedFile.name;
-
-          _attachedMedia.add(
-            _AttachedMedia(
-              type: type,
-              label: selectedFile.name,
-              path: resolvedPath,
-            ),
-          );
-          addedCount += 1;
-        }
+        _attachedMedia.addAll(pending);
       });
 
       if (!mounted) {
@@ -722,7 +866,7 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '$addedCount file(s) added.',
+            '${pending.length} file(s) added.',
           ),
         ),
       );
@@ -748,6 +892,24 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
         lower.endsWith('.avi') ||
         lower.endsWith('.mkv') ||
         lower.endsWith('.webm');
+  }
+
+  bool _isAudioPath(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.mp3') ||
+        lower.endsWith('.wav') ||
+        lower.endsWith('.m4a') ||
+        lower.endsWith('.aac') ||
+        lower.endsWith('.ogg');
+  }
+
+  String? _firstAudioPath(List<String> mediaPaths) {
+    for (final path in mediaPaths) {
+      if (_isAudioPath(path)) {
+        return path;
+      }
+    }
+    return null;
   }
 
   String _toTitleCase(String value) {
@@ -785,6 +947,58 @@ class _ReportIssueScreenState extends State<ReportIssueScreen> {
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }
+
+  AudioEncoder _recordEncoderForPlatform() {
+    if (kIsWeb) {
+      return AudioEncoder.opus;
+    }
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return AudioEncoder.aacLc;
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+      case TargetPlatform.fuchsia:
+        return AudioEncoder.wav;
+    }
+  }
+
+  bool _requiresMicrophonePermission() {
+    if (kIsWeb) {
+      return false;
+    }
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+      case TargetPlatform.iOS:
+        return true;
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+      case TargetPlatform.fuchsia:
+        return false;
+    }
+  }
+
+  String _recordExtensionForEncoder(AudioEncoder encoder) {
+    switch (encoder) {
+      case AudioEncoder.wav:
+        return 'wav';
+      case AudioEncoder.opus:
+        return 'webm';
+      case AudioEncoder.aacLc:
+      case AudioEncoder.aacEld:
+      case AudioEncoder.aacHe:
+      case AudioEncoder.amrNb:
+      case AudioEncoder.amrWb:
+      case AudioEncoder.flac:
+      case AudioEncoder.pcm16bits:
+        return 'm4a';
+    }
+  }
+
 }
 
 enum _MediaType { picture, video }
