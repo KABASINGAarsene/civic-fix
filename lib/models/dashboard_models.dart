@@ -21,7 +21,11 @@ class ReportItem {
   final String priorityLabel;
   final bool isAnonymous;
   final bool hasAudioDescription;
+  final String? audioPath;
   final List<String> attachedMedia;
+  final String? assignedTo;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   const ReportItem({
     required this.id,
@@ -37,7 +41,11 @@ class ReportItem {
     this.priorityLabel = 'Low',
     this.isAnonymous = false,
     this.hasAudioDescription = false,
+    this.audioPath,
     this.attachedMedia = const [],
+    this.assignedTo,
+    this.createdAt,
+    this.updatedAt,
   });
 }
 
@@ -164,6 +172,11 @@ class AdminIssue {
   final int priorityScore; // 0–100
   final String category;
   final String status; // 'submitted', 'inProgress', 'resolved'
+  final String description;
+  final String address;
+  final List<String> attachedMedia; // File paths for images/videos
+  final bool hasAudioDescription;
+  final String? audioPath;
 
   const AdminIssue({
     required this.id,
@@ -175,6 +188,11 @@ class AdminIssue {
     required this.priorityScore,
     required this.category,
     required this.status,
+    this.description = '',
+    this.address = '',
+    this.attachedMedia = const [],
+    this.hasAudioDescription = false,
+    this.audioPath,
   });
 }
 
@@ -186,6 +204,8 @@ class ChatMessage {
   final bool isOfficer; // true = officer bubble (left), false = citizen (right)
   final String time;
   final bool hasImage;
+  final String? senderId;
+  final DateTime? createdAt;
 
   const ChatMessage({
     required this.id,
@@ -193,5 +213,7 @@ class ChatMessage {
     required this.isOfficer,
     required this.time,
     this.hasImage = false,
+    this.senderId,
+    this.createdAt,
   });
 }

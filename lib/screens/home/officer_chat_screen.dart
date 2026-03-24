@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../models/dashboard_models.dart';
@@ -22,76 +26,100 @@ class OfficerChatScreen extends StatefulWidget {
 }
 
 class _OfficerChatScreenState extends State<OfficerChatScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final _inputController = TextEditingController();
   final _scrollController = ScrollController();
   bool _caseResolved = false;
 
-  // Sample conversation matching the design
-  late List<ChatMessage> _messages;
+  List<ChatMessage> _messages = [];
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _messagesSub;
 
   @override
   void initState() {
     super.initState();
-    _messages = [
-      const ChatMessage(
-        id: 'm1',
-        text:
-            'Hello, I have reviewed your report regarding the broken water pipe in Gasabo. Our field team has just completed the repairs.',
-        isOfficer: true,
-        time: '10:45 AM',
-      ),
-      const ChatMessage(
-        id: 'm2',
-        text: 'Please see the attached photo of the fix. Can you confirm if the water pressure has returned to normal?',
-        isOfficer: true,
-        time: '10:46 AM',
-        hasImage: true,
-      ),
-      const ChatMessage(
-        id: 'm3',
-        text:
-            'Yes, I can see the crew finished. Checking the water pressure now... it looks much better! Thank you for the quick response.',
-        isOfficer: false,
-        time: '10:52 AM',
-      ),
-    ];
+    _listenMessages();
   }
 
   @override
   void dispose() {
+    _messagesSub?.cancel();
     _inputController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _sendMessage() {
-    final text = _inputController.text.trim();
-    if (text.isEmpty) return;
-    setState(() {
-      _messages.add(ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        text: text,
-        isOfficer: false,
-        time: _nowTime(),
-      ));
-    });
-    _inputController.clear();
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+  void _listenMessages() {
+    _messagesSub = _firestore
+        .collection('reports')
+        .doc(widget.ticketId)
+        .collection('messages')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .listen((snapshot) {
+      final next = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final senderRole = (data['senderRole'] as String? ?? 'citizen').toLowerCase();
+        final ts = (data['createdAt'] as Timestamp?)?.toDate();
+        return ChatMessage(
+          id: doc.id,
+          text: (data['text'] as String?) ?? '',
+          isOfficer: senderRole == 'admin',
+          time: _formatTime(ts),
+          hasImage: (data['hasImage'] as bool?) ?? false,
+          senderId: data['senderId'] as String?,
+          createdAt: ts,
         );
-      }
+      }).toList();
+
+      if (!mounted) return;
+      setState(() {
+        _messages = next;
+      });
+
+      Future.delayed(const Duration(milliseconds: 60), () {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+          );
+        }
+      });
     });
   }
 
-  String _nowTime() {
-    final now = DateTime.now();
-    final h = now.hour.toString().padLeft(2, '0');
-    final m = now.minute.toString().padLeft(2, '0');
-    return '$h:$m';
+  Future<void> _sendMessage() async {
+    final text = _inputController.text.trim();
+    if (text.isEmpty) return;
+
+    final uid = _auth.currentUser?.uid ?? 'citizen';
+    await _firestore
+        .collection('reports')
+        .doc(widget.ticketId)
+        .collection('messages')
+        .add({
+      'text': text,
+      'senderId': uid,
+      'senderRole': 'citizen',
+      'hasImage': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    await _firestore.collection('reports').doc(widget.ticketId).update({
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    _inputController.clear();
+  }
+
+  String _formatTime(DateTime? dateTime) {
+    if (dateTime == null) return 'Just now';
+    final hour = dateTime.hour > 12 ? dateTime.hour - 12 : dateTime.hour;
+    final normalizedHour = hour == 0 ? 12 : hour;
+    final suffix = dateTime.hour >= 12 ? 'PM' : 'AM';
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return '$normalizedHour:$minute $suffix';
   }
 
   void _showCaseLog(BuildContext context) {

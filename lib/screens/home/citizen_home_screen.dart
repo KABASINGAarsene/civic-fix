@@ -404,10 +404,7 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
 
   // Navigation Helper
   void _navigateToDetails(ReportItem item) {
-    // Simulate an assigned officer for in-progress reports
-    final assignedTo = item.status == ReportStatus.inProgress
-        ? 'Officer Jean Pierre'
-        : null;
+    final assignedTo = item.assignedTo;
     Navigator.push(
       context,
       MaterialPageRoute(
