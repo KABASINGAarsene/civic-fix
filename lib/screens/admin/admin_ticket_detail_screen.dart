@@ -8,6 +8,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../models/dashboard_models.dart';
 import '../../state/admin_dashboard_provider.dart';
+import '../home/officer_chat_screen.dart';
 
 class AdminTicketDetailScreen extends StatefulWidget {
   final AdminIssue issue;
@@ -93,6 +94,8 @@ class _AdminTicketDetailScreenState extends State<AdminTicketDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildIssueDetailsCard(),
+                  const SizedBox(height: 14),
+                  _buildOpenConversationButton(context),
                   const SizedBox(height: 14),
                   _buildVoiceNote(),
                   const SizedBox(height: 14),
@@ -808,6 +811,45 @@ class _AdminTicketDetailScreenState extends State<AdminTicketDetailScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Open Conversation Button
+
+  Widget _buildOpenConversationButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OfficerChatScreen(
+                officerName: 'Admin',
+                department: 'District Authority',
+                ticketId: widget.issue.id,
+                issueTitle: widget.issue.title,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.chat_outlined, size: 18, color: _blue),
+        label: const Text(
+          'Open Conversation with Citizen',
+          style: TextStyle(
+            color: _blue,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: _blue),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

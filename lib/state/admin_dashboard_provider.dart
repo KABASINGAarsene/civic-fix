@@ -320,6 +320,7 @@ class AdminDashboardProvider extends ChangeNotifier {
               .toList(),
           hasAudioDescription: (data['hasAudioDescription'] as bool?) ?? false,
           audioPath: (data['audioPath'] as String?),
+          citizenId: (data['reporterId'] as String?) ?? '',
         );
       }).toList();
     } catch (e) {
@@ -371,7 +372,12 @@ class AdminDashboardProvider extends ChangeNotifier {
     required String senderRole,
   }) async {
     final uid = _auth.currentUser?.uid ?? senderRole;
-    await _firestore.collection('reports').doc(issueId).collection('messages').add({
+
+    await _firestore
+        .collection('reports')
+        .doc(issueId)
+        .collection('messages')
+        .add({
       'text': text,
       'senderId': uid,
       'senderRole': senderRole,
@@ -379,9 +385,37 @@ class AdminDashboardProvider extends ChangeNotifier {
       'hasImage': false,
     });
 
+    // Mark the report as having an active conversation and store last message
+    // preview so the citizen messages list can display it without sub-queries.
     await _firestore.collection('reports').doc(issueId).update({
       'updatedAt': FieldValue.serverTimestamp(),
+      'hasConversation': true,
+      'lastMessageText': text,
+      'lastMessageAt': FieldValue.serverTimestamp(),
+      'lastMessageSenderRole': senderRole,
     });
+
+    // Notify the citizen when admin sends a message.
+    if (senderRole == 'admin') {
+      final reportSnap =
+          await _firestore.collection('reports').doc(issueId).get();
+      final citizenId = reportSnap.data()?['reporterId'] as String?;
+      if (citizenId != null && citizenId.isNotEmpty && citizenId != 'guest') {
+        final preview = text.length > 100 ? '${text.substring(0, 100)}…' : text;
+        await _firestore
+            .collection('notifications')
+            .doc(citizenId)
+            .collection('items')
+            .add({
+          'title': 'New Message from Admin',
+          'body': preview,
+          'tag': 'MESSAGE',
+          'issueId': issueId,
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
   }
 
   String _timeAgo(DateTime? dateTime) {

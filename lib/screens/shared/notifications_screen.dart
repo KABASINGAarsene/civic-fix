@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 
@@ -15,66 +17,61 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   static const Color _adminBg = Color(0xFF0F172A);
   static const Color _adminCard = Color(0xFF1E293B);
 
+  // Admin uses a local mutable list; citizen uses a Firestore stream.
   late List<_Notification> _notifications;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _citizenStream;
 
   @override
   void initState() {
     super.initState();
-    _notifications = widget.isAdmin ? _adminNotifications() : _citizenNotifications();
+    if (widget.isAdmin) {
+      _notifications = _adminNotifications();
+    } else {
+      _notifications = [];
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        _citizenStream = FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(uid)
+            .collection('items')
+            .orderBy('createdAt', descending: true)
+            .snapshots();
+      }
+    }
   }
 
-  List<_Notification> _citizenNotifications() => [
-        _Notification(
-          id: '1',
-          icon: Icons.build_outlined,
-          color: AppColors.primaryBlue,
-          title: 'Report In Progress',
-          body: 'Your report "Broken Pipe in Kirehe Main St." has been assigned to Officer Jean Pierre.',
-          time: '2h ago',
-          isRead: false,
-          tag: 'STATUS UPDATE',
-        ),
-        _Notification(
-          id: '2',
-          icon: Icons.check_circle_outline,
-          color: AppColors.success,
-          title: 'Issue Resolved',
-          body: 'Street Light Failure – Sector 4 has been resolved. Please confirm if it meets your satisfaction.',
-          time: '5h ago',
-          isRead: false,
-          tag: 'RESOLVED',
-        ),
-        _Notification(
-          id: '3',
-          icon: Icons.thumb_up_alt_outlined,
-          color: AppColors.warning,
-          title: '45 Citizens Upvoted',
-          body: 'Your report "New Waste Collection Point" has received 45 upvotes and is now high priority.',
-          time: 'Yesterday',
-          isRead: true,
-          tag: 'COMMUNITY',
-        ),
-        _Notification(
-          id: '4',
-          icon: Icons.person_outline,
-          color: AppColors.info,
-          title: 'Officer Assigned',
-          body: 'Officer Marie Claire has been assigned to your "Road Damage on KG 5 Ave" report.',
-          time: '2 days ago',
-          isRead: true,
-          tag: 'ASSIGNMENT',
-        ),
-        _Notification(
-          id: '5',
-          icon: Icons.chat_outlined,
-          color: AppColors.primaryBlue,
-          title: 'New Message from Officer',
-          body: 'Officer Jean Pierre: "We have dispatched a field team to inspect the issue. ETA 30 minutes."',
-          time: '3 days ago',
-          isRead: true,
-          tag: 'MESSAGE',
-        ),
-      ];
+  static final List<_Notification> _citizenMockNotifications = [
+    _Notification(
+      id: 'mock_1',
+      icon: Icons.chat_outlined,
+      color: AppColors.primaryBlue,
+      title: 'New Message from Admin',
+      body: 'Your report "Broken Water Pipe – Gasabo" has been reviewed. A field team will be dispatched shortly.',
+      time: '2h ago',
+      isRead: false,
+      tag: 'MESSAGE',
+    ),
+    _Notification(
+      id: 'mock_2',
+      icon: Icons.chat_outlined,
+      color: AppColors.primaryBlue,
+      title: 'New Message from Admin',
+      body: 'We have scheduled an inspection for your reported pothole on Kigali Road. Expected repair: 2 days.',
+      time: 'Yesterday',
+      isRead: false,
+      tag: 'MESSAGE',
+    ),
+    _Notification(
+      id: 'mock_3',
+      icon: Icons.chat_outlined,
+      color: AppColors.primaryBlue,
+      title: 'New Message from Admin',
+      body: 'Thank you for your report on the street light failure. Replacement parts have been ordered.',
+      time: '3 days ago',
+      isRead: true,
+      tag: 'MESSAGE',
+    ),
+  ];
 
   List<_Notification> _adminNotifications() => [
         _Notification(
@@ -138,10 +135,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _markRead(String id) {
-    setState(() {
-      final n = _notifications.firstWhere((n) => n.id == id);
-      n.isRead = true;
-    });
+    if (widget.isAdmin) {
+      setState(() {
+        final n = _notifications.firstWhere((n) => n.id == id);
+        n.isRead = true;
+      });
+    } else {
+      // Mark read in Firestore for citizens.
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(uid)
+            .collection('items')
+            .doc(id)
+            .update({'isRead': true});
+      }
+    }
   }
 
   int get _unreadCount => _notifications.where((n) => !n.isRead).length;
@@ -154,6 +164,79 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final textColor = isDark ? AppColors.textWhite : AppColors.textPrimary;
     final mutedColor = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
 
+    // Citizen side: use Firestore stream
+    if (!widget.isAdmin && _citizenStream != null) {
+      return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _citizenStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              backgroundColor: bgColor,
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          final docs = snapshot.data?.docs ?? [];
+          final firestoreItems = docs.map((doc) {
+            final d = doc.data();
+            final ts = (d['createdAt'] as Timestamp?)?.toDate();
+            return _Notification(
+              id: doc.id,
+              icon: Icons.chat_outlined,
+              color: AppColors.primaryBlue,
+              title: (d['title'] as String?) ?? 'New Message',
+              body: (d['body'] as String?) ?? '',
+              time: _timeAgo(ts),
+              isRead: (d['isRead'] as bool?) ?? false,
+              tag: (d['tag'] as String?) ?? 'MESSAGE',
+            );
+          }).toList();
+
+          // Fall back to mock admin messages while there are no real ones yet.
+          final items = firestoreItems.isNotEmpty
+              ? firestoreItems
+              : _citizenMockNotifications;
+
+          final unread = items.where((n) => !n.isRead).length;
+
+          return Scaffold(
+            backgroundColor: bgColor,
+            appBar: AppBar(
+              backgroundColor: cardColor,
+              foregroundColor: textColor,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back, color: textColor),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Notifications',
+                      style: AppTextStyles.h3.copyWith(color: textColor)),
+                  if (unread > 0)
+                    Text(
+                      '$unread unread',
+                      style: AppTextStyles.caption
+                          .copyWith(color: AppColors.primaryBlue),
+                    ),
+                ],
+              ),
+            ),
+            body: items.isEmpty
+                ? _buildEmpty(mutedColor)
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 1),
+                    itemBuilder: (context, i) => _buildNotificationTile(
+                        items[i], cardColor, textColor, mutedColor),
+                  ),
+          );
+        },
+      );
+    }
+
+    // Admin side: local list
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -201,6 +284,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               },
             ),
     );
+  }
+
+  String _timeAgo(DateTime? dt) {
+    if (dt == null) return '';
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    return '${diff.inDays}d ago';
   }
 
   Widget _buildNotificationTile(
