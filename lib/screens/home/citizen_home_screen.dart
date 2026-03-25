@@ -7,6 +7,7 @@ import '../../state/citizen_home_provider.dart';
 import './citizen_reports_details.dart';
 import '../report_issue_screen.dart';
 import '../citizen/citizen_map_content.dart';
+import '../citizen/citizen_messages_content.dart';
 import '../citizen/citizen_profile_content.dart';
 import '../shared/notifications_screen.dart';
 
@@ -202,19 +203,6 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('District Feed', style: AppTextStyles.h3),
-        TextButton.icon(
-          onPressed: () =>
-              context.read<CitizenHomeProvider>().setNavIndex(1),
-          icon: const Icon(
-            Icons.map_outlined,
-            size: 16,
-            color: AppColors.primaryBlue,
-          ),
-          label: Text(
-            'View Map',
-            style: AppTextStyles.link.copyWith(decoration: TextDecoration.none),
-          ),
-        ),
       ],
     );
   }
@@ -223,10 +211,10 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
     switch (provider.selectedNavIndex) {
       case 0:
         return _buildHomeTabContent(provider);
-      case 2:
-        return _buildMyReportsTabContent(provider);
       case 1:
-        return const CitizenMapContent();
+        return _buildMyReportsTabContent(provider);
+      case 2:
+        return const CitizenMessagesContent();
       case 3:
         return const CitizenProfileContent();
       default:
@@ -641,14 +629,14 @@ class _CitizenHomeScreenState extends State<CitizenHomeScreen> {
           label: 'HOME',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          activeIcon: Icon(Icons.map),
-          label: 'MAP',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.assignment_outlined),
           activeIcon: Icon(Icons.assignment),
-          label: 'My reports',
+          label: 'MY REPORTS',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat_bubble_outline),
+          activeIcon: Icon(Icons.chat_bubble),
+          label: 'MESSAGES',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
