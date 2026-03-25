@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../shared/notifications_screen.dart';
@@ -19,10 +21,18 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
   // Currently selected marker index
   int _selectedMarker = 0;
 
+  // Map controller for zoom and position
+  final MapController _mapController = MapController();
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   static const _markers = [
     _MapMarker(
-      top: 0.38,
-      left: 0.28,
+      position: LatLng(-1.932, 30.040),
       color: Color(0xFF1E5EFF),
       icon: Icons.water_drop,
       label: 'Water Infrastructure Leak',
@@ -30,8 +40,7 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
       distance: '2.4km from District Office',
     ),
     _MapMarker(
-      top: 0.22,
-      left: 0.52,
+      position: LatLng(-1.920, 30.084),
       color: Color(0xFFFFC107),
       icon: Icons.bolt,
       label: 'Power Outage – Sector 3',
@@ -39,8 +48,7 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
       distance: '4.1km from District Office',
     ),
     _MapMarker(
-      top: 0.55,
-      left: 0.60,
+      position: LatLng(-1.956, 30.090),
       color: Color(0xFFDC3545),
       icon: Icons.warning_amber,
       label: 'Road Collapse – Main Road',
@@ -48,8 +56,7 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
       distance: '1.8km from District Office',
     ),
     _MapMarker(
-      top: 0.65,
-      left: 0.38,
+      position: LatLng(-1.966, 30.066),
       color: Color(0xFF28A745),
       icon: Icons.eco,
       label: 'Waste Dump Site',
@@ -57,8 +64,7 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
       distance: '5.3km from District Office',
     ),
     _MapMarker(
-      top: 0.30,
-      left: 0.42,
+      position: LatLng(-1.926, 30.072),
       color: Color(0xFF9C27B0),
       icon: Icons.domain,
       label: 'Public Building Issue',
@@ -126,79 +132,51 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
   }
 
   Widget _buildMockMap() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final h = constraints.maxHeight;
-        return Container(
-          color: const Color(0xFFD8EBC8), // light green map background
-          child: Stack(
-            children: [
-              // Road network painted
-              CustomPaint(
-                size: Size(w, h),
-                painter: _RoadPainter(),
-              ),
-              // Location labels
-              _mapLabel('NGIRYI', w * 0.55, h * 0.05),
-              _mapLabel('GASURA', w * 0.75, h * 0.05),
-              _mapLabel('KABUYE', w * 0.25, h * 0.22),
-              _mapLabel('GASANZE', w * 0.62, h * 0.20),
-              _mapLabel('KAGUGU', w * 0.60, h * 0.32),
-              _mapLabel('KIGALI', w * 0.47, h * 0.50),
-              _mapLabel('KIYOVU', w * 0.45, h * 0.62),
-              _mapLabel('GACURIRO', w * 0.70, h * 0.35),
-              // Issue markers
-              ...List.generate(_markers.length, (i) {
-                final m = _markers[i];
-                return Positioned(
-                  top: h * m.top - 20,
-                  left: w * m.left - 20,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedMarker = i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: _selectedMarker == i ? 44 : 38,
-                      height: _selectedMarker == i ? 44 : 38,
-                      decoration: BoxDecoration(
-                        color: m.color,
-                        shape: BoxShape.circle,
-                        border: _selectedMarker == i
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: m.color.withOpacity(0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(m.icon, color: Colors.white, size: 20),
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _mapLabel(String text, double x, double y) {
-    return Positioned(
-      left: x,
-      top: y,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF4A4A4A),
-          letterSpacing: 0.5,
-        ),
+    return FlutterMap(
+      mapController: _mapController,
+      options: const MapOptions(
+        initialCenter: LatLng(-1.9441, 30.0619), // Kigali center
+        initialZoom: 13.0,
       ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.civic_fix',
+        ),
+        MarkerLayer(
+          markers: List.generate(_markers.length, (i) {
+            final m = _markers[i];
+            return Marker(
+              point: m.position,
+              width: _selectedMarker == i ? 44 : 38,
+              height: _selectedMarker == i ? 44 : 38,
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedMarker = i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: _selectedMarker == i ? 44 : 38,
+                  height: _selectedMarker == i ? 44 : 38,
+                  decoration: BoxDecoration(
+                    color: m.color,
+                    shape: BoxShape.circle,
+                    border: _selectedMarker == i
+                        ? Border.all(color: Colors.white, width: 3)
+                        : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: m.color.withOpacity(0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(m.icon, color: Colors.white, size: 20),
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 
@@ -367,11 +345,28 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
   Widget _buildZoomControls() {
     return Column(
       children: [
-        _squareButton(Icons.add, _darkHeader),
+        GestureDetector(
+          onTap: () {
+            final currentZoom = _mapController.camera.zoom;
+            _mapController.move(_mapController.camera.center, currentZoom + 1);
+          },
+          child: _squareButton(Icons.add, _darkHeader),
+        ),
         const SizedBox(height: 8),
-        _squareButton(Icons.remove, _darkHeader),
+        GestureDetector(
+          onTap: () {
+            final currentZoom = _mapController.camera.zoom;
+            _mapController.move(_mapController.camera.center, currentZoom - 1);
+          },
+          child: _squareButton(Icons.remove, _darkHeader),
+        ),
         const SizedBox(height: 8),
-        _squareButton(Icons.my_location, _darkHeader),
+        GestureDetector(
+          onTap: () {
+            _mapController.move(const LatLng(-1.9441, 30.0619), 13.0);
+          },
+          child: _squareButton(Icons.my_location, _darkHeader),
+        ),
       ],
     );
   }
@@ -542,8 +537,7 @@ class _AdminFieldMapContentState extends State<AdminFieldMapContent> {
 
 // Data class for map markers
 class _MapMarker {
-  final double top;
-  final double left;
+  final LatLng position;
   final Color color;
   final IconData icon;
   final String label;
@@ -551,58 +545,11 @@ class _MapMarker {
   final String distance;
 
   const _MapMarker({
-    required this.top,
-    required this.left,
+    required this.position,
     required this.color,
     required this.icon,
     required this.label,
     required this.priority,
     required this.distance,
   });
-}
-
-// Paints simple road lines onto the mock map
-class _RoadPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final roadPaint = Paint()
-      ..color = Colors.white.withOpacity(0.7)
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-
-    final minorPaint = Paint()
-      ..color = Colors.white.withOpacity(0.45)
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    // Main horizontal road (NR1)
-    canvas.drawLine(
-        Offset(0, size.height * 0.50), Offset(size.width, size.height * 0.50),
-        roadPaint);
-    // Main vertical road (NR3)
-    canvas.drawLine(
-        Offset(size.width * 0.45, 0), Offset(size.width * 0.45, size.height),
-        roadPaint);
-    // Diagonal RN2
-    canvas.drawLine(
-        Offset(size.width * 0.1, size.height * 0.1),
-        Offset(size.width * 0.50, size.height * 0.50),
-        minorPaint);
-    // Secondary roads
-    canvas.drawLine(
-        Offset(size.width * 0.45, size.height * 0.30),
-        Offset(size.width * 0.75, size.height * 0.15),
-        minorPaint);
-    canvas.drawLine(
-        Offset(size.width * 0.45, size.height * 0.50),
-        Offset(size.width * 0.80, size.height * 0.65),
-        minorPaint);
-    canvas.drawLine(
-        Offset(size.width * 0.10, size.height * 0.50),
-        Offset(size.width * 0.30, size.height * 0.80),
-        minorPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

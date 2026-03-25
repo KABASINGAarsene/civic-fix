@@ -725,7 +725,7 @@ class _AdminProfileContentState extends State<AdminProfileContent> {
           style: const TextStyle(color: AppColors.textWhite, fontSize: 14)),
       subtitle: Text(subtitle,
           style: TextStyle(color: _muted, fontSize: 12)),
-      activeColor: _blue,
+      activeThumbColor: _blue,
       contentPadding: EdgeInsets.zero,
     );
   }
