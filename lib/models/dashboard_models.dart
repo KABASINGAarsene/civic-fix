@@ -177,6 +177,7 @@ class AdminIssue {
   final List<String> attachedMedia; // File paths for images/videos
   final bool hasAudioDescription;
   final String? audioPath;
+  final String citizenId; // UID of the citizen who submitted the report
 
   const AdminIssue({
     required this.id,
@@ -193,6 +194,7 @@ class AdminIssue {
     this.attachedMedia = const [],
     this.hasAudioDescription = false,
     this.audioPath,
+    this.citizenId = '',
   });
 }
 
