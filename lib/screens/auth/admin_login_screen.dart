@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
-import 'otp_verification_screen.dart';
+import '../../services/auth_service.dart';
 
 /// Admin Login Screen
 /// Login page for district officials with city illustration background
@@ -21,11 +21,21 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
 
   bool _isLoading = false;
   bool _isLoginMode = true;
   bool _obscurePassword = true;
   String _selectedLanguage = 'EN';
+
+  String? _selectedDistrict;
+  final List<String> _districts = [
+    'Gasabo', 'Kicukiro', 'Nyarugenge', 'Burera', 'Gakenke', 'Gicumbi', 
+    'Musanze', 'Rulindo', 'Gisagara', 'Huye', 'Kamonyi', 'Muhanga', 
+    'Nyamagabe', 'Nyanza', 'Nyaruguru', 'Ruhango', 'Bugesera', 'Gatsibo', 
+    'Kayonza', 'Kirehe', 'Ngoma', 'Nyagatare', 'Rwamagana', 'Karongi', 
+    'Ngororero', 'Nyabihu', 'Nyamasheke', 'Rubavu', 'Rusizi', 'Rutsiro'
+  ];
 
   @override
   void dispose() {
@@ -42,21 +52,31 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement login logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // TODO: Navigate to admin dashboard
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: AppColors.success,
-          ),
+      try {
+        // Technically login process is identical for Admin and Citizen 
+        // because we just do phone->email mapping lookup and firebase login.
+        await _authService.loginCitizen(
+          phone: _phoneController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/admin-dashboard', (route) => false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -67,25 +87,47 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement signup logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Navigate to OTP verification
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(
-              email: _emailController.text.trim(),
-              phoneNumber: _phoneController.text.trim(),
-              isAdmin: true,
-            ),
-          ),
+      try {
+        await _authService.signUpAdmin(
+          phone: _phoneController.text.trim(),
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          district: _selectedDistrict ?? 'Unknown',
         );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created! Please check your spam folder for the link to verify your sign up.'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // Switch back to login mode
+          setState(() {
+            _isLoginMode = true;
+            _nameController.clear();
+            _emailController.clear();
+            _passwordController.clear();
+            _selectedDistrict = null;
+            _formKey.currentState?.reset();
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -486,6 +528,128 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             ),
           ),
         ),
+        if (_isLoginMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _showForgotPasswordDialog,
+              child: Text(
+                'Forgot Password?',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final emailController = TextEditingController(text: _emailController.text);
+    bool isSending = false;
+    
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Reset Password'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Enter your email address and we will send you a link to reset your password.'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      hintText: 'your@email.com',
+                      filled: true,
+                      fillColor: AppColors.inputBackground,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
+                  onPressed: isSending ? null : () async {
+                    if (emailController.text.trim().isEmpty) return;
+                    setDialogState(() => isSending = true);
+                    try {
+                      await AuthService().sendPasswordResetEmail(emailController.text.trim());
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Password reset email sent! Check your inbox (and spam).'), backgroundColor: Colors.green),
+                        );
+                      }
+                    } catch (e) {
+                      setDialogState(() => isSending = false);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to send email: $e'), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
+                  },
+                  child: isSending 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+
+  Widget _buildDistrictField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Assigned District', style: AppTextStyles.inputLabel),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedDistrict,
+          decoration: InputDecoration(
+            hintText: 'Select your district',
+            hintStyle: AppTextStyles.inputHint,
+            errorStyle: AppTextStyles.inputError,
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.inputBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.inputBorder)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.inputBorderFocused, width: 2)),
+            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.error)),
+          ),
+          items: _districts.map((String district) {
+            return DropdownMenuItem<String>(
+              value: district,
+              child: Text(district, style: AppTextStyles.inputText),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedDistrict = newValue;
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select your assigned district';
+            }
+            return null;
+          },
+        ),
       ],
     );
   }
@@ -677,6 +841,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                               // Email Field (Signup mode only)
                               if (!_isLoginMode) _buildEmailField(),
                               if (!_isLoginMode) const SizedBox(height: 20),
+                              // District Field (Signup mode only)
+                              if (!_isLoginMode) _buildDistrictField(),
+                              if (!_isLoginMode) const SizedBox(height: 20),
                               // Password Field
                               _buildPasswordField(),
                               const SizedBox(height: 24),
@@ -702,6 +869,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                           _nameController.clear();
                                           _emailController.clear();
                                           _passwordController.clear();
+                                          _selectedDistrict = null;
                                           _formKey.currentState?.reset();
                                         });
                                       },

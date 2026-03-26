@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
-import 'otp_verification_screen.dart';
+import '../../services/auth_service.dart';
 
 /// Citizen Login Screen
 /// Login page for regular citizens with Rwanda landscape background
@@ -22,6 +22,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nidController = TextEditingController();
+  final _authService = AuthService();
 
   bool _isLoading = false;
   bool _isLoginMode = true;
@@ -44,21 +45,29 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement login logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // TODO: Navigate to citizen dashboard
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login successful'),
-            backgroundColor: AppColors.success,
-          ),
+      try {
+        await _authService.loginCitizen(
+          phone: _phoneController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/citizen-home', (route) => false);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -69,25 +78,46 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement signup logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Navigate to OTP verification
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(
-              email: _emailController.text.trim(),
-              phoneNumber: _phoneController.text.trim(),
-              isAdmin: false,
-            ),
-          ),
+      try {
+        await _authService.signUpCitizen(
+          phone: _phoneController.text.trim(),
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created! Please check your spam folder for the link to verify your sign up.'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // Switch back to login mode
+          setState(() {
+            _isLoginMode = true;
+            _nameController.clear();
+            _emailController.clear();
+            _passwordController.clear();
+            _nidController.clear();
+            _formKey.currentState?.reset();
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -474,7 +504,87 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             ),
           ),
         ),
+        if (_isLoginMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _showForgotPasswordDialog,
+              child: Text(
+                'Forgot Password?',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
+    );
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final emailController = TextEditingController();
+    bool isSending = false;
+    
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Reset Password'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Enter your email address and we will send you a link to reset your password.'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      hintText: 'your@email.com',
+                      filled: true,
+                      fillColor: AppColors.inputBackground,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
+                  onPressed: isSending ? null : () async {
+                    if (emailController.text.trim().isEmpty) return;
+                    setDialogState(() => isSending = true);
+                    try {
+                      await AuthService().sendPasswordResetEmail(emailController.text.trim());
+                      if (mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Password reset email sent! Check your inbox (and spam).'), backgroundColor: Colors.green),
+                        );
+                      }
+                    } catch (e) {
+                      setDialogState(() => isSending = false);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to send email. Check if the address is correct.'), backgroundColor: Colors.red),
+                        );
+                      }
+                    }
+                  },
+                  child: isSending 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          }
+        );
+      }
     );
   }
 

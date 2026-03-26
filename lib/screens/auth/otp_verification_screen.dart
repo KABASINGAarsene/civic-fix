@@ -127,8 +127,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         ),
       );
 
-      // For now, just pop back - later navigate to dashboard
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigate to dashboard based on role
+      if (widget.isAdmin) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/admin-dashboard', (route) => false);
+      } else {
+        Navigator.of(context).pushNamedAndRemoveUntil('/citizen-home', (route) => false);
+      }
     }
   }
 

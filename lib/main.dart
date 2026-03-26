@@ -2,9 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/auth/citizen_login_screen.dart';
 import 'screens/auth/admin_login_screen.dart';
+import 'screens/district_feed_screen.dart';
+import 'screens/capture_evidence_screen.dart';
+import 'screens/report_incident_screen.dart';
+import 'screens/my_reports_screen.dart';
+import 'screens/case_verification_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
+import 'screens/issues_management_screen.dart';
+import 'package:district_direct/screens/ticket_detail_screen.dart';
+import 'screens/district_map_screen.dart';
+import 'screens/admin_chats_screen.dart';
+import 'screens/admin_profile_screen.dart';
+import 'screens/citizen_chats_screen.dart';
 import 'constants/app_colors.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -42,6 +62,25 @@ class DistrictDirectApp extends StatelessWidget {
         '/': (context) => const RoleSelectionScreen(),
         '/citizen-login': (context) => const CitizenLoginScreen(),
         '/admin-login': (context) => const AdminLoginScreen(),
+        '/citizen-home': (context) => const DistrictFeedScreen(),
+        '/capture-evidence': (context) => const CaptureEvidenceScreen(),
+        '/report-incident': (context) => const ReportIncidentScreen(),
+        '/my-reports': (context) => const MyReportsScreen(),
+        '/chats': (context) => const CaseVerificationScreen(),
+        '/citizen-chats': (context) => const CitizenChatsScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/admin-dashboard': (context) => const AdminDashboardScreen(),
+        '/admin-issues': (context) => const IssuesManagementScreen(),
+        '/admin-ticket-detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          return TicketDetailScreen(
+            data: args?['data'],
+            ticketId: args?['ticketId'],
+          );
+        },
+        '/admin-map': (context) => const DistrictMapScreen(),
+        '/admin-chats': (context) => const AdminChatsScreen(),
+        '/admin-profile': (context) => const AdminProfileScreen(),
       },
     );
   }

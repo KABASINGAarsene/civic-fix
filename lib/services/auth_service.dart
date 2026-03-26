@@ -1,203 +1,152 @@
-import 'dart:math';
-// import 'package:http/http.dart' as http;
-// import 'dart:convert';
-
-/// Authentication Service
-/// Handles user authentication, OTP generation, and login logic
-///
-/// TODO: Integrate with actual backend API
-/// TODO: Implement SMS gateway for OTP delivery (Pindo, Africa's Talking, Twilio)
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
-  // Singleton pattern
-  static final AuthService _instance = AuthService._internal();
-  factory AuthService() => _instance;
-  AuthService._internal();
+  final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // TODO: Replace with actual API endpoint
-  static const String _baseUrl = 'https://api.districtdirect.rw';
-
-  /// Generate a random 6-digit OTP
-  /// This should be called on the backend, not in production client code
-  String generateOTP() {
-    final random = Random();
-    final otp = (100000 + random.nextInt(900000)).toString();
-    return otp;
-  }
-
-  /// Send OTP to phone number via SMS
-  ///
-  /// TODO: Integrate with SMS gateway
-  /// Options for Rwanda:
-  /// - Pindo (https://www.pindo.io/)
-  /// - Africa's Talking (https://africastalking.com/)
-  /// - Twilio (https://www.twilio.com/)
-  /// - MTN Rwanda API
-  /// - Airtel Rwanda API
-  Future<Map<String, dynamic>> sendOTP(String phoneNumber) async {
-    try {
-      // Generate OTP
-      final otp = generateOTP();
-
-      // TODO: Store OTP in database with expiry time (e.g., 5 minutes)
-      // Example:
-      // await _storeOTPInDatabase(phoneNumber, otp, expiryMinutes: 5);
-
-      // TODO: Send SMS via gateway
-      // Example with generic SMS gateway:
-      // final response = await http.post(
-      //   Uri.parse('$_baseUrl/sms/send'),
-      //   headers: {'Content-Type': 'application/json'},
-      //   body: jsonEncode({
-      //     'phone': phoneNumber,
-      //     'message': 'Your DistrictDirect verification code is: $otp. Valid for 5 minutes.',
-      //   }),
-      // );
-      //
-      // if (response.statusCode == 200) {
-      //   return {'success': true, 'message': 'OTP sent successfully'};
-      // }
-
-      // Simulate success for now
-      print('OTP generated: $otp for phone: $phoneNumber');
-      print('SMS would be sent via gateway in production');
-
-      return {
-        'success': true,
-        'message': 'OTP sent successfully',
-        'otp': otp, // Don't return this in production!
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Failed to send OTP: ${e.toString()}',
-      };
-    }
-  }
-
-  /// Verify OTP entered by user
-  Future<Map<String, dynamic>> verifyOTP(String phoneNumber, String otp) async {
-    try {
-      // TODO: Verify OTP against database
-      // Check if OTP matches and hasn't expired
-      // Example:
-      // final response = await http.post(
-      //   Uri.parse('$_baseUrl/auth/verify-otp'),
-      //   headers: {'Content-Type': 'application/json'},
-      //   body: jsonEncode({
-      //     'phone': phoneNumber,
-      //     'otp': otp,
-      //   }),
-      // );
-      //
-      // if (response.statusCode == 200) {
-      //   final data = jsonDecode(response.body);
-      //   return {'success': true, 'token': data['token']};
-      // }
-
-      // Simulate success for now
-      print('Verifying OTP: $otp for phone: $phoneNumber');
-
-      return {'success': true, 'message': 'OTP verified successfully'};
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'OTP verification failed: ${e.toString()}',
-      };
-    }
-  }
-
-  /// Login with phone number and password
-  Future<Map<String, dynamic>> login({
-    required String phoneNumber,
+  // Sign up a citizen
+  Future<auth.UserCredential?> signUpCitizen({
+    required String phone,
+    required String name,
+    required String email,
     required String password,
-    String? nationalId,
-    bool isAdmin = false,
   }) async {
     try {
-      // TODO: Make actual API call to backend
-      // Example:
-      // final response = await http.post(
-      //   Uri.parse('$_baseUrl/auth/login'),
-      //   headers: {'Content-Type': 'application/json'},
-      //   body: jsonEncode({
-      //     'phone': phoneNumber,
-      //     'password': password,
-      //     'nationalId': nationalId,
-      //     'isAdmin': isAdmin,
-      //   }),
-      // );
-      //
-      // if (response.statusCode == 200) {
-      //   final data = jsonDecode(response.body);
-      //   // Store token in secure storage
-      //   await _storeAuthToken(data['token']);
-      //   return {
-      //     'success': true,
-      //     'user': data['user'],
-      //     'token': data['token'],
-      //   };
-      // }
+      // 1. Create the user in Firebase Auth using Email and Password
+      // Firebase doesn't natively support Phone + Password creation easily, 
+      // so we use email/password for the core auth token.
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // Simulate API delay
-      await Future.delayed(const Duration(seconds: 1));
+      // 2. Save the metadata (Phone, Name, Role) to Firestore Firestore
+      if (credential.user != null) {
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'phone': phone,
+          'name': name,
+          'email': email,
+          'role': 'citizen',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-      // Simulate successful login
-      print('Login attempt: phone=$phoneNumber, isAdmin=$isAdmin');
+        // 3. We also need a mapping to look up email by phone during login
+        await _firestore.collection('phoneMappings').doc(phone).set({
+          'email': email,
+        });
 
-      return {
-        'success': true,
-        'message': 'Login successful',
-        'user': {
-          'id': '12345',
-          'phone': phoneNumber,
-          'nationalId': nationalId,
-          'role': isAdmin ? 'admin' : 'citizen',
-        },
-      };
+        // 4. Send Firebase Verification Email
+        if (!credential.user!.emailVerified) {
+          await credential.user!.sendEmailVerification();
+        }
+        
+        // Force sign out so they have to verify before logging in
+        await _firebaseAuth.signOut();
+      }
+
+      return credential;
     } catch (e) {
-      return {'success': false, 'message': 'Login failed: ${e.toString()}'};
+      print('Signup Error: $e');
+      rethrow;
     }
   }
 
-  /// Register new user
-  Future<Map<String, dynamic>> register({
-    required String phoneNumber,
+  // Sign in a citizen using Phone and Password
+  Future<auth.UserCredential?> loginCitizen({
+    required String phone,
     required String password,
-    required String otp,
-    String? nationalId,
   }) async {
     try {
-      // TODO: Implement registration logic
-      // 1. Verify OTP first
-      // 2. Create user account
-      // 3. Return auth token
+      // 1. Look up the email associated with this phone number
+      final mappingDoc = await _firestore.collection('phoneMappings').doc(phone).get();
+      
+      if (!mappingDoc.exists) {
+        throw Exception('No account found for this phone number.');
+      }
 
-      return {'success': true, 'message': 'Registration successful'};
+      final email = mappingDoc.data()?['email'] as String;
+
+      // 2. Sign in using the retrieved email and the provided password
+      final credential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (credential.user != null && !credential.user!.emailVerified) {
+        await _firebaseAuth.signOut();
+        throw Exception('Please check your spam folder for the link to verify your sign up before logging in.');
+      }
+
+      return credential;
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Registration failed: ${e.toString()}',
-      };
+      print('Login Error: $e');
+      rethrow;
     }
   }
 
-  /// Logout user
-  Future<void> logout() async {
-    // TODO: Clear auth token from secure storage
-    // TODO: Invalidate token on backend
-    print('User logged out');
+  // Sign up an Admin
+  Future<auth.UserCredential?> signUpAdmin({
+    required String email,
+    required String password,
+    required String phone,
+    required String name,
+    required String district,
+  }) async {
+    try {
+      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (credential.user != null) {
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'uid': credential.user!.uid,
+          'phone': phone,
+          'name': name,
+          'email': email,
+          'role': 'admin',
+          'district': district,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        await _firestore.collection('phoneMappings').doc(phone).set({
+          'email': email,
+        });
+
+        if (!credential.user!.emailVerified) {
+          await credential.user!.sendEmailVerification();
+        }
+        
+        // Force sign out so they have to verify before logging in
+        await _firebaseAuth.signOut();
+      }
+
+      return credential;
+    } catch (e) {
+      print('Admin Signup Error: $e');
+      rethrow;
+    }
   }
 
-  /// Check if user is logged in
-  Future<bool> isLoggedIn() async {
-    // TODO: Check if valid auth token exists in secure storage
-    return false;
+  // Check if current user is logged in
+  auth.User? getCurrentUser() {
+    return _firebaseAuth.currentUser;
   }
 
-  /// Get current user
-  Future<Map<String, dynamic>?> getCurrentUser() async {
-    // TODO: Fetch user data from backend or local storage
-    return null;
+  // Sign out
+  Future<void> signOut() async {
+    await _firebaseAuth.signOut();
+  }
+
+  // Password Reset
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+    } catch (e) {
+      print('Password Reset Error: $e');
+      rethrow;
+    }
   }
 }
