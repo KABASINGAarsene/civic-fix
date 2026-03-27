@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'issue_detail_screen.dart';
+import '../shared/issue_detail_screen.dart';
 
 class DistrictFeedScreen extends StatefulWidget {
   const DistrictFeedScreen({Key? key}) : super(key: key);

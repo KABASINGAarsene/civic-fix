@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/auth/citizen_login_screen.dart';
 import 'screens/auth/admin_login_screen.dart';
-import 'screens/district_feed_screen.dart';
-import 'screens/capture_evidence_screen.dart';
-import 'screens/report_incident_screen.dart';
-import 'screens/my_reports_screen.dart';
-import 'screens/case_verification_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/admin_dashboard_screen.dart';
-import 'screens/issues_management_screen.dart';
-import 'package:district_direct/screens/ticket_detail_screen.dart';
-import 'screens/district_map_screen.dart';
-import 'screens/admin_chats_screen.dart';
-import 'screens/admin_profile_screen.dart';
-import 'screens/citizen_chats_screen.dart';
+import 'screens/citizen/district_feed_screen.dart';
+import 'screens/citizen/capture_evidence_screen.dart';
+import 'screens/citizen/report_incident_screen.dart';
+import 'screens/citizen/my_reports_screen.dart';
+import 'screens/shared/case_verification_screen.dart';
+import 'screens/citizen/profile_screen.dart';
+import 'screens/admin/admin_dashboard_screen.dart';
+import 'screens/admin/issues_management_screen.dart';
+import 'screens/admin/ticket_detail_screen.dart';
+import 'screens/admin/district_map_screen.dart';
+import 'screens/admin/admin_chats_screen.dart';
+import 'screens/admin/admin_profile_screen.dart';
+import 'screens/citizen/citizen_chats_screen.dart';
 import 'constants/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
