@@ -27,7 +27,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   bool _isLoading = false;
   bool _isLoginMode = true;
   bool _obscurePassword = true;
-  String _selectedLanguage = 'EN';
 
   @override
   void dispose() {
@@ -122,44 +121,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
     }
   }
 
-  Widget _buildLanguageSwitcher() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: ['KN', 'EN', 'FR'].map((lang) {
-        final isSelected = _selectedLanguage == lang;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedLanguage = lang;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primaryBlue.withOpacity(0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: isSelected
-                  ? Border.all(color: AppColors.primaryBlue, width: 2)
-                  : null,
-            ),
-            child: Text(
-              lang,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected
-                    ? AppColors.primaryBlue
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+
 
   Widget _buildInfoCard() {
     return Container(
@@ -701,13 +663,46 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       backgroundColor: AppColors.backgroundWhite,
       body: Column(
         children: [
-          // Language Switcher - Above the image
+          // Header with Logo
           SafeArea(
             bottom: false,
             child: Container(
               color: AppColors.backgroundWhite,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: _buildLanguageSwitcher(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Logo
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city,
+                          color: AppColors.textWhite,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DistrictDirect',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textWhite,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           // Scrollable content
@@ -872,7 +867,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         const SizedBox(height: 16),
                         Center(
                           child: Text(
-                            'DISTRICTDIRECT RWANDA\n© 2024 Government Service Portal',
+                            'DISTRICTDIRECT RWANDA\n© 2026 Government Service Portal',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,

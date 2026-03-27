@@ -277,7 +277,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   const SizedBox(height: 36),
                   // Footer
                   const Text(
-                    '© 2024 Government of Rwanda',
+                    '© 2026 Government of Rwanda',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textWhite,

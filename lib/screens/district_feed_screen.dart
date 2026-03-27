@@ -12,7 +12,6 @@ class DistrictFeedScreen extends StatefulWidget {
 }
 
 class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
-  int _selectedLanguageIndex = 0;
   int _bottomNavIndex = 0;
 
   String? _selectedProvince;
@@ -73,8 +72,6 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              _buildLanguageToggle(),
               const SizedBox(height: 16),
               _buildReportButton(),
               const SizedBox(height: 16),
@@ -235,63 +232,6 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     );
   }
 
-  Widget _buildLanguageToggle() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          _buildLangSegment(0, 'English'),
-          _buildLangSegment(1, 'Français'),
-          _buildLangSegment(2, 'Kinyarwanda'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLangSegment(int index, String text) {
-    bool isSelected = _selectedLanguageIndex == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedLanguageIndex = index;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFF0A4DDE)
-                    : const Color(0xFF4B5563),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildReportButton() {
     return Container(

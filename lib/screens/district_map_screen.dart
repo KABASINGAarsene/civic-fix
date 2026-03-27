@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class DistrictMapScreen extends StatefulWidget {
   const DistrictMapScreen({Key? key}) : super(key: key);
@@ -49,8 +51,8 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
         ? const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)))
         : Stack(
         children: [
-          // Fullscreen Map Placeholder
-          _buildFullscreenMap(),
+          // FlutterMap with real coordinates
+          _buildFlutterMap(),
 
           // Territory Isolation Banner
           Positioned(
@@ -58,54 +60,6 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
             left: 16,
             right: 16,
             child: _buildTerritoryBanner(),
-          ),
-
-          // Real-time Firestore Map Pins
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('issues')
-                .where('district', isEqualTo: _adminDistrict)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              
-              final docs = snapshot.data!.docs;
-              return Stack(
-                children: docs.asMap().entries.map((entry) {
-                  final data = entry.value.data() as Map<String, dynamic>;
-                  final lat = data['latitude'] as double?;
-                  final lng = data['longitude'] as double?;
-                  
-                  if (lat == null || lng == null) return const SizedBox.shrink();
-
-                  // Simple projection for demonstration on a static image
-                  // In a real app, this would be handled by a Google Maps widget
-                  final topOffset = 150 + (entry.key * 60) % 250; 
-                  final leftOffset = 50 + (entry.key * 110) % 280;
-
-                  return Positioned(
-                    top: topOffset.toDouble(),
-                    left: leftOffset.toDouble(),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context, 
-                          '/admin-ticket-detail',
-                          arguments: {
-                            'data': data,
-                            'ticketId': entry.value.id,
-                          },
-                        );
-                      },
-                      child: _buildMapPin(
-                        entry.key + 1 > 9 ? "!" : (entry.key + 1).toString(), 
-                        _getPriorityColor(data['priority'])
-                      ),
-                    ),
-                  );
-                }).toList(),
-              );
-            },
           ),
 
           // Bottom Info Sheet
@@ -155,21 +109,69 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
     );
   }
 
-  Widget _buildFullscreenMap() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        image: DecorationImage(
-          image: NetworkImage('https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color(0xFF1F2937),
-            BlendMode.multiply, // Darken map for dark mode feel
+  Widget _buildFlutterMap() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('issues')
+          .where('district', isEqualTo: _adminDistrict)
+          .snapshots(),
+      builder: (context, snapshot) {
+        List<Marker> markers = [];
+        
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+          int markerCount = 0;
+          for (var entry in docs) {
+            final data = entry.data() as Map<String, dynamic>;
+            final lat = data['latitude'] as double?;
+            final lng = data['longitude'] as double?;
+            
+            if (lat != null && lng != null) {
+              markers.add(
+                Marker(
+                  point: LatLng(lat, lng),
+                  width: 80,
+                  height: 80,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/admin-ticket-detail',
+                        arguments: {
+                          'data': data,
+                          'ticketId': entry.id,
+                        },
+                      );
+                    },
+                    child: _buildMapPin(
+                      markerCount + 1 > 9 ? "!" : (markerCount + 1).toString(),
+                      _getPriorityColor(data['priority']),
+                    ),
+                  ),
+                ),
+              );
+              markerCount++;
+            }
+          }
+        }
+
+        // Default center for Rwanda
+        const LatLng kigaliCenter = LatLng(-1.9536, 29.8739);
+
+        return FlutterMap(
+          options: const MapOptions(
+            initialCenter: kigaliCenter,
+            initialZoom: 9.0,
           ),
-        ),
-      ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'civic.fix',
+            ),
+            MarkerLayer(markers: markers),
+          ],
+        );
+      },
     );
   }
 

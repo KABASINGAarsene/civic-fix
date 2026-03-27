@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'dart:async';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -351,6 +353,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Color _getPriorityColor(dynamic priority) {
+    if (priority is num) {
+      if (priority >= 2) return const Color(0xFFEF4444); // Critical
+      if (priority >= 1) return const Color(0xFFF59E0B); // Medium
+      return const Color(0xFF10B981); // Low
+    }
+    return const Color(0xFF3B82F6);
+  }
+
   Widget _buildSectionHeader(String title, String action) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -377,95 +388,150 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildHeatmapCard() {
-    return Container(
-      height: 180,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(16),
-        image: const DecorationImage(
-          image: NetworkImage(
-              'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&q=80'), // Map placeholder
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Color(0xFF1F2937),
-            BlendMode.multiply,
-          ), // Darken the map
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Simulated Heatmap Dots
-          Positioned(
-            top: 50,
-            left: 100,
-            child: Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.6),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 60,
-            right: 80,
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.6),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          // Hotspot Overlay Box
-          Positioned(
-            bottom: 16,
-            left: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF111827).withOpacity(0.9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'CURRENT HOTSPOT',
-                    style: TextStyle(
-                      color: Color(0xFF9CA3AF),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('issues')
+          .where('district', isEqualTo: _adminDistrict)
+          .snapshots(),
+      builder: (context, snapshot) {
+        List<Marker> markers = [];
+        if (snapshot.hasData) {
+          final docs = snapshot.data!.docs;
+          for (int i = 0; i < docs.length && i < 10; i++) { // Limit to 10 markers on dashboard
+            final data = docs[i].data() as Map<String, dynamic>;
+            final lat = data['latitude'] as double?;
+            final lng = data['longitude'] as double?;
+            
+            if (lat != null && lng != null) {
+              markers.add(
+                Marker(
+                  point: LatLng(lat, lng),
+                  width: 40,
+                  height: 40,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: _getPriorityColor(data['priority']),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getPriorityColor(data['priority']).withOpacity(0.4),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                     ),
                   ),
-                  SizedBox(height: 2),
-                  Text(
-                    _adminDistrict ?? 'Current District',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                ),
+              );
+            }
+          }
+        }
+
+        const LatLng kigaliCenter = LatLng(-1.9536, 29.8739);
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Stack(
+              children: [
+                FlutterMap(
+                  options: const MapOptions(
+                    initialCenter: kigaliCenter,
+                    initialZoom: 10.0,
+                    interactionOptions: InteractionOptions(
+                      flags: ~InteractiveFlag.all,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$_totalReceived Reports Found',
-                    style: const TextStyle(
-                      color: Color(0xFFEF4444),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'civic.fix',
+                    ),
+                    MarkerLayer(markers: markers),
+                  ],
+                ),
+                // Overlay gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.6),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                // Hotspot Overlay Box
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111827).withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFF3B82F6).withOpacity(0.5),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'CURRENT HOTSPOT',
+                          style: TextStyle(
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _adminDistrict ?? 'Current District',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$_totalReceived Reports Found',
+                          style: const TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 

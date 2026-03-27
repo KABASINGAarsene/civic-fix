@@ -26,7 +26,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   bool _isLoading = false;
   bool _isLoginMode = true;
   bool _obscurePassword = true;
-  String _selectedLanguage = 'EN';
 
   String? _selectedDistrict;
   final List<String> _districts = [
@@ -132,44 +131,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     }
   }
 
-  Widget _buildLanguageSwitcher() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: ['EN', 'FR', 'KN'].map((lang) {
-        final isSelected = _selectedLanguage == lang;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedLanguage = lang;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primaryBlue.withOpacity(0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: isSelected
-                  ? Border.all(color: AppColors.primaryBlue, width: 2)
-                  : null,
-            ),
-            child: Text(
-              lang,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected
-                    ? AppColors.primaryBlue
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+
 
   Widget _buildInfoCard() {
     return Container(
@@ -704,7 +666,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               color: AppColors.backgroundWhite,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   // Logo
                   Container(
@@ -735,8 +697,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       ],
                     ),
                   ),
-                  // Language Switcher
-                  _buildLanguageSwitcher(),
                 ],
               ),
             ),
@@ -900,7 +860,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         // Footer
                         Center(
                           child: Text(
-                            'Official Government of the Republic of Rwanda\n© 2024 Government Service Portal',
+                            'Official Government of the Republic of Rwanda\n© 2026 Government Service Portal',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,
