@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
-import '../../services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 /// Citizen Login Screen
 /// Login page for regular citizens with Rwanda landscape background
@@ -22,7 +23,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nidController = TextEditingController();
-  final _authService = AuthService();
 
   bool _isLoading = false;
   bool _isLoginMode = true;
@@ -45,12 +45,16 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       });
 
       try {
-        await _authService.loginCitizen(
+        await context.read<AuthProvider>().loginCitizen(
           phone: _phoneController.text.trim(),
           password: _passwordController.text,
         );
         if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/citizen-home', (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/citizen-home',
+            (route) => false,
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -78,7 +82,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       });
 
       try {
-        await _authService.signUpCitizen(
+        await context.read<AuthProvider>().signUpCitizen(
           phone: _phoneController.text.trim(),
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
@@ -87,7 +91,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Account created! Please check your spam folder for the link to verify your sign up.'),
+              content: Text(
+                'Account created! Please check your spam folder for the link to verify your sign up.',
+              ),
               backgroundColor: AppColors.success,
               duration: Duration(seconds: 5),
             ),
@@ -120,8 +126,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       }
     }
   }
-
-
 
   Widget _buildInfoCard() {
     return Container(
@@ -487,7 +491,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   Future<void> _showForgotPasswordDialog() async {
     final emailController = TextEditingController();
     bool isSending = false;
-    
+
     await showDialog(
       context: context,
       builder: (context) {
@@ -498,7 +502,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Enter your email address and we will send you a link to reset your password.'),
+                  const Text(
+                    'Enter your email address and we will send you a link to reset your password.',
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: emailController,
@@ -506,7 +512,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                       hintText: 'your@email.com',
                       filled: true,
                       fillColor: AppColors.inputBackground,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ],
@@ -514,39 +522,70 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryBlue),
-                  onPressed: isSending ? null : () async {
-                    if (emailController.text.trim().isEmpty) return;
-                    setDialogState(() => isSending = true);
-                    try {
-                      await AuthService().sendPasswordResetEmail(emailController.text.trim());
-                      if (mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Password reset email sent! Check your inbox (and spam).'), backgroundColor: Colors.green),
-                        );
-                      }
-                    } catch (e) {
-                      setDialogState(() => isSending = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to send email. Check if the address is correct.'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                  child: isSending 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                  ),
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          if (emailController.text.trim().isEmpty) return;
+                          setDialogState(() => isSending = true);
+                          try {
+                            await context
+                                .read<AuthProvider>()
+                                .sendPasswordResetEmail(
+                                  emailController.text.trim(),
+                                );
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password reset email sent! Check your inbox (and spam).',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to send email. Check if the address is correct.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Send Link',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 

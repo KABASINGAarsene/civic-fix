@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -24,9 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _fetchUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = fb_auth.FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       if (mounted) {
         setState(() {
           _userData = doc.data();
@@ -69,10 +74,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeaderCard() {
     if (_isLoading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(24.0),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     final name = _userData?['name'] ?? 'Citizen';
@@ -218,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _showLanguagePicker() async {
     final List<String> languages = ['English', 'French', 'Kinyarwanda'];
-    
+
     await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -235,20 +242,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              ...languages.map((lang) => ListTile(
-                title: Text(lang),
-                trailing: _selectedLanguage == lang ? const Icon(Icons.check, color: Color(0xFF10B981)) : null,
-                onTap: () {
-                  setState(() {
-                    _selectedLanguage = lang;
-                  });
-                  Navigator.pop(context);
-                },
-              )),
+              ...languages.map(
+                (lang) => ListTile(
+                  title: Text(lang),
+                  trailing: _selectedLanguage == lang
+                      ? const Icon(Icons.check, color: Color(0xFF10B981))
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedLanguage = lang;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
             ],
           ),
         );
-      }
+      },
     );
   }
 
@@ -287,45 +298,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black54),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0A4DDE)),
-                  onPressed: isSaving ? null : () async {
-                    setDialogState(() => isSaving = true);
-                    try {
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user != null) {
-                        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-                          'name': nameController.text.trim(),
-                          'phone': phoneController.text.trim(),
-                        });
-                        
-                        await _fetchUserData();
-                        
-                        if (mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Profile updated successfully'), backgroundColor: Colors.green),
-                          );
-                        }
-                      }
-                    } catch (e) {
-                      setDialogState(() => isSaving = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error updating profile: $e'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                  child: isSaving 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Save', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A4DDE),
+                  ),
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          setDialogState(() => isSaving = true);
+                          try {
+                            final user =
+                                fb_auth.FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .update({
+                                    'name': nameController.text.trim(),
+                                    'phone': phoneController.text.trim(),
+                                  });
+
+                              await _fetchUserData();
+
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Profile updated successfully',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSaving = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error updating profile: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Save',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
@@ -335,11 +375,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final email = _userData?['email'] as String?;
     if (email == null || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email not found. Cannot reset password.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Email not found. Cannot reset password.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    
+
     bool isSending = false;
     await showDialog(
       context: context,
@@ -355,38 +398,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black54),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0A4DDE)),
-                  onPressed: isSending ? null : () async {
-                    setDialogState(() => isSending = true);
-                    try {
-                      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                      if (mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Password reset link sent to your email! (Check your spam)'), backgroundColor: Colors.green),
-                        );
-                      }
-                    } catch (e) {
-                      setDialogState(() => isSending = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to send link: $e'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                  child: isSending 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A4DDE),
+                  ),
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          setDialogState(() => isSending = true);
+                          try {
+                            await fb_auth.FirebaseAuth.instance
+                                .sendPasswordResetEmail(email: email);
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password reset link sent to your email! (Check your spam)',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to send link: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Send Link',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -435,10 +504,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
             ),
           ],
         ),
@@ -451,7 +517,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () async {
-          await FirebaseAuth.instance.signOut();
+          await context.read<AuthProvider>().signOut();
           if (mounted) {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
@@ -503,8 +569,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'REPORTS'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'CHATS'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long),
+            label: 'REPORTS',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'CHATS',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
         ],
       ),

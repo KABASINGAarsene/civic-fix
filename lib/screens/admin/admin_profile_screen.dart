@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({Key? key}) : super(key: key);
@@ -26,9 +28,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   }
 
   Future<void> _fetchUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = fb_auth.FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       if (mounted) {
         setState(() {
           _userData = doc.data();
@@ -106,7 +111,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   Widget _buildProfileHeader() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
 
     final name = _userData?['name'] ?? 'Admin User';
@@ -159,7 +166,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
@@ -176,7 +186,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Color(0xFFBFDBFE), size: 14),
+                    const Icon(
+                      Icons.location_on,
+                      color: Color(0xFFBFDBFE),
+                      size: 14,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       district,
@@ -213,7 +227,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     );
   }
 
-  Widget _buildSettingsGroup({required String title, required List<Widget> children}) {
+  Widget _buildSettingsGroup({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -235,9 +252,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFF374151)),
           ),
-          child: Column(
-            children: children,
-          ),
+          child: Column(children: children),
         ),
       ],
     );
@@ -269,10 +284,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
             )
           : null,
       trailing: const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
@@ -333,7 +345,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         dropdownColor: const Color(0xFF1F2937),
         icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF9CA3AF)),
         underline: const SizedBox(),
-        style: const TextStyle(color: Color(0xFF3B82F6), fontSize: 13, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: Color(0xFF3B82F6),
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
         onChanged: (String? newValue) {
           if (newValue != null) {
             setState(() {
@@ -343,11 +359,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         },
         items: <String>['English', 'French', 'Kinyarwanda']
             .map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
+              return DropdownMenuItem<String>(value: value, child: Text(value));
+            })
+            .toList(),
       ),
     );
   }
@@ -358,7 +372,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       height: 54,
       child: OutlinedButton.icon(
         onPressed: () async {
-          await FirebaseAuth.instance.signOut();
+          await context.read<AuthProvider>().signOut();
           if (mounted) {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
@@ -394,7 +408,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1F2937),
-              title: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Edit Profile',
+                style: TextStyle(color: Colors.white),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -404,8 +421,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Full Name',
                       labelStyle: TextStyle(color: Color(0xFF9CA3AF)),
-                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF374151))),
-                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF3B82F6))),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF374151)),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -415,8 +436,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Email Address',
                       labelStyle: TextStyle(color: Color(0xFF9CA3AF)),
-                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF374151))),
-                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF3B82F6))),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF374151)),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                      ),
                     ),
                   ),
                 ],
@@ -424,47 +449,76 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF9CA3AF))),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
-                  onPressed: isSaving ? null : () async {
-                    setDialogState(() => isSaving = true);
-                    try {
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user != null) {
-                        // Update Firestore users collection
-                        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-                          'name': nameController.text.trim(),
-                          'email': emailController.text.trim(),
-                        });
-                        
-                        // Refresh local data
-                        await _fetchUserData();
-                        
-                        if (mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Profile updated successfully'), backgroundColor: Colors.green),
-                          );
-                        }
-                      }
-                    } catch (e) {
-                      setDialogState(() => isSaving = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error updating profile: $e'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                  child: isSaving 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Save', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                  ),
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          setDialogState(() => isSaving = true);
+                          try {
+                            final user =
+                                fb_auth.FirebaseAuth.instance.currentUser;
+                            if (user != null) {
+                              // Update Firestore users collection
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user.uid)
+                                  .update({
+                                    'name': nameController.text.trim(),
+                                    'email': emailController.text.trim(),
+                                  });
+
+                              // Refresh local data
+                              await _fetchUserData();
+
+                              if (mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Profile updated successfully',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSaving = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error updating profile: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Save',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
@@ -474,11 +528,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     final email = _userData?['email'] as String?;
     if (email == null || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email not found. Cannot reset password.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Email not found. Cannot reset password.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    
+
     bool isSending = false;
     await showDialog(
       context: context,
@@ -487,7 +544,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1F2937),
-              title: const Text('Change Password', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Change Password',
+                style: TextStyle(color: Colors.white),
+              ),
               content: const Text(
                 'We will send a secure password reset link to your email address. Do you want to proceed?',
                 style: TextStyle(color: Color(0xFF9CA3AF)),
@@ -495,38 +555,64 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF9CA3AF))),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
-                  onPressed: isSending ? null : () async {
-                    setDialogState(() => isSending = true);
-                    try {
-                      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                      if (mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Password reset link sent to your email! (Check your spam)'), backgroundColor: Colors.green),
-                        );
-                      }
-                    } catch (e) {
-                      setDialogState(() => isSending = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to send link: $e'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                  },
-                  child: isSending 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Send Link', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                  ),
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          setDialogState(() => isSending = true);
+                          try {
+                            await fb_auth.FirebaseAuth.instance
+                                .sendPasswordResetEmail(email: email);
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password reset link sent to your email! (Check your spam)',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to send link: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Send Link',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -559,7 +645,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         unselectedFontSize: 10,
         elevation: 0,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
           BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),

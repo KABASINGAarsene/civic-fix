@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'screens/auth/citizen_login_screen.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'screens/citizen/district_feed_screen.dart';
-import 'screens/citizen/capture_evidence_screen.dart';
+import 'screens/citizen/create_report_screen.dart';
 import 'screens/citizen/report_incident_screen.dart';
 import 'screens/citizen/my_reports_screen.dart';
 import 'screens/shared/case_verification_screen.dart';
@@ -15,16 +15,16 @@ import 'screens/admin/district_map_screen.dart';
 import 'screens/admin/admin_chats_screen.dart';
 import 'screens/admin/admin_profile_screen.dart';
 import 'screens/citizen/citizen_chats_screen.dart';
+import 'package:provider/provider.dart';
 import 'constants/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -41,47 +41,52 @@ class DistrictDirectApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'DistrictDirect Rwanda',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: AppColors.primaryBlue,
-        scaffoldBackgroundColor: AppColors.backgroundWhite,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryBlue,
-          primary: AppColors.primaryBlue,
-          secondary: AppColors.teal,
+    return ChangeNotifierProvider(
+      create: (_) => AuthProvider(),
+      child: MaterialApp(
+        title: 'DistrictDirect Rwanda',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: AppColors.primaryBlue,
+          scaffoldBackgroundColor: AppColors.backgroundWhite,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primaryBlue,
+            primary: AppColors.primaryBlue,
+            secondary: AppColors.teal,
+          ),
+          useMaterial3: true,
+          fontFamily: 'Roboto',
         ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      // Initial route
-      initialRoute: '/',
-      // Define routes
-      routes: {
-        '/': (context) => const RoleSelectionScreen(),
-        '/citizen-login': (context) => const CitizenLoginScreen(),
-        '/admin-login': (context) => const AdminLoginScreen(),
-        '/citizen-home': (context) => const DistrictFeedScreen(),
-        '/capture-evidence': (context) => const CaptureEvidenceScreen(),
-        '/report-incident': (context) => const ReportIncidentScreen(),
-        '/my-reports': (context) => const MyReportsScreen(),
-        '/chats': (context) => const CaseVerificationScreen(),
-        '/citizen-chats': (context) => const CitizenChatsScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/admin-dashboard': (context) => const AdminDashboardScreen(),
-        '/admin-issues': (context) => const IssuesManagementScreen(),
-        '/admin-ticket-detail': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-          return TicketDetailScreen(
-            data: args?['data'],
-            ticketId: args?['ticketId'],
-          );
+        // Initial route
+        initialRoute: '/',
+        // Define routes
+        routes: {
+          '/': (context) => const RoleSelectionScreen(),
+          '/citizen-login': (context) => const CitizenLoginScreen(),
+          '/admin-login': (context) => const AdminLoginScreen(),
+          '/citizen-home': (context) => const DistrictFeedScreen(),
+          '/capture-evidence': (context) => const CreateReportScreen(),
+          '/report-incident': (context) => const ReportIncidentScreen(),
+          '/my-reports': (context) => const MyReportsScreen(),
+          '/chats': (context) => const CaseVerificationScreen(),
+          '/citizen-chats': (context) => const CitizenChatsScreen(),
+          '/profile': (context) => const ProfileScreen(),
+          '/admin-dashboard': (context) => const AdminDashboardScreen(),
+          '/admin-issues': (context) => const IssuesManagementScreen(),
+          '/admin-ticket-detail': (context) {
+            final args =
+                ModalRoute.of(context)?.settings.arguments
+                    as Map<String, dynamic>?;
+            return TicketDetailScreen(
+              data: args?['data'],
+              ticketId: args?['ticketId'],
+            );
+          },
+          '/admin-map': (context) => const DistrictMapScreen(),
+          '/admin-chats': (context) => const AdminChatsScreen(),
+          '/admin-profile': (context) => const AdminProfileScreen(),
         },
-        '/admin-map': (context) => const DistrictMapScreen(),
-        '/admin-chats': (context) => const AdminChatsScreen(),
-        '/admin-profile': (context) => const AdminProfileScreen(),
-      },
+      ),
     );
   }
 }

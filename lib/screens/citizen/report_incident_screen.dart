@@ -25,12 +25,12 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   Position? _currentPosition;
   bool _isInitialized = false;
   String? _editDocId; // non-null when editing an existing report
-  
+
   XFile? _imageFile;
   String? _audioPath;
   String _description = '';
   String _title = '';
-  
+
   String? _selectedProvince;
   String? _selectedDistrict;
   String? _selectedSector;
@@ -40,52 +40,245 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     'Eastern Province',
     'Western Province',
     'Northern Province',
-    'Southern Province'
+    'Southern Province',
   ];
 
   final Map<String, List<String>> _provinceToDistricts = {
     'Kigali City': ['Gasabo', 'Kicukiro', 'Nyarugenge'],
-    'Eastern Province': ['Bugesera', 'Gatsibo', 'Kayonza', 'Kirehe', 'Ngoma', 'Nyagatare', 'Rwamagana'],
-    'Western Province': ['Karongi', 'Ngororero', 'Nyabihu', 'Nyamasheke', 'Rubavu', 'Rusizi', 'Rutsiro'],
+    'Eastern Province': [
+      'Bugesera',
+      'Gatsibo',
+      'Kayonza',
+      'Kirehe',
+      'Ngoma',
+      'Nyagatare',
+      'Rwamagana',
+    ],
+    'Western Province': [
+      'Karongi',
+      'Ngororero',
+      'Nyabihu',
+      'Nyamasheke',
+      'Rubavu',
+      'Rusizi',
+      'Rutsiro',
+    ],
     'Northern Province': ['Burera', 'Gakenke', 'Gicumbi', 'Musanze', 'Rulindo'],
-    'Southern Province': ['Gisagara', 'Huye', 'Kamonyi', 'Muhanga', 'Nyamagabe', 'Nyanza', 'Nyaruguru', 'Ruhango'],
+    'Southern Province': [
+      'Gisagara',
+      'Huye',
+      'Kamonyi',
+      'Muhanga',
+      'Nyamagabe',
+      'Nyanza',
+      'Nyaruguru',
+      'Ruhango',
+    ],
   };
 
   final Map<String, List<String>> _districtsAndSectors = {
-    'Gasabo': ['Bumbogo', 'Gatsata', 'Gisozi', 'Kacyiru', 'Kimihurura', 'Kimironko', 'Kinyinya', 'Ndera', 'Nduba', 'Remera', 'Rusororo', 'Rutunga'],
-    'Nyarugenge': ['Gitega', 'Kanyinya', 'Kigali', 'Kimisagara', 'Mageragere', 'Muhima', 'Nyakabanda', 'Nyamirambo', 'Nyarugenge', 'Rwezamenyo'],
-    'Kicukiro': ['Gahanga', 'Gatenga', 'Gikondo', 'Kagarama', 'Kanombe', 'Kicukiro', 'Kigarama', 'Masaka', 'Niboye', 'Nyarugunga'],
-    'Rusizi': ['Bugarama', 'Butare', 'Bweyeye', 'Gashonga', 'Giheke', 'Gihundwe', 'Gitambi', 'Kamembe', 'Muganza', 'Mururu', 'Nkanka', 'Nkombo', 'Nkungu', 'Nyakabuye', 'Nyakarenzo', 'Nzahaha', 'Rwimbogo'],
-    'Rubavu': ['Bugeshi', 'Busasamana', 'Cyanzarwe', 'Gisenyi', 'Kanama', 'Kanzenze', 'Mudende', 'Nyamyumba', 'Nyundo', 'Rubavu', 'Rugerero', 'Rukoko'],
-    'Musanze': ['Busogo', 'Cyuve', 'Gacaca', 'Gashaki', 'Gataraga', 'Kimonyi', 'Kinigi', 'Muhoza', 'Muko', 'Nkotsi', 'Nyange', 'Remera', 'Rwaza', 'Shingiro'],
-    'Kirehe': ['Gahara', 'Gatore', 'Kigarama', 'Kirehe', 'Mahama', 'Mpanga', 'Musaza', 'Mushikiri', 'Nasho', 'Nyamugari', 'Nyarubuye'],
+    'Gasabo': [
+      'Bumbogo',
+      'Gatsata',
+      'Gisozi',
+      'Kacyiru',
+      'Kimihurura',
+      'Kimironko',
+      'Kinyinya',
+      'Ndera',
+      'Nduba',
+      'Remera',
+      'Rusororo',
+      'Rutunga',
+    ],
+    'Nyarugenge': [
+      'Gitega',
+      'Kanyinya',
+      'Kigali',
+      'Kimisagara',
+      'Mageragere',
+      'Muhima',
+      'Nyakabanda',
+      'Nyamirambo',
+      'Nyarugenge',
+      'Rwezamenyo',
+    ],
+    'Kicukiro': [
+      'Gahanga',
+      'Gatenga',
+      'Gikondo',
+      'Kagarama',
+      'Kanombe',
+      'Kicukiro',
+      'Kigarama',
+      'Masaka',
+      'Niboye',
+      'Nyarugunga',
+    ],
+    'Rusizi': [
+      'Bugarama',
+      'Butare',
+      'Bweyeye',
+      'Gashonga',
+      'Giheke',
+      'Gihundwe',
+      'Gitambi',
+      'Kamembe',
+      'Muganza',
+      'Mururu',
+      'Nkanka',
+      'Nkombo',
+      'Nkungu',
+      'Nyakabuye',
+      'Nyakarenzo',
+      'Nzahaha',
+      'Rwimbogo',
+    ],
+    'Rubavu': [
+      'Bugeshi',
+      'Busasamana',
+      'Cyanzarwe',
+      'Gisenyi',
+      'Kanama',
+      'Kanzenze',
+      'Mudende',
+      'Nyamyumba',
+      'Nyundo',
+      'Rubavu',
+      'Rugerero',
+      'Rukoko',
+    ],
+    'Musanze': [
+      'Busogo',
+      'Cyuve',
+      'Gacaca',
+      'Gashaki',
+      'Gataraga',
+      'Kimonyi',
+      'Kinigi',
+      'Muhoza',
+      'Muko',
+      'Nkotsi',
+      'Nyange',
+      'Remera',
+      'Rwaza',
+      'Shingiro',
+    ],
+    'Kirehe': [
+      'Gahara',
+      'Gatore',
+      'Kigarama',
+      'Kirehe',
+      'Mahama',
+      'Mpanga',
+      'Musaza',
+      'Mushikiri',
+      'Nasho',
+      'Nyamugari',
+      'Nyarubuye',
+    ],
     'Bugesera': ['Gashora', 'Juru', 'Kamabuye', 'Ntarama', 'Nyamata', 'Rilima'],
-    'Kayonza': ['Gahini', 'Kabare', 'Kabarondo', 'Mukarange', 'Murama', 'Murundi', 'Ndego', 'Nyamirama', 'Rukara', 'Ruramira', 'Rwinkwavu'],
-    'Gatsibo': ['Gasange', 'Gatsibo', 'Gitoki', 'Kageyo', 'Kiramuruzi', 'Kiziguro', 'Muhura', 'Murambi', 'Ngarama', 'Nyagihanga', 'Remera', 'Rugarama', 'Rwimbogo'],
-    'Nyagatare': ['Gatunda', 'Kiyombe', 'Karama', 'Karangazi', 'Katabagemu', 'Matimba', 'Mimuri', 'Mukama', 'Musheli', 'Nyagatare', 'Rukomo', 'Rwempasha', 'Tabagwe'],
-    'Ngoma': ['Gashanda', 'Jarama', 'Karembo', 'Kazo', 'Kibungo', 'Mugesera', 'Murama', 'Mutenderi', 'Remera', 'Rukira', 'Rukumberi', 'Zaza'],
-    'Rwamagana': ['Fumbwe', 'Gahengeri', 'Gishari', 'Karenge', 'Kigabiro', 'Muhazi', 'Munyaga', 'Munyiginya', 'Musha', 'Muyumbu', 'Mwulire', 'Nyakariro', 'Nzige', 'Rubona'],
+    'Kayonza': [
+      'Gahini',
+      'Kabare',
+      'Kabarondo',
+      'Mukarange',
+      'Murama',
+      'Murundi',
+      'Ndego',
+      'Nyamirama',
+      'Rukara',
+      'Ruramira',
+      'Rwinkwavu',
+    ],
+    'Gatsibo': [
+      'Gasange',
+      'Gatsibo',
+      'Gitoki',
+      'Kageyo',
+      'Kiramuruzi',
+      'Kiziguro',
+      'Muhura',
+      'Murambi',
+      'Ngarama',
+      'Nyagihanga',
+      'Remera',
+      'Rugarama',
+      'Rwimbogo',
+    ],
+    'Nyagatare': [
+      'Gatunda',
+      'Kiyombe',
+      'Karama',
+      'Karangazi',
+      'Katabagemu',
+      'Matimba',
+      'Mimuri',
+      'Mukama',
+      'Musheli',
+      'Nyagatare',
+      'Rukomo',
+      'Rwempasha',
+      'Tabagwe',
+    ],
+    'Ngoma': [
+      'Gashanda',
+      'Jarama',
+      'Karembo',
+      'Kazo',
+      'Kibungo',
+      'Mugesera',
+      'Murama',
+      'Mutenderi',
+      'Remera',
+      'Rukira',
+      'Rukumberi',
+      'Zaza',
+    ],
+    'Rwamagana': [
+      'Fumbwe',
+      'Gahengeri',
+      'Gishari',
+      'Karenge',
+      'Kigabiro',
+      'Muhazi',
+      'Munyaga',
+      'Munyiginya',
+      'Musha',
+      'Muyumbu',
+      'Mwulire',
+      'Nyakariro',
+      'Nzige',
+      'Rubona',
+    ],
   };
-  
-  final TextEditingController _manualLocationController = TextEditingController();
+
+  final TextEditingController _manualLocationController =
+      TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (!_isInitialized && args != null) {
-      _editDocId     = args['docId'] as String?;
-      _imageFile     = args['imageFile'] as XFile?;
-      _audioPath     = args['audioPath'] as String?;
-      _title         = args['title'] as String? ?? '';
-      _description   = args['description'] as String? ?? '';
+      _editDocId = args['docId'] as String?;
+      _imageFile = args['imageFile'] as XFile?;
+      _audioPath = args['audioPath'] as String?;
+      _title = args['title'] as String? ?? '';
+      _description = args['description'] as String? ?? '';
       // Pre-fill selectors when editing
-      if (args['category'] != null) _selectedCategory = args['category'] as String;
-      if (args['province'] != null) _selectedProvince = args['province'] as String;
-      if (args['district'] != null) _selectedDistrict = args['district'] as String;
-      if (args['sector']   != null) _selectedSector   = args['sector']   as String;
-      if (args['priority'] != null) _priorityLevel    = (args['priority'] as num).toDouble();
-      if (args['is_anonymous'] != null) _isAnonymous  = args['is_anonymous'] as bool;
+      if (args['category'] != null)
+        _selectedCategory = args['category'] as String;
+      if (args['province'] != null)
+        _selectedProvince = args['province'] as String;
+      if (args['district'] != null)
+        _selectedDistrict = args['district'] as String;
+      if (args['sector'] != null) _selectedSector = args['sector'] as String;
+      if (args['priority'] != null)
+        _priorityLevel = (args['priority'] as num).toDouble();
+      if (args['is_anonymous'] != null)
+        _isAnonymous = args['is_anonymous'] as bool;
       if (args['manual_location'] != null) {
         _manualLocationController.text = args['manual_location'] as String;
       }
@@ -100,7 +293,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     // Check if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location services are disabled.')),
+        );
       return;
     }
 
@@ -108,15 +304,23 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied.')));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied.')),
+          );
         return;
       }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied.')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location permissions are permanently denied.'),
+          ),
+        );
       return;
-    } 
+    }
 
     try {
       final position = await Geolocator.getCurrentPosition();
@@ -124,9 +328,21 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         _currentPosition = position;
         _isLocationFound = true;
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location acquired successfully!'), backgroundColor: Colors.green));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location acquired successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error getting location: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error getting location: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
     }
   }
 
@@ -135,6 +351,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     _manualLocationController.dispose();
     super.dispose();
   }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -159,8 +376,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0E7FF),
                       borderRadius: BorderRadius.circular(12),
@@ -212,32 +431,15 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF0A4DDE)),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Column(
-        children: const [
-          Text(
-            'Report Incident',
-            style: TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            'DistrictDirect Rwanda',
-            style: TextStyle(
-              color: Color(0xFF6B7280),
-              fontSize: 12,
-            ),
-          ),
-        ],
+      title: const Text(
+        'Create Report',
+        style: TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.info_outline, color: Color(0xFF0A4DDE)),
-          onPressed: () {},
-        ),
-      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(40),
         child: Padding(
@@ -248,24 +450,32 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text('STEP 3 OF 3',
-                    style: TextStyle(color: Color(0xFF0A4DDE), fontSize: 12,
-                      fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  Text('Incident Details',
-                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 12)),
+                  Text(
+                    'STEP 2 OF 2',
+                    style: TextStyle(
+                      color: Color(0xFF0A4DDE),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'Incident Details',
+                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
-              Row(children: [
-                _stepBar(true, onTap: () {
-                  Navigator.pop(context); // back to step 2
-                  Navigator.pop(context); // back to step 1
-                }),
-                const SizedBox(width: 4),
-                _stepBar(true, onTap: () => Navigator.pop(context)), // back to step 2
-                const SizedBox(width: 4),
-                _stepBar(true, onTap: null), // current step
-              ]),
+              Row(
+                children: [
+                  _stepBar(
+                    true,
+                    onTap: () => Navigator.pop(context),
+                  ), // back to step 1
+                  const SizedBox(width: 4),
+                  _stepBar(true, onTap: null), // current step
+                ],
+              ),
             ],
           ),
         ),
@@ -300,7 +510,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -321,14 +531,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               onPressed: _getCurrentLocation,
               icon: Icon(
                 _isLocationFound ? Icons.check_circle : Icons.my_location,
-                color: _isLocationFound ? const Color(0xFF10B981) : Colors.white,
+                color: _isLocationFound
+                    ? const Color(0xFF10B981)
+                    : Colors.white,
               ),
               label: Text(
                 _isLocationFound
                     ? 'Location Acquired'
                     : 'Get My Current Location',
                 style: TextStyle(
-                  color: _isLocationFound ? const Color(0xFF10B981) : Colors.white,
+                  color: _isLocationFound
+                      ? const Color(0xFF10B981)
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -379,13 +593,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               controller: _manualLocationController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Enter street address or describe the exact location (e.g. near the high school, 500m after the first turn)...',
+                hintText:
+                    'Enter street address or describe the exact location (e.g. near the high school, 500m after the first turn)...',
                 hintStyle: TextStyle(color: Color(0xFF9CA3AF), height: 1.4),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(16),
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(bottom: 32),
-                  child: Icon(Icons.location_on_outlined, color: Color(0xFF9CA3AF)),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    color: Color(0xFF9CA3AF),
+                  ),
                 ),
               ),
             ),
@@ -424,7 +642,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? const Color(0xFF0A4DDE) : const Color(0xFFE5E7EB),
+                color: isSelected
+                    ? const Color(0xFF0A4DDE)
+                    : const Color(0xFFE5E7EB),
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: [
@@ -433,7 +653,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     color: const Color(0xFF0A4DDE).withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
-                  )
+                  ),
               ],
             ),
             child: Column(
@@ -459,7 +679,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? const Color(0xFF0A4DDE) : const Color(0xFF111827),
+                    color: isSelected
+                        ? const Color(0xFF0A4DDE)
+                        : const Color(0xFF111827),
                   ),
                 ),
               ],
@@ -469,6 +691,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       }).toList(),
     );
   }
+
   Widget _buildLocationSelectors() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -495,7 +718,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Province Dropdown
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -520,7 +743,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   setState(() {
                     _selectedProvince = newValue;
                     _selectedDistrict = null; // Reset district
-                    _selectedSector = null;   // Reset sector
+                    _selectedSector = null; // Reset sector
                   });
                 },
               ),
@@ -532,7 +755,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: _selectedProvince == null ? const Color(0xFFF3F4F6) : Colors.white,
+              color: _selectedProvince == null
+                  ? const Color(0xFFF3F4F6)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFD1D5DB)),
             ),
@@ -541,10 +766,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 value: _selectedDistrict,
                 hint: const Text('Select Target District'),
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: _selectedProvince == null ? Colors.grey : Colors.black87),
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: _selectedProvince == null
+                      ? Colors.grey
+                      : Colors.black87,
+                ),
                 items: _selectedProvince == null
                     ? []
-                    : (_provinceToDistricts[_selectedProvince] ?? []).map((String district) {
+                    : (_provinceToDistricts[_selectedProvince] ?? []).map((
+                        String district,
+                      ) {
                         return DropdownMenuItem<String>(
                           value: district,
                           child: Text(district),
@@ -566,7 +798,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: _selectedDistrict == null ? const Color(0xFFF3F4F6) : Colors.white,
+              color: _selectedDistrict == null
+                  ? const Color(0xFFF3F4F6)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFD1D5DB)),
             ),
@@ -575,15 +809,23 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 value: _selectedSector,
                 hint: const Text('Select Sector'),
                 isExpanded: true,
-                icon: Icon(Icons.arrow_drop_down, color: _selectedDistrict == null ? Colors.grey : Colors.black87),
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: _selectedDistrict == null
+                      ? Colors.grey
+                      : Colors.black87,
+                ),
                 items: _selectedDistrict == null
                     ? []
-                    : (_districtsAndSectors[_selectedDistrict] ?? ['Main Sector']).map((String sector) {
-                        return DropdownMenuItem<String>(
-                          value: sector,
-                          child: Text(sector),
-                        );
-                      }).toList(),
+                    : (_districtsAndSectors[_selectedDistrict] ??
+                              ['Main Sector'])
+                          .map((String sector) {
+                            return DropdownMenuItem<String>(
+                              value: sector,
+                              child: Text(sector),
+                            );
+                          })
+                          .toList(),
                 onChanged: _selectedDistrict == null
                     ? null
                     : (newValue) {
@@ -629,9 +871,21 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildPriorityLabel('LOW', const Color(0xFF10B981), _priorityLevel == 0),
-              _buildPriorityLabel('MEDIUM', const Color(0xFFF59E0B), _priorityLevel == 1),
-              _buildPriorityLabel('CRITICAL', const Color(0xFFEF4444), _priorityLevel == 2),
+              _buildPriorityLabel(
+                'LOW',
+                const Color(0xFF10B981),
+                _priorityLevel == 0,
+              ),
+              _buildPriorityLabel(
+                'MEDIUM',
+                const Color(0xFFF59E0B),
+                _priorityLevel == 1,
+              ),
+              _buildPriorityLabel(
+                'CRITICAL',
+                const Color(0xFFEF4444),
+                _priorityLevel == 2,
+              ),
             ],
           ),
         ),
@@ -645,10 +899,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(height: 4),
         Text(
@@ -656,7 +907,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF6B7280),
+            color: isSelected
+                ? const Color(0xFF2563EB)
+                : const Color(0xFF6B7280),
           ),
         ),
       ],
@@ -701,10 +954,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             SizedBox(height: 4),
             Text(
               'Hide my identity from the public community feed.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF6B7280),
-              ),
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             ),
           ],
         ),
@@ -727,27 +977,29 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   static const String _cloudinaryCloudName = 'doigncrt4';
   static const String _cloudinaryUploadPreset = 'civic-fix';
 
-  Future<String?> _uploadToCloudinary(List<int> bytes, String resourceType, String publicId) async {
+  Future<String?> _uploadToCloudinary(
+    List<int> bytes,
+    String resourceType,
+    String publicId,
+  ) async {
     try {
       final uri = Uri.parse(
-          'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/$resourceType/upload');
-      
-      final cleanFilename = '${publicId}.${resourceType == 'image' ? 'jpg' : 'mp4'}';
+        'https://api.cloudinary.com/v1_1/$_cloudinaryCloudName/$resourceType/upload',
+      );
+
+      final cleanFilename =
+          '${publicId}.${resourceType == 'image' ? 'jpg' : 'mp4'}';
       final request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = _cloudinaryUploadPreset
         ..fields['public_id'] = publicId
         ..fields['filename_override'] = cleanFilename
         ..files.add(
-          http.MultipartFile.fromBytes(
-            'file',
-            bytes,
-            filename: cleanFilename,
-          ),
+          http.MultipartFile.fromBytes('file', bytes, filename: cleanFilename),
         );
 
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(responseBody);
         return data['secure_url'] as String?;
@@ -763,19 +1015,20 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Future<void> _submitReport() async {
     setState(() => _isSubmitting = true);
-    
+
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('User not logged in. Please sign in again.');
-      
+      if (user == null)
+        throw Exception('User not logged in. Please sign in again.');
+
       if (_selectedDistrict == null || _selectedSector == null) {
         throw Exception('Please select a Target District and Sector.');
       }
-      
+
       String? imageUrl;
       String? audioUrl;
       final ticketId = _editDocId ?? const Uuid().v4();
-      
+
       // Clear '#' and other special chars from ticketId for Cloudinary happy IDs
       final safeTicketId = ticketId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -783,15 +1036,23 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       // Upload new Image to Cloudinary (if a new one was selected)
       if (_imageFile != null) {
         final bytes = await _imageFile!.readAsBytes();
-        imageUrl = await _uploadToCloudinary(bytes, 'image', 'issues_${safeTicketId}_photo_$timestamp');
+        imageUrl = await _uploadToCloudinary(
+          bytes,
+          'image',
+          'issues_${safeTicketId}_photo_$timestamp',
+        );
       }
-      
+
       // Upload new Audio to Cloudinary (if a new one was recorded)
       if (_audioPath != null) {
-        final audioBytes = kIsWeb 
+        final audioBytes = kIsWeb
             ? (await http.get(Uri.parse(_audioPath!))).bodyBytes
             : await File(_audioPath!).readAsBytes();
-        audioUrl = await _uploadToCloudinary(audioBytes, 'video', 'issues_${safeTicketId}_audio_$timestamp');
+        audioUrl = await _uploadToCloudinary(
+          audioBytes,
+          'video',
+          'issues_${safeTicketId}_audio_$timestamp',
+        );
       }
 
       final Map<String, dynamic> updateData = {
@@ -813,33 +1074,50 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
       if (_editDocId != null) {
         // ── EDIT MODE: update existing document ──
-        await FirebaseFirestore.instance.collection('issues').doc(_editDocId).update(updateData);
+        await FirebaseFirestore.instance
+            .collection('issues')
+            .doc(_editDocId)
+            .update(updateData);
       } else {
         // ── CREATE MODE: new document ──
         final user = FirebaseAuth.instance.currentUser!;
-        await FirebaseFirestore.instance.collection('issues').doc(ticketId).set({
-          ...updateData,
-          'ticket_id': ticketId,
-          'reported_by_uid': user.uid,
-          'status': 'Submitted',
-          'timestamp': FieldValue.serverTimestamp(),
-          'upvotes': [],
-        });
+        await FirebaseFirestore.instance
+            .collection('issues')
+            .doc(ticketId)
+            .set({
+              ...updateData,
+              'ticket_id': ticketId,
+              'reported_by_uid': user.uid,
+              'status': 'Submitted',
+              'timestamp': FieldValue.serverTimestamp(),
+              'upvotes': [],
+            });
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_editDocId != null ? 'Report updated!' : 'Incident reported successfully!'),
+            content: Text(
+              _editDocId != null
+                  ? 'Report updated!'
+                  : 'Incident reported successfully!',
+            ),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushNamedAndRemoveUntil(context, '/my-reports', (route) => route.isFirst);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/my-reports',
+          (route) => route.isFirst,
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Failed to submit: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -851,9 +1129,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FA),
-        ),
+        decoration: BoxDecoration(color: const Color(0xFFF8F9FA)),
         child: ElevatedButton(
           onPressed: _isSubmitting ? null : _submitReport,
           style: ElevatedButton.styleFrom(
@@ -865,23 +1141,30 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: _isSubmitting 
-            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'Submit to District',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_forward, color: Colors.white, size: 20),
-                ],
-              ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      'Submit to District',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
+                ),
         ),
       ),
     );
