@@ -1,10 +1,57 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb ? '180208394444-8jmbo2kvv8johktl8jta0k8g0ma54sel.apps.googleusercontent.com' : null,
+  );
+
+  // Sign in with Google
+  Future<auth.UserCredential?> signInWithGoogle({required String role}) async {
+    try {
+      // 1. Trigger the Google Authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null; // User cancelled
+
+      // 2. Obtain details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // 3. Create a new credential
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // 4. Once signed in, return the UserCredential
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user;
+
+      if (user != null) {
+        // Check if user profile exists in Firestore
+        final userDoc = await _firestore.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+          // New user: Create profile
+          await _firestore.collection('users').doc(user.uid).set({
+            'uid': user.uid,
+            'name': user.displayName ?? 'Citizen',
+            'email': user.email,
+            'phone': '', // Google doesn't provide phone by default
+            'role': role,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      return userCredential;
+    } catch (e) {
+      print('Google Sign-In Error: $e');
+      rethrow;
+    }
+  }
 
   // Sign up a citizen
   Future<auth.UserCredential?> signUpCitizen({
@@ -138,6 +185,7 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
 
@@ -147,53 +195,6 @@ class AuthService {
       await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
     } catch (e) {
       print('Password Reset Error: $e');
-      rethrow;
-    }
-  }
-
-  // Google Sign-In
-  Future<auth.UserCredential?> signInWithGoogle() async {
-    try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-      if (googleUser == null) {
-        // User canceled the sign-in
-        return null;
-      }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
-      final credential = auth.GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential
-      final userCredential = await _firebaseAuth.signInWithCredential(credential);
-
-      // Check if this is a new user and create Firestore document
-      if (userCredential.user != null) {
-        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
-        
-        if (!userDoc.exists) {
-          // New user - create Firestore document
-          await _firestore.collection('users').doc(userCredential.user!.uid).set({
-            'uid': userCredential.user!.uid,
-            'name': userCredential.user!.displayName ?? 'User',
-            'email': userCredential.user!.email,
-            'phone': userCredential.user!.phoneNumber ?? '',
-            'role': 'citizen',
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        }
-      }
-
-      return userCredential;
-    } catch (e) {
-      print('Google Sign-In Error: $e');
       rethrow;
     }
   }

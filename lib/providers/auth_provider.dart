@@ -33,6 +33,12 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  Future<auth.UserCredential?> signInWithGoogle({required String role}) async {
+    return _runWithLoading(
+      () => _authService.signInWithGoogle(role: role),
+    );
+  }
+
   Future<auth.UserCredential?> signUpCitizen({
     required String phone,
     required String name,
@@ -73,10 +79,6 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> sendPasswordResetEmail(String email) async {
     await _runWithLoading(() => _authService.sendPasswordResetEmail(email));
-  }
-
-  Future<auth.UserCredential?> signInWithGoogle() async {
-    return _runWithLoading(() => _authService.signInWithGoogle());
   }
 
   Future<T> _runWithLoading<T>(Future<T> Function() action) async {
