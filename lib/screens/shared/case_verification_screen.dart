@@ -34,7 +34,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: _isAdmin ? const Color(0xFF111827) : const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -77,11 +77,17 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return AppBar(
-      backgroundColor: _isAdmin ? const Color(0xFF1F2937) : const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_new, color: _isAdmin ? Colors.white : const Color(0xFF111827), size: 18),
+        icon: Icon(
+          Icons.arrow_back_ios_new,
+          color: scheme.onSurface,
+          size: 18,
+        ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Column(
@@ -89,24 +95,24 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
           Text(
             _isAdmin ? 'Citizen: $_citizenName' : 'District Official',
             style: TextStyle(
-              color: _isAdmin ? Colors.white : const Color(0xFF111827),
+              color: scheme.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             'Ticket: ${_ticketId!.substring(0, 8).toUpperCase()}',
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
           ),
         ],
       ),
       centerTitle: true,
       actions: [
         IconButton(
-          icon: Icon(Icons.info_outline, color: _isAdmin ? Colors.white : const Color(0xFF0A4DDE)),
+          icon: Icon(
+            Icons.info_outline,
+            color: scheme.primary,
+          ),
           onPressed: () {
             // Navigate to actual ticket detail
           },
@@ -116,18 +122,21 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
   }
 
   Widget _buildEmptyState() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 48, color: _isAdmin ? Colors.grey[700] : Colors.grey[300]),
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 48,
+            color: scheme.outline,
+          ),
           const SizedBox(height: 16),
           Text(
             'Start the conversation...',
-            style: TextStyle(
-              color: _isAdmin ? Colors.grey[500] : Colors.grey[400],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
           ),
         ],
       ),
@@ -135,6 +144,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
   }
 
   Widget _buildMessageBubble(Map<String, dynamic> data) {
+    final scheme = Theme.of(context).colorScheme;
     final senderId = data['senderId'];
     final receiverId = data['receiverId'];
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -166,12 +176,16 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(right: 8),
               child: CircleAvatar(
                 radius: 14,
-                backgroundColor: Color(0xFFE5E7EB),
-                child: Icon(Icons.person, size: 16, color: Color(0xFF6B7280)),
+                backgroundColor: scheme.surfaceContainerHighest,
+                child: Icon(
+                  Icons.person,
+                  size: 16,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ),
           Flexible(
@@ -181,9 +195,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isMe 
-                        ? const Color(0xFF2563EB) 
-                        : (_isAdmin ? const Color(0xFF374151) : Colors.white),
+                    color: isMe ? scheme.primary : scheme.surface,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
@@ -191,8 +203,12 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                       bottomRight: Radius.circular(isMe ? 4 : 16),
                     ),
                     boxShadow: [
-                      if (!isMe && !_isAdmin)
-                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2)),
+                      if (!isMe)
+                        BoxShadow(
+                          color: scheme.shadow.withValues(alpha: 0.15),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
                     ],
                   ),
                   child: Column(
@@ -215,7 +231,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                       Text(
                         text,
                         style: TextStyle(
-                          color: isMe || _isAdmin ? Colors.white : const Color(0xFF111827),
+                          color: isMe ? scheme.onPrimary : scheme.onSurface,
                           fontSize: 15,
                           height: 1.4,
                         ),
@@ -226,7 +242,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                 const SizedBox(height: 4),
                 Text(
                   timeStr,
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
+                  style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 10),
                 ),
               ],
             ),
@@ -238,20 +254,22 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
   }
 
   Widget _buildSystemMessage(String text, String time) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: _isAdmin ? const Color(0xFF1F2937) : Colors.white,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _isAdmin ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+            color: scheme.outline.withValues(alpha: 0.45),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: scheme.shadow.withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -263,10 +281,10 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: const Color(0xFF2563EB).withOpacity(0.1),
+                color: scheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.info_outline, color: Color(0xFF2563EB), size: 16),
+              child: Icon(Icons.info_outline, color: scheme.primary, size: 16),
             ),
             const SizedBox(width: 12),
             Flexible(
@@ -277,7 +295,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                   Text(
                     text,
                     style: TextStyle(
-                      color: _isAdmin ? Colors.white : const Color(0xFF111827),
+                      color: scheme.onSurface,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -285,7 +303,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                   const SizedBox(height: 2),
                   Text(
                     time,
-                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
+                    style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 10),
                   ),
                 ],
               ),
@@ -297,11 +315,17 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
   }
 
   Widget _buildChatInput() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _isAdmin ? const Color(0xFF1F2937) : Colors.white,
-        border: Border(top: BorderSide(color: _isAdmin ? const Color(0xFF374151) : const Color(0xFFE5E7EB))),
+        color: scheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: scheme.outline.withValues(alpha: 0.45),
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -311,15 +335,15 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: _isAdmin ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
+                  color: scheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
                   controller: _messageController,
-                  style: TextStyle(color: _isAdmin ? Colors.white : Colors.black),
+                  style: TextStyle(color: scheme.onSurface),
                   decoration: InputDecoration(
                     hintText: 'Type your message...',
-                    hintStyle: TextStyle(color: _isAdmin ? const Color(0xFF9CA3AF) : Colors.grey),
+                    hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                     border: InputBorder.none,
                   ),
                 ),
@@ -330,11 +354,15 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
               onTap: _sendMessage,
               child: Container(
                 padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2563EB),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.send, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.send,
+                  color: scheme.onPrimary,
+                  size: 20,
+                ),
               ),
             ),
           ],

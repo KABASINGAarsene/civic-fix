@@ -44,11 +44,12 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)))
+        ? Center(child: CircularProgressIndicator(color: scheme.primary))
         : Stack(
         children: [
           // FlutterMap with real coordinates
@@ -75,8 +76,8 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 180), // Above the bottom sheet
         child: FloatingActionButton(
-          backgroundColor: const Color(0xFF1F2937),
-          child: const Icon(Icons.layers, color: Colors.white),
+          backgroundColor: scheme.surface,
+          child: Icon(Icons.layers, color: scheme.onSurface),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Toggling Heatmap Layer...')),
@@ -88,13 +89,14 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final scheme = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
-      title: const Text(
+      title: Text(
         'District Field Map',
         style: TextStyle(
-          color: Colors.white,
+          color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -102,7 +104,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
       centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(Icons.filter_list, color: Colors.white),
+          icon: Icon(Icons.filter_list, color: scheme.onSurface),
           onPressed: () {},
         ),
       ],
@@ -176,12 +178,13 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   Widget _buildTerritoryBanner() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937).withOpacity(0.95),
+        color: scheme.surface.withOpacity(0.95),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.5)),
+        border: Border.all(color: scheme.primary.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -195,20 +198,20 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.2),
+              color: scheme.primary.withOpacity(0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.security, color: Color(0xFF60A5FA), size: 16),
+            child: Icon(Icons.security, color: scheme.primary, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Exclusive Territory View',
                   style: TextStyle(
-                    color: Color(0xFF9CA3AF),
+                    color: scheme.onSurfaceVariant,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
@@ -217,8 +220,8 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Viewing issues assigned to ${_adminDistrict ?? 'N/A'}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: scheme.onSurface,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -232,12 +235,13 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   Color _getPriorityColor(dynamic priority) {
+    final scheme = Theme.of(context).colorScheme;
     if (priority is num) {
       if (priority >= 2) return const Color(0xFFEF4444); // Critical
       if (priority >= 1) return const Color(0xFFF59E0B); // Medium
       return const Color(0xFF10B981); // Low
     }
-    return const Color(0xFF3B82F6);
+    return scheme.primary;
   }
 
   Widget _buildMapPin(String count, Color color) {
@@ -275,6 +279,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   Widget _buildBottomMapCard() {
+    final scheme = Theme.of(context).colorScheme;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('issues')
@@ -294,9 +299,9 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2937).withOpacity(0.95),
+            color: scheme.surface.withOpacity(0.95),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF374151)),
+            border: Border.all(color: scheme.outline.withOpacity(0.45)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.5),
@@ -312,18 +317,18 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Active Field Teams',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     '$fieldVisits Active visits',
-                    style: const TextStyle(
-                      color: Color(0xFF10B981),
+                    style: TextStyle(
+                      color: Colors.green,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -342,13 +347,14 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   Widget _buildTeamRow(String name, String location, bool isOnline) {
+    final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isOnline ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+            color: isOnline ? scheme.tertiary : scheme.onSurfaceVariant,
             shape: BoxShape.circle,
           ),
         ),
@@ -357,7 +363,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           child: Text(
             name,
             style: TextStyle(
-              color: isOnline ? Colors.white : const Color(0xFF9CA3AF),
+              color: isOnline ? scheme.onSurface : scheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -365,8 +371,8 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
         ),
         Text(
           location,
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
+          style: TextStyle(
+            color: scheme.onSurfaceVariant,
             fontSize: 12,
           ),
         ),
@@ -375,10 +381,11 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        border: Border(top: BorderSide(color: Color(0xFF374151))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.35))),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -400,9 +407,9 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F2937),
-        selectedItemColor: const Color(0xFF3B82F6),
-        unselectedItemColor: const Color(0xFF6B7280),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

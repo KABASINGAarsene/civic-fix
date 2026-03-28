@@ -73,18 +73,26 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
     return '$m:$s';
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, ColorScheme scheme) {
     switch (status) {
-      case 'Submitted':   return const Color(0xFF2563EB); // Blue
-      case 'Received':    return const Color(0xFF7C3AED); // Purple
-      case 'Assigned':    return const Color(0xFFF59E0B); // Amber
-      case 'Field Visit': return const Color(0xFFD97706); // Orange
-      case 'Resolved':    return const Color(0xFF10B981); // Green
-      default:            return const Color(0xFF6B7280); // Gray
+      case 'Submitted':
+        return scheme.primary;
+      case 'Received':
+        return scheme.secondary;
+      case 'Assigned':
+        return scheme.tertiary;
+      case 'Field Visit':
+        return scheme.secondary.withValues(alpha: 0.8);
+      case 'Resolved':
+        return scheme.tertiary;
+      default:
+        return scheme.onSurfaceVariant;
     }
   }
 
   Future<void> _deleteReport() async {
+    final scheme = Theme.of(context).colorScheme;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -93,7 +101,10 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF6B7280))),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: scheme.onSurfaceVariant),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -150,8 +161,12 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     if (_isFetching) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFF2563EB))));
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: scheme.primary)),
+      );
     }
     
     final data = _currentData;
@@ -181,36 +196,59 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
     final bool isResolved = status == 'Resolved';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: photo != null ? 240 : 80,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: scheme.surface,
             elevation: 0,
             leading: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: scheme.surface,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                    )
+                  ],
                 ),
-                child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF111827), size: 18),
+                child: Icon(
+                  Icons.arrow_back_ios_new,
+                  color: scheme.onSurface,
+                  size: 18,
+                ),
               ),
             ),
-            title: const Text('Issue Details', style: TextStyle(color: Color(0xFF111827), fontWeight: FontWeight.bold, fontSize: 18)),
+            title: Text(
+              'Issue Details',
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
             centerTitle: true,
             flexibleSpace: FlexibleSpaceBar(
               background: photo != null
                   ? Image.network(photo, fit: BoxFit.cover,
                       loadingBuilder: (ctx, child, prog) => prog == null ? child
-                          : Container(color: const Color(0xFFE5E7EB),
+                          : Container(color: scheme.surfaceContainerHighest,
                               child: const Center(child: CircularProgressIndicator(strokeWidth: 2))))
-                  : Container(color: const Color(0xFFF3F4F6),
-                      child: const Center(child: Icon(Icons.image_not_supported, color: Color(0xFFD1D5DB), size: 48))),
+                  : Container(
+                      color: scheme.surfaceContainerHighest,
+                      child: Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: scheme.outline,
+                          size: 48,
+                        ),
+                      )),
             ),
           ),
 
@@ -227,23 +265,40 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: _getStatusColor(status).withOpacity(0.12),
+                          color: _getStatusColor(status, scheme).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(status.toUpperCase(),
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
-                            color: _getStatusColor(status), letterSpacing: 0.8)),
+                            color: _getStatusColor(status, scheme), letterSpacing: 0.8)),
                       ),
-                      Text(shortId, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF6B7280))),
+                      Text(
+                        shortId,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Submitted on $dateStr', style: const TextStyle(fontSize: 13, color: Color(0xFF9CA3AF))),
+                  Text(
+                    'Submitted on $dateStr',
+                    style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+                  ),
 
                   const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFF3F4F6)),
+                  Divider(color: scheme.outline.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
 
                   // ── Details ──
@@ -257,7 +312,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   // ── Audio ──
                   if (audio != null) ...[
                     const SizedBox(height: 20),
-                    const Divider(color: Color(0xFFF3F4F6)),
+                    Divider(color: scheme.outline.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
                     _sectionTitle('Voice Note'),
                     const SizedBox(height: 12),
@@ -265,7 +320,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   ],
 
                   const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFF3F4F6)),
+                  Divider(color: scheme.outline.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
 
                   // ── Tracker ──
@@ -305,8 +360,8 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                         icon: const Icon(Icons.edit_outlined, size: 18),
                         label: const Text('Edit Report', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
+                          backgroundColor: scheme.primary,
+                          foregroundColor: scheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
@@ -342,8 +397,8 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                       icon: const Icon(Icons.chat_outlined, size: 18),
                       label: const Text('Message District Official', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
+                        backgroundColor: scheme.tertiary,
+                        foregroundColor: scheme.onTertiary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         elevation: 0,
@@ -351,7 +406,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  const Divider(color: Color(0xFFF3F4F6)),
+                  Divider(color: scheme.outline.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   _sectionTitle('Comments'),
                   const SizedBox(height: 12),
@@ -368,10 +423,15 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                       if (!snapshot.hasData) return const SizedBox();
                       final docs = snapshot.data!.docs;
                       if (docs.isEmpty) {
-                        return const Padding(
+                        return Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Text('No comments yet. Be the first to comment!',
-                              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+                          child: Text(
+                            'No comments yet. Be the first to comment!',
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 13,
+                            ),
+                          ),
                         );
                       }
                       return ListView.builder(
@@ -387,8 +447,12 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: 14,
-                                  backgroundColor: const Color(0xFFE5E7EB),
-                                  child: const Icon(Icons.person, size: 16, color: Color(0xFF6B7280)),
+                                  backgroundColor: scheme.surfaceContainerHighest,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 16,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -396,10 +460,10 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(cdata['userName'] ?? 'Citizen',
-                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
+                                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scheme.onSurface)),
                                       const SizedBox(height: 2),
                                       Text(cdata['text'] ?? '',
-                                          style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+                                          style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
                                     ],
                                   ),
                                 ),
@@ -419,17 +483,20 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                           controller: _commentController,
                           decoration: InputDecoration(
                             hintText: 'Add a comment...',
-                            hintStyle: const TextStyle(fontSize: 13),
+                            hintStyle: TextStyle(
+                              fontSize: 13,
+                              color: scheme.onSurfaceVariant,
+                            ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                             filled: true,
-                            fillColor: const Color(0xFFF3F4F6),
+                            fillColor: scheme.surfaceContainerHighest,
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: _addComment,
-                        icon: const Icon(Icons.send, color: Color(0xFF2563EB)),
+                        icon: Icon(Icons.send, color: scheme.primary),
                       ),
                     ],
                   ),
@@ -443,18 +510,18 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
     );
   }
 
-  Widget _sectionTitle(String text) => Text(text,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF111827)));
+    Widget _sectionTitle(String text) => Text(text,
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface));
 
   Widget _row(IconData icon, String label, String value) => Padding(
     padding: const EdgeInsets.only(bottom: 12),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, size: 18, color: const Color(0xFF6B7280)),
+      Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
       const SizedBox(width: 10),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF), fontWeight: FontWeight.w500)),
+        Text(label, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 14, color: Color(0xFF111827), fontWeight: FontWeight.w500)),
+        Text(value, style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500)),
       ])),
     ]),
   );
@@ -462,9 +529,9 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
   Widget _buildAudioPlayer(String url) => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: const Color(0xFFE5E7EB)),
+      border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
     ),
     child: Row(children: [
       GestureDetector(
@@ -477,8 +544,8 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
         },
         child: Container(
           width: 44, height: 44,
-          decoration: const BoxDecoration(color: Color(0xFF2563EB), shape: BoxShape.circle),
-          child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white, size: 24),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+          child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, color: Theme.of(context).colorScheme.onPrimary, size: 24),
         ),
       ),
       const SizedBox(width: 12),
@@ -487,10 +554,10 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
           data: SliderTheme.of(context).copyWith(
             trackHeight: 3,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            thumbColor: const Color(0xFF2563EB),
-            activeTrackColor: const Color(0xFF2563EB),
-            inactiveTrackColor: const Color(0xFFE5E7EB),
-            overlayColor: const Color(0xFF2563EB).withOpacity(0.15),
+            thumbColor: Theme.of(context).colorScheme.primary,
+            activeTrackColor: Theme.of(context).colorScheme.primary,
+            inactiveTrackColor: Theme.of(context).colorScheme.outline,
+            overlayColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
           ),
           child: Slider(
             value: _duration.inSeconds > 0
@@ -502,8 +569,8 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(_fmt(_position), style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
-            Text(_fmt(_duration), style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+            Text(_fmt(_position), style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text(_fmt(_duration), style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ]),
         ),
       ])),
@@ -518,12 +585,12 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
           width: 22, height: 22,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: done ? const Color(0xFF2563EB) : Colors.white,
-            border: Border.all(color: done ? const Color(0xFF2563EB) : const Color(0xFFD1D5DB), width: 2),
+            color: done ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
+            border: Border.all(color: done ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline, width: 2),
           ),
-          child: done ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
+          child: done ? Icon(Icons.check, size: 12, color: Theme.of(context).colorScheme.onPrimary) : null,
         ),
-        if (!isLast) Container(width: 2, height: 28, color: const Color(0xFFE5E7EB)),
+        if (!isLast) Container(width: 2, height: 28, color: Theme.of(context).colorScheme.outline),
       ]),
       const SizedBox(width: 14),
       Expanded(child: Padding(
@@ -531,9 +598,9 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(title, style: TextStyle(fontSize: 14,
               fontWeight: done ? FontWeight.bold : FontWeight.w500,
-              color: done ? const Color(0xFF111827) : const Color(0xFF9CA3AF))),
+              color: done ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurfaceVariant)),
           if (subtitle.isNotEmpty)
-            Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+            Text(subtitle, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ]),
       )),
     ],

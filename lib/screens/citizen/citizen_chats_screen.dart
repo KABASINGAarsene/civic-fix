@@ -17,19 +17,24 @@ class CitizenChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final scheme = Theme.of(context).colorScheme;
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: scheme.surface,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'My Conversations',
-          style: TextStyle(color: Color(0xFF111827), fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF111827), size: 18),
+          icon: Icon(Icons.arrow_back_ios_new, color: scheme.onSurface, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -55,7 +60,7 @@ class CitizenChatsScreen extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.sync, size: 48, color: Colors.blue),
+                            Icon(Icons.sync, size: 48, color: scheme.primary),
                             const SizedBox(height: 16),
                             const Text(
                               'Syncing Conversations...',
@@ -63,10 +68,10 @@ class CitizenChatsScreen extends StatelessWidget {
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'The chat system is being synchronized. Please wait a few moments or try again later.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -83,16 +88,26 @@ class CitizenChatsScreen extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[300]),
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: scheme.outline,
+                        ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'No conversations yet',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Start a chat from your issue reports.',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -113,11 +128,11 @@ class CitizenChatsScreen extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: scheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: scheme.shadow.withValues(alpha: 0.15),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -128,11 +143,14 @@ class CitizenChatsScreen extends StatelessWidget {
                         leading: Container(
                           width: 48,
                           height: 48,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFEFF6FF),
+                          decoration: BoxDecoration(
+                            color: scheme.primary.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.support_agent, color: Color(0xFF2563EB)),
+                          child: Icon(
+                            Icons.support_agent,
+                            color: scheme.primary,
+                          ),
                         ),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -140,14 +158,21 @@ class CitizenChatsScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 ticketTitle,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: scheme.onSurface,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Text(
                               timeStr,
-                              style: const TextStyle(color: Colors.grey, fontSize: 11),
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -157,7 +182,10 @@ class CitizenChatsScreen extends StatelessWidget {
                             lastMsg,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(
+                              color: scheme.onSurfaceVariant,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                         onTap: () {

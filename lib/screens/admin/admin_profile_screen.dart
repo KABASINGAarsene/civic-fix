@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class AdminProfileScreen extends StatefulWidget {
@@ -13,10 +14,6 @@ class AdminProfileScreen extends StatefulWidget {
 
 class _AdminProfileScreenState extends State<AdminProfileScreen> {
   int _bottomNavIndex = 4; // Profile is index 4
-
-  bool _pushNotifications = true;
-  bool _isDarkMode = true;
-  String _selectedLanguage = 'English';
 
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
@@ -47,15 +44,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appSettings = context.watch<AppSettingsProvider>();
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Admin Profile',
           style: TextStyle(
-            color: Colors.white,
+            color: scheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -76,14 +76,20 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 _buildSwitchTile(
                   icon: Icons.notifications_active_outlined,
                   title: 'Push Notifications',
-                  value: _pushNotifications,
-                  onChanged: (val) => setState(() => _pushNotifications = val),
+                  value: appSettings.notificationsEnabled,
+                  onChanged: (val) {
+                    appSettings.setNotificationsEnabled(val);
+                  },
                 ),
                 _buildSwitchTile(
                   icon: Icons.dark_mode_outlined,
                   title: 'Dark Theme',
-                  value: _isDarkMode,
-                  onChanged: (val) => setState(() => _isDarkMode = val),
+                  value: appSettings.isDarkMode,
+                  onChanged: (val) {
+                    appSettings.setThemeMode(
+                      val ? ThemeMode.dark : ThemeMode.light,
+                    );
+                  },
                 ),
                 _buildLanguageDropdownTile(),
               ],
@@ -110,9 +116,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
+    final scheme = Theme.of(context).colorScheme;
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      return Center(
+        child: CircularProgressIndicator(color: scheme.primary),
       );
     }
 
@@ -123,15 +130,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+            color: scheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -141,14 +144,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: scheme.onPrimary,
               shape: BoxShape.circle,
             ),
-            child: const CircleAvatar(
+            child: CircleAvatar(
               radius: 36,
-              backgroundColor: Colors.blueGrey,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+              backgroundColor: scheme.secondaryContainer,
+              child: Icon(Icons.person, size: 50, color: scheme.onSecondaryContainer),
             ),
           ),
           const SizedBox(width: 16),
@@ -158,8 +161,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: scheme.onPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -171,13 +174,13 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: scheme.onPrimary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
+                  child: Text(
                     'District Admin',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -186,16 +189,16 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_on,
-                      color: Color(0xFFBFDBFE),
+                      color: scheme.onPrimary.withValues(alpha: 0.85),
                       size: 14,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       district,
-                      style: const TextStyle(
-                        color: Color(0xFFBFDBFE),
+                      style: TextStyle(
+                        color: scheme.onPrimary.withValues(alpha: 0.85),
                         fontSize: 12,
                       ),
                     ),
@@ -204,12 +207,16 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.email, color: Color(0xFFBFDBFE), size: 14),
+                    Icon(
+                      Icons.email,
+                      color: scheme.onPrimary.withValues(alpha: 0.85),
+                      size: 14,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       email,
-                      style: const TextStyle(
-                        color: Color(0xFFBFDBFE),
+                      style: TextStyle(
+                        color: scheme.onPrimary.withValues(alpha: 0.85),
                         fontSize: 12,
                       ),
                     ),
@@ -219,7 +226,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
+            icon: Icon(Icons.edit, color: scheme.onPrimary),
             onPressed: _showEditProfileDialog,
           ),
         ],
@@ -231,6 +238,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     required String title,
     required List<Widget> children,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -238,8 +246,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           padding: const EdgeInsets.only(left: 8, bottom: 8),
           child: Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
               fontSize: 11,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
@@ -248,9 +256,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2937),
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF374151)),
+            border: Border.all(color: scheme.outline.withValues(alpha: 0.35)),
           ),
           child: Column(children: children),
         ),
@@ -264,19 +272,20 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     String? subtitle,
     required VoidCallback onTap,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF374151),
+          color: scheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF9CA3AF), size: 18),
+        child: Icon(icon, color: scheme.onSurfaceVariant, size: 18),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: scheme.onSurface,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
@@ -284,10 +293,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       subtitle: subtitle != null
           ? Text(
               subtitle,
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
             )
           : null,
-      trailing: const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
+      trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
       onTap: onTap,
     );
   }
@@ -298,66 +307,68 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return SwitchListTile(
       secondary: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF374151),
+          color: scheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF9CA3AF), size: 18),
+        child: Icon(icon, color: scheme.onSurfaceVariant, size: 18),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: scheme.onSurface,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
       ),
       value: value,
-      activeColor: const Color(0xFF3B82F6),
-      inactiveTrackColor: const Color(0xFF374151),
+      activeColor: scheme.primary,
+      inactiveTrackColor: scheme.surfaceContainerHighest,
       onChanged: onChanged,
     );
   }
 
   Widget _buildLanguageDropdownTile() {
+    final appSettings = context.watch<AppSettingsProvider>();
+    final scheme = Theme.of(context).colorScheme;
+
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF374151),
+          color: scheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(Icons.language, color: Color(0xFF9CA3AF), size: 18),
+        child: Icon(Icons.language, color: scheme.onSurfaceVariant, size: 18),
       ),
-      title: const Text(
+      title: Text(
         'Language',
         style: TextStyle(
-          color: Colors.white,
+          color: scheme.onSurface,
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
       ),
       trailing: DropdownButton<String>(
-        value: _selectedLanguage,
-        dropdownColor: const Color(0xFF1F2937),
-        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF9CA3AF)),
+        value: appSettings.selectedLanguageLabel,
+        dropdownColor: scheme.surface,
+        icon: Icon(Icons.arrow_drop_down, color: scheme.onSurfaceVariant),
         underline: const SizedBox(),
-        style: const TextStyle(
-          color: Color(0xFF3B82F6),
+        style: TextStyle(
+          color: scheme.primary,
           fontSize: 13,
           fontWeight: FontWeight.bold,
         ),
         onChanged: (String? newValue) {
           if (newValue != null) {
-            setState(() {
-              _selectedLanguage = newValue;
-            });
+            appSettings.setLanguageFromLabel(newValue);
           }
         },
-        items: <String>['English', 'French', 'Kinyarwanda']
+        items: appSettings.supportedLanguageLabels
             .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(value: value, child: Text(value));
             })
@@ -367,6 +378,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   }
 
   Widget _buildLogoutButton() {
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 54,
@@ -377,17 +389,17 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
         },
-        icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
-        label: const Text(
+        icon: Icon(Icons.logout, color: scheme.error),
+        label: Text(
           'Log Out',
           style: TextStyle(
-            color: Color(0xFFEF4444),
+            color: scheme.error,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFFEF4444)),
+          side: BorderSide(color: scheme.error),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -400,6 +412,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     final nameController = TextEditingController(text: _userData?['name']);
     final emailController = TextEditingController(text: _userData?['email']);
     bool isSaving = false;
+    final scheme = Theme.of(context).colorScheme;
 
     await showDialog(
       context: context,
@@ -407,40 +420,40 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1F2937),
-              title: const Text(
+              backgroundColor: scheme.surface,
+              title: Text(
                 'Edit Profile',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: scheme.onSurface),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: nameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: scheme.onSurface),
+                    decoration: InputDecoration(
                       labelText: 'Full Name',
-                      labelStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                      labelStyle: TextStyle(color: scheme.onSurfaceVariant),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF374151)),
+                        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                        borderSide: BorderSide(color: scheme.primary),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: emailController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: scheme.onSurface),
+                    decoration: InputDecoration(
                       labelText: 'Email Address',
-                      labelStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                      labelStyle: TextStyle(color: scheme.onSurfaceVariant),
                       enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF374151)),
+                        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
                       ),
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF3B82F6)),
+                        borderSide: BorderSide(color: scheme.primary),
                       ),
                     ),
                   ),
@@ -449,14 +462,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: scheme.primary,
                   ),
                   onPressed: isSaving
                       ? null
@@ -511,9 +524,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           'Save',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: scheme.onPrimary),
                         ),
                 ),
               ],
@@ -537,32 +550,33 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
 
     bool isSending = false;
+    final scheme = Theme.of(context).colorScheme;
     await showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF1F2937),
-              title: const Text(
+              backgroundColor: scheme.surface,
+              title: Text(
                 'Change Password',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: scheme.onSurface),
               ),
-              content: const Text(
+              content: Text(
                 'We will send a secure password reset link to your email address. Do you want to proceed?',
-                style: TextStyle(color: Color(0xFF9CA3AF)),
+                style: TextStyle(color: scheme.onSurfaceVariant),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: scheme.primary,
                   ),
                   onPressed: isSending
                       ? null
@@ -603,9 +617,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           'Send Link',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: scheme.onPrimary),
                         ),
                 ),
               ],
@@ -617,10 +631,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        border: Border(top: BorderSide(color: Color(0xFF374151))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.35))),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -638,9 +653,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F2937),
-        selectedItemColor: const Color(0xFF3B82F6),
-        unselectedItemColor: const Color(0xFF6B7280),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

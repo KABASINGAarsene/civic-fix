@@ -180,36 +180,37 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     if (_isFetching) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF111827),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: Center(child: CircularProgressIndicator(color: scheme.primary)),
       );
     }
 
     if (_currentData == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF111827),
-        appBar: AppBar(backgroundColor: const Color(0xFF111827), elevation: 0),
-        body: const Center(
-          child: Text('Ticket not found or session expired.', style: TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(backgroundColor: Theme.of(context).scaffoldBackgroundColor, elevation: 0),
+        body: Center(
+          child: Text('Ticket not found or session expired.', style: TextStyle(color: scheme.onSurface)),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: Icon(Icons.arrow_back_ios, color: scheme.onSurface, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Ticket #${(_currentTicketId ?? "").substring(0, 8).toUpperCase()}',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: scheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -255,36 +256,38 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildImagePlaceholder(String message) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       height: 220,
-      color: const Color(0xFF1F2937),
+      color: scheme.surface,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.broken_image, color: Color(0xFF4B5563), size: 48),
+          Icon(Icons.broken_image, color: scheme.onSurfaceVariant, size: 48),
           const SizedBox(height: 8),
-          Text(message, style: const TextStyle(color: Color(0xFF9CA3AF))),
+          Text(message, style: TextStyle(color: scheme.onSurfaceVariant)),
         ],
       ),
     );
   }
 
   Widget _buildCitizenDetailsPanel() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF374151)),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'CITIZEN DETAILS',
             style: TextStyle(
-              color: Color(0xFF9CA3AF),
+              color: scheme.onSurfaceVariant,
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
@@ -304,8 +307,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   children: [
                     Text(
                       _currentData?['userName'] ?? 'Citizen User',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: scheme.onSurface,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -315,8 +318,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     const SizedBox(height: 2),
                     Text(
                       _currentData?['phone'] ?? 'Phone Private',
-                      style: const TextStyle(
-                        color: Color(0xFF60A5FA),
+                      style: TextStyle(
+                        color: scheme.secondary,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         decoration: TextDecoration.underline,
@@ -330,18 +333,18 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF374151),
+                  color: scheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.pin_drop, color: Color(0xFF9CA3AF), size: 12),
+                    Icon(Icons.pin_drop, color: scheme.onSurfaceVariant, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       '${_currentData?['district'] ?? ''} / ${_currentData?['sector'] ?? ''}',
-                      style: const TextStyle(
-                        color: Color(0xFFD1D5DB),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
                         fontSize: 11,
                       ),
                     ),
@@ -356,15 +359,16 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildVoiceNotePlayer() {
+    final scheme = Theme.of(context).colorScheme;
     final audioUrl = _currentData?['audio_url'];
     if (audioUrl == null) return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF374151)),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
       ),
       child: Column(
         children: [
@@ -373,20 +377,20 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF374151),
+                  color: scheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.mic, color: Color(0xFF60A5FA), size: 24),
+                child: Icon(Icons.mic, color: scheme.secondary, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Citizen Voice Note',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: scheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -394,8 +398,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${_formatDuration(_duration)} Duration • ${_currentData?['sector'] ?? 'Unknown'}',
-                      style: const TextStyle(
-                        color: Color(0xFF9CA3AF),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),
@@ -403,8 +407,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                 ),
               ),
               Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
                   shape: BoxShape.circle,
                 ),
                 child: _isAudioLoading 
@@ -426,9 +430,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               trackHeight: 4,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-              activeTrackColor: const Color(0xFF3B82F6),
-              inactiveTrackColor: const Color(0xFF374151),
-              thumbColor: const Color(0xFF3B82F6),
+              activeTrackColor: scheme.primary,
+              inactiveTrackColor: scheme.outline,
+              thumbColor: scheme.primary,
             ),
             child: Slider(
               value: _position.inSeconds.toDouble(),
@@ -442,8 +446,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(_formatDuration(_position), style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10)),
-              Text(_formatDuration(_duration), style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10)),
+              Text(_formatDuration(_position), style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 10)),
+              Text(_formatDuration(_duration), style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 10)),
             ],
           ),
         ],
@@ -452,6 +456,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildLocationSection() {
+    final scheme = Theme.of(context).colorScheme;
     final double? lat = _currentData?['latitude'];
     final double? lng = _currentData?['longitude'];
     final String manualLoc = _currentData?['manual_location'] ?? '';
@@ -483,8 +488,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF3B82F6),
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.location_on, color: Colors.white, size: 24),
@@ -524,23 +529,23 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2937),
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3)),
+            border: Border.all(color: scheme.primary.withOpacity(0.3)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.directions, color: Color(0xFF60A5FA), size: 20),
+              Icon(Icons.directions, color: scheme.secondary, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Citizen Provided Location',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: scheme.onSurface,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -548,8 +553,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '"$manualLoc"',
-                      style: const TextStyle(
-                        color: Color(0xFFD1D5DB),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
                         fontSize: 14,
                         height: 1.4,
                         fontStyle: FontStyle.italic,
@@ -664,6 +669,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildActionPanel() {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -674,7 +680,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           child: ElevatedButton(
             onPressed: _isUpdating ? null : _updateTicketStatus,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: scheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -703,17 +709,17 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2937),
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF374151)),
+            border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: (_selectedStatus == 'Received') ? 'Submitted' : _selectedStatus,
               isExpanded: true,
-              dropdownColor: const Color(0xFF1F2937),
-              icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              dropdownColor: scheme.surface,
+              icon: Icon(Icons.keyboard_arrow_down, color: scheme.onSurface),
+              style: TextStyle(color: scheme.onSurface, fontSize: 16),
               items: <String>['Submitted', 'Assigned', 'Field Visit', 'Resolved'].map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -730,10 +736,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         ),
         const SizedBox(height: 24),
         // Message to Citizen
-        const Text(
+        Text(
           'MESSAGE TO CITIZEN',
           style: TextStyle(
-            color: Color(0xFF9CA3AF),
+            color: scheme.onSurfaceVariant,
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
@@ -757,11 +763,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     decoration: BoxDecoration(
                       color: Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF4B5563)),
+                      border: Border.all(color: scheme.outline.withValues(alpha: 0.8)),
                     ),
                     child: Text(
                       reply,
-                      style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 12),
+                      style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
                     ),
                   ),
                 ),
@@ -773,23 +779,23 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         TextField(
           controller: _updateController,
           maxLines: 4,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Describe the action taken or progress update...',
-            hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+            hintStyle: TextStyle(color: scheme.onSurfaceVariant),
             filled: true,
-            fillColor: const Color(0xFF1F2937),
+            fillColor: scheme.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF374151)),
+              borderSide: BorderSide(color: scheme.outline),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF374151)),
+              borderSide: BorderSide(color: scheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: BorderSide(color: scheme.primary),
             ),
           ),
         ),
@@ -797,10 +803,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         // Resolution Section (Only show if Resolved)
         if (_selectedStatus == 'Resolved') ...[
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'RESOLUTION SECTION',
             style: TextStyle(
-              color: Color(0xFF9CA3AF),
+              color: scheme.onSurfaceVariant,
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
@@ -813,10 +819,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 32),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.05),
+                color: scheme.primary.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withOpacity(0.5),
+                  color: scheme.primary.withOpacity(0.5),
                   style: BorderStyle.none,
                 ),
               ),
@@ -848,25 +854,25 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E3A8A),
+                        color: scheme.primaryContainer,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.camera_alt, color: Color(0xFF60A5FA), size: 28),
+                      child: Icon(Icons.camera_alt, color: scheme.secondary, size: 28),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Upload Resolution Photo',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: scheme.onSurface,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Mandatory for ticket completion',
                       style: TextStyle(
-                        color: Color(0xFF9CA3AF),
+                        color: scheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
                     ),

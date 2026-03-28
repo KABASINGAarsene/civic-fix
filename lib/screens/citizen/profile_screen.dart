@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,10 +13,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isDarkMode = false;
-  bool _notificationsEnabled = true;
-  String _selectedLanguage = 'English';
-
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
 
@@ -45,13 +42,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeaderCard(),
+              _buildHeaderCard(scheme),
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -72,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeaderCard() {
+  Widget _buildHeaderCard(ColorScheme scheme) {
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -91,15 +90,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0A4DDE), Color(0xFF2563EB)],
+        gradient: LinearGradient(
+          colors: [scheme.primary, scheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A4DDE).withValues(alpha: 0.3),
+            color: scheme.shadow.withValues(alpha: 0.25),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -112,25 +111,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
                   shape: BoxShape.circle,
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.blueGrey,
-                  child: Icon(Icons.person, size: 50, color: Colors.white),
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  child: Icon(Icons.person, size: 50, color: scheme.onSurface),
                 ),
               ),
               GestureDetector(
                 onTap: _showEditProfileDialog,
                 child: Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981),
+                  decoration: BoxDecoration(
+                    color: scheme.tertiary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                  child: Icon(Icons.edit, size: 14, color: scheme.onTertiary),
                 ),
               ),
             ],
@@ -175,6 +174,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSettingsGrid() {
+    final appSettings = context.watch<AppSettingsProvider>();
+    final scheme = Theme.of(context).colorScheme;
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -184,39 +186,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
       childAspectRatio: 1.1,
       children: [
         _buildGridOption(
-          icon: _isDarkMode ? Icons.nightlight_round : Icons.wb_sunny,
+          icon: appSettings.isDarkMode ? Icons.nightlight_round : Icons.wb_sunny,
           title: 'App Theme',
-          subtitle: _isDarkMode ? 'Dark Mode' : 'Light Mode',
-          color: const Color(0xFF8B5CF6),
+          subtitle: appSettings.isDarkMode ? 'Dark Mode' : 'Light Mode',
+          color: scheme.secondary,
           onTap: () {
-            setState(() {
-              _isDarkMode = !_isDarkMode;
-            });
+            appSettings.toggleThemeMode();
           },
         ),
         _buildGridOption(
           icon: Icons.notifications_active,
           title: 'Notifications',
-          subtitle: _notificationsEnabled ? 'Enabled' : 'Disabled',
-          color: const Color(0xFFF59E0B),
+          subtitle: appSettings.notificationsEnabled ? 'Enabled' : 'Disabled',
+          color: scheme.tertiary,
           onTap: () {
-            setState(() {
-              _notificationsEnabled = !_notificationsEnabled;
-            });
+            appSettings.setNotificationsEnabled(
+              !appSettings.notificationsEnabled,
+            );
           },
         ),
         _buildGridOption(
           icon: Icons.language,
           title: 'Language',
-          subtitle: _selectedLanguage,
-          color: const Color(0xFF10B981),
+          subtitle: appSettings.selectedLanguageLabel,
+          color: scheme.primary,
           onTap: _showLanguagePicker,
         ),
         _buildGridOption(
           icon: Icons.shield,
           title: 'Security',
           subtitle: 'Password, PIN',
-          color: const Color(0xFFEF4444),
+          color: scheme.error,
           onTap: _showChangePasswordConfirmation,
         ),
       ],
@@ -224,7 +224,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _showLanguagePicker() async {
-    final List<String> languages = ['English', 'French', 'Kinyarwanda'];
+    final appSettings = context.read<AppSettingsProvider>();
+    final languages = appSettings.supportedLanguageLabels;
 
     await showModalBottomSheet(
       context: context,
@@ -245,13 +246,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ...languages.map(
                 (lang) => ListTile(
                   title: Text(lang),
-                  trailing: _selectedLanguage == lang
-                      ? const Icon(Icons.check, color: Color(0xFF10B981))
+                    trailing: appSettings.selectedLanguageLabel == lang
+                      ? Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      )
                       : null,
                   onTap: () {
-                    setState(() {
-                      _selectedLanguage = lang;
-                    });
+                    appSettings.setLanguageFromLabel(lang);
                     Navigator.pop(context);
                   },
                 ),
@@ -298,14 +300,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Colors.black54),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A4DDE),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
                   onPressed: isSaving
                       ? null
@@ -398,14 +402,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Colors.black54),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A4DDE),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
                   onPressed: isSending
                       ? null
@@ -466,16 +472,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: scheme.shadow.withValues(alpha: 0.12),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -495,8 +503,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF111827),
+              style: TextStyle(
+                color: scheme.onSurface,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
@@ -504,7 +512,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
             ),
           ],
         ),
@@ -522,18 +530,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
         },
-        icon: const Icon(Icons.logout, color: Colors.white),
+        icon: const Icon(Icons.logout),
         label: const Text(
           'Log Out',
           style: TextStyle(
-            color: Colors.white,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          foregroundColor: Theme.of(context).colorScheme.onError,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -544,10 +552,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: scheme.surface,
+        border: Border(
+          top: BorderSide(color: scheme.outline.withValues(alpha: 0.45)),
+        ),
       ),
       child: BottomNavigationBar(
         currentIndex: 3, // Profile is index 3
@@ -561,9 +573,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF0A4DDE),
-        unselectedItemColor: const Color(0xFF9CA3AF),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

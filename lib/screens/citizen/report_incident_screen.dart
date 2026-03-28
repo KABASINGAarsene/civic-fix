@@ -353,8 +353,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: SingleChildScrollView(
         child: Padding(
@@ -367,12 +369,12 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Category',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
+                      color: scheme.onSurface,
                     ),
                   ),
                   Container(
@@ -381,15 +383,15 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE0E7FF),
+                      color: scheme.primary.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'REQUIRED',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF4338CA),
+                        color: scheme.primary,
                       ),
                     ),
                   ),
@@ -400,12 +402,12 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               const SizedBox(height: 24),
               _buildLocationSelectors(),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'Priority Level',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 16),
@@ -424,17 +426,19 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return AppBar(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF0A4DDE)),
+        icon: Icon(Icons.arrow_back_ios_new, color: scheme.primary),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text(
+      title: Text(
         'Create Report',
         style: TextStyle(
-          color: Color(0xFF111827),
+          color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -449,11 +453,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Text(
                     'STEP 2 OF 2',
                     style: TextStyle(
-                      color: Color(0xFF0A4DDE),
+                      color: scheme.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
@@ -461,7 +465,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   ),
                   Text(
                     'Incident Details',
-                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -484,13 +491,15 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _stepBar(bool filled, {VoidCallback? onTap}) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 5,
           decoration: BoxDecoration(
-            color: filled ? const Color(0xFF0A4DDE) : const Color(0xFFE5E7EB),
+            color: filled ? scheme.primary : scheme.outline,
             borderRadius: BorderRadius.circular(3),
           ),
         ),
@@ -499,15 +508,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildLocationSection() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: scheme.shadow.withValues(alpha: 0.15),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -516,12 +527,12 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Incident Location',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
+              color: scheme.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -532,8 +543,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               icon: Icon(
                 _isLocationFound ? Icons.check_circle : Icons.my_location,
                 color: _isLocationFound
-                    ? const Color(0xFF10B981)
-                    : Colors.white,
+                  ? scheme.tertiary
+                  : scheme.onPrimary,
               ),
               label: Text(
                 _isLocationFound
@@ -541,42 +552,42 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     : 'Get My Current Location',
                 style: TextStyle(
                   color: _isLocationFound
-                      ? const Color(0xFF10B981)
-                      : Colors.white,
+                      ? scheme.tertiary
+                      : scheme.onPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isLocationFound
-                    ? const Color(0xFFD1FAE5)
-                    : const Color(0xFF0A4DDE),
+                    ? scheme.tertiary.withValues(alpha: 0.2)
+                    : scheme.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 elevation: _isLocationFound ? 0 : 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: _isLocationFound
-                      ? const BorderSide(color: Color(0xFF10B981))
+                      ? BorderSide(color: scheme.tertiary)
                       : BorderSide.none,
                 ),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Use this if you are currently at the place where the incident or issue is located.',
             style: TextStyle(
-              color: Color(0xFF6B7280),
+              color: scheme.onSurfaceVariant,
               fontSize: 13,
               height: 1.4,
             ),
           ),
           const SizedBox(height: 16),
-          const Center(
+          Center(
             child: Text(
               'OR',
               style: TextStyle(
-                color: Color(0xFF9CA3AF),
+                color: scheme.onSurfaceVariant,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -585,9 +596,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           const SizedBox(height: 16),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
+              color: scheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.5)),
             ),
             child: TextField(
               controller: _manualLocationController,
@@ -595,14 +606,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               decoration: InputDecoration(
                 hintText:
                     'Enter street address or describe the exact location (e.g. near the high school, 500m after the first turn)...',
-                hintStyle: TextStyle(color: Color(0xFF9CA3AF), height: 1.4),
+                hintStyle: TextStyle(
+                  color: scheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(16),
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(bottom: 32),
                   child: Icon(
                     Icons.location_on_outlined,
-                    color: Color(0xFF9CA3AF),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -614,6 +628,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildCategoryGrid() {
+    final scheme = Theme.of(context).colorScheme;
     final categories = [
       {'title': 'Infrastructure', 'icon': Icons.build},
       {'title': 'Health', 'icon': Icons.medical_services},
@@ -639,18 +654,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             width: (MediaQuery.of(context).size.width - 52) / 2, // 2 columns
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: scheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF0A4DDE)
-                    : const Color(0xFFE5E7EB),
+                    ? scheme.primary
+                    : scheme.outline,
                 width: isSelected ? 2 : 1,
               ),
               boxShadow: [
                 if (isSelected)
                   BoxShadow(
-                    color: const Color(0xFF0A4DDE).withOpacity(0.1),
+                    color: scheme.primary.withValues(alpha: 0.15),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -663,13 +678,13 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF0A4DDE)
-                        : const Color(0xFFF3F4F6),
+                        ? scheme.primary
+                        : scheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     cat['icon'] as IconData,
-                    color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                    color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                     size: 20,
                   ),
                 ),
@@ -680,8 +695,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: isSelected
-                        ? const Color(0xFF0A4DDE)
-                        : const Color(0xFF111827),
+                        ? scheme.primary
+                        : scheme.onSurface,
                   ),
                 ),
               ],
@@ -693,26 +708,28 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildLocationSelectors() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
+        color: scheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.location_city, color: Color(0xFF2563EB), size: 20),
+            children: [
+              Icon(Icons.location_city, color: scheme.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 'Incident Location Details',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E3A8A),
+                  color: scheme.primary,
                 ),
               ),
             ],
@@ -723,16 +740,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: scheme.surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFD1D5DB)),
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedProvince,
                 hint: const Text('Select Province'),
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+                icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
                 items: _provinces.map((String province) {
                   return DropdownMenuItem<String>(
                     value: province,
@@ -756,10 +773,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: _selectedProvince == null
-                  ? const Color(0xFFF3F4F6)
-                  : Colors.white,
+                  ? scheme.surfaceContainerHighest
+                  : scheme.surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFD1D5DB)),
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -769,8 +786,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 icon: Icon(
                   Icons.arrow_drop_down,
                   color: _selectedProvince == null
-                      ? Colors.grey
-                      : Colors.black87,
+                      ? scheme.outline
+                      : scheme.onSurface,
                 ),
                 items: _selectedProvince == null
                     ? []
@@ -799,10 +816,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: _selectedDistrict == null
-                  ? const Color(0xFFF3F4F6)
-                  : Colors.white,
+                  ? scheme.surfaceContainerHighest
+                  : scheme.surface,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFD1D5DB)),
+              border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
@@ -812,8 +829,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 icon: Icon(
                   Icons.arrow_drop_down,
                   color: _selectedDistrict == null
-                      ? Colors.grey
-                      : Colors.black87,
+                      ? scheme.outline
+                      : scheme.onSurface,
                 ),
                 items: _selectedDistrict == null
                     ? []
@@ -842,14 +859,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildPrioritySlider() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            activeTrackColor: const Color(0xFF2563EB),
-            inactiveTrackColor: const Color(0xFFE5E7EB),
-            thumbColor: Colors.white,
-            overlayColor: const Color(0xFF2563EB).withOpacity(0.2),
+            activeTrackColor: scheme.primary,
+            inactiveTrackColor: scheme.outline,
+            thumbColor: scheme.onPrimary,
+            overlayColor: scheme.primary.withValues(alpha: 0.2),
             trackHeight: 4.0,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12.0),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
@@ -873,17 +892,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             children: [
               _buildPriorityLabel(
                 'LOW',
-                const Color(0xFF10B981),
+                scheme.tertiary,
                 _priorityLevel == 0,
               ),
               _buildPriorityLabel(
                 'MEDIUM',
-                const Color(0xFFF59E0B),
+                scheme.secondary,
                 _priorityLevel == 1,
               ),
               _buildPriorityLabel(
                 'CRITICAL',
-                const Color(0xFFEF4444),
+                scheme.error,
                 _priorityLevel == 2,
               ),
             ],
@@ -894,6 +913,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildPriorityLabel(String text, Color color, bool isSelected) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Container(
@@ -908,8 +929,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFF6B7280),
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -917,17 +938,19 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildPriorityInfoBox() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
+        color: scheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
       ),
-      child: const Text(
+      child: Text(
         '"Medium urgency reports are typically reviewed within 24-48 business hours."',
         style: TextStyle(
-          color: Color(0xFF1D4ED8),
+          color: scheme.primary,
           fontSize: 13,
           fontStyle: FontStyle.italic,
           height: 1.4,
@@ -937,24 +960,26 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildAnonymousToggle() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Report Anonymously',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+                color: scheme.onSurface,
               ),
             ),
             SizedBox(height: 4),
             Text(
               'Hide my identity from the public community feed.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -965,10 +990,10 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               _isAnonymous = value;
             });
           },
-          activeColor: Colors.white,
-          activeTrackColor: const Color(0xFF10B981),
-          inactiveThumbColor: Colors.white,
-          inactiveTrackColor: const Color(0xFFD1D5DB),
+          activeColor: scheme.onPrimary,
+          activeTrackColor: scheme.tertiary,
+          inactiveThumbColor: scheme.onPrimary,
+          inactiveTrackColor: scheme.outline,
         ),
       ],
     );
@@ -1126,17 +1151,19 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildSubmitButton() {
+    final scheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: const Color(0xFFF8F9FA)),
+        decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
         child: ElevatedButton(
           onPressed: _isSubmitting ? null : _submitReport,
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 18),
-            backgroundColor: const Color(0xFF0A4DDE),
+            backgroundColor: scheme.primary,
             elevation: 4,
-            shadowColor: const Color(0xFF0A4DDE).withOpacity(0.4),
+            shadowColor: scheme.primary.withValues(alpha: 0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

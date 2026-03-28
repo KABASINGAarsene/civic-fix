@@ -102,19 +102,21 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF0A4DDE)),
+          icon: Icon(Icons.arrow_back_ios_new, color: scheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Create Report',
           style: TextStyle(
-            color: Color(0xFF111827),
+            color: scheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -132,11 +134,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
+                  children: [
                     Text(
                       'STEP 1 OF 2',
                       style: TextStyle(
-                        color: Color(0xFF0A4DDE),
+                        color: scheme.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -144,7 +146,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                     ),
                     Text(
                       'Capture Evidence',
-                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -168,12 +173,12 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Issue Title',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -182,9 +187,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 maxLength: 60,
                 decoration: InputDecoration(
                   hintText: 'e.g. Broken pipe on KG 11 Ave',
-                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                  hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: scheme.surface,
                   counterText: '',
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -192,47 +197,51 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    borderSide: BorderSide(
+                      color: scheme.outline.withValues(alpha: 0.5),
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    borderSide: BorderSide(
+                      color: scheme.outline.withValues(alpha: 0.5),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF0A4DDE),
+                    borderSide: BorderSide(
+                      color: scheme.primary,
                       width: 2,
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Short Description',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
               _buildDescriptionInput(),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'Add supporting media',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'DistrictDirect uses media to ensure transparency and faster resolution. Attach photos or record a voice memo.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Color(0xFF4B5563),
+                  color: scheme.onSurfaceVariant,
                   height: 1.5,
                 ),
               ),
@@ -268,6 +277,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildPhotoUploadContainer() {
+    final scheme = Theme.of(context).colorScheme;
+
     Widget photoWidget;
     if (_imageFile != null) {
       photoWidget = ClipRRect(
@@ -318,7 +329,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     } else {
       photoWidget = CustomPaint(
         painter: DashedRectPainter(
-          color: const Color(0xFFD1D5DB),
+          color: scheme.outline,
           strokeWidth: 2.0,
           gap: 6.0,
         ),
@@ -328,29 +339,29 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE0E7FF),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.camera_alt,
-                  color: Color(0xFF0A4DDE),
+                  color: scheme.primary,
                   size: 36,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Take Photo or Video',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: scheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'High quality preferred',
-                style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -363,7 +374,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FA),
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: photoWidget,
@@ -451,19 +462,21 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildVoiceRecordContainer() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _isRecording ? const Color(0xFFFEE2E2) : Colors.white,
+        color: _isRecording
+            ? scheme.error.withValues(alpha: 0.12)
+            : scheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _isRecording
-              ? const Color(0xFFEF4444)
-              : const Color(0xFFE5E7EB),
+          color: _isRecording ? scheme.error : scheme.outline,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: scheme.shadow.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -481,8 +494,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: (_audioPath != null || _existingAudioUrl != null)
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
+                        ? scheme.tertiary
+                        : scheme.error,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -509,10 +522,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                                 : (_isRecording
                                       ? 'Recording...'
                                       : 'Voice Recording'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF111827),
+                              color: scheme.onSurface,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -520,9 +533,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         if (_isRecording)
                           Text(
                             _formatDuration(_recordDuration),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFEF4444),
+                              color: scheme.error,
                               fontFamily: 'monospace',
                             ),
                           )
@@ -534,18 +547,18 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                                     _playbackDuration == Duration.zero
                                 ? 'Ready to play'
                                 : '${_formatDuration(_playbackPosition.inSeconds)} / ${_formatDuration(_playbackDuration.inSeconds > 0 ? _playbackDuration.inSeconds : _recordDuration)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF6B7280),
+                              color: scheme.onSurfaceVariant,
                               fontFamily: 'monospace',
                             ),
                           )
                         else
-                          const Text(
+                          Text(
                             '05:00 limit',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF6B7280),
+                              color: scheme.onSurfaceVariant,
                               fontFamily: 'monospace',
                             ),
                           ),
@@ -553,22 +566,22 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                     ),
                     const SizedBox(height: 8),
                     if (_isRecording)
-                      const LinearProgressIndicator(color: Color(0xFFEF4444))
+                      LinearProgressIndicator(color: scheme.error)
                     else if (_audioPath != null || _existingAudioUrl != null)
                       LinearProgressIndicator(
                         value: _playbackDuration.inMilliseconds > 0
                             ? _playbackPosition.inMilliseconds /
                                   _playbackDuration.inMilliseconds
                             : 0,
-                        color: const Color(0xFF10B981),
-                        backgroundColor: const Color(0xFFD1FAE5),
+                        color: scheme.tertiary,
+                        backgroundColor: scheme.tertiary.withValues(alpha: 0.2),
                       )
                     else
                       Container(
                         height: 6,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
+                          color: scheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -577,9 +590,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               if (_audioPath != null || _existingAudioUrl != null)
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: Color(0xFFEF4444),
+                    color: scheme.error,
                   ),
                   onPressed: _deleteAudio,
                 ),
@@ -591,11 +604,13 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _buildDescriptionInput() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
       ),
       child: TextField(
         controller: _descriptionController,
@@ -604,24 +619,31 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         decoration: InputDecoration(
           hintText:
               'Briefly describe the issue (e.g. Broken\nstreetlight on KG 201 St)...',
-          hintStyle: const TextStyle(
-            color: Color(0xFF9CA3AF),
+          hintStyle: TextStyle(
+            color: scheme.onSurfaceVariant,
             fontSize: 15,
             height: 1.5,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
-          counterStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+          counterStyle: TextStyle(
+            color: scheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildBottomActions() {
+    final scheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(color: const Color(0xFFF8F9FA)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+        ),
         child: Row(
           children: [
             Expanded(
@@ -630,16 +652,16 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 onPressed: () {},
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: Color(0xFFE5E7EB)),
+                  side: BorderSide(color: scheme.outline.withValues(alpha: 0.6)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: const Color(0xFFF3F4F6),
+                  backgroundColor: scheme.surfaceContainerHighest,
                 ),
-                child: const Text(
+                child: Text(
                   'Save Draft',
                   style: TextStyle(
-                    color: Color(0xFF111827),
+                    color: scheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -685,26 +707,30 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: const Color(0xFF0A4DDE),
+                  backgroundColor: scheme.primary,
                   elevation: 4,
-                  shadowColor: const Color(0xFF0A4DDE).withOpacity(0.4),
+                  shadowColor: scheme.primary.withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
                       'Continue',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: scheme.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(width: 8),
-                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                    Icon(
+                      Icons.arrow_forward,
+                      color: scheme.onPrimary,
+                      size: 20,
+                    ),
                   ],
                 ),
               ),
@@ -716,13 +742,15 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Widget _stepBar(bool filled, {VoidCallback? onTap}) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           height: 5,
           decoration: BoxDecoration(
-            color: filled ? const Color(0xFF0A4DDE) : const Color(0xFFE5E7EB),
+            color: filled ? scheme.primary : scheme.outline,
             borderRadius: BorderRadius.circular(3),
           ),
         ),

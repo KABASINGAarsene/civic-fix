@@ -64,7 +64,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Padding(
@@ -121,13 +121,13 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                   }).toList();
 
                   if (docs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Padding(
-                        padding: EdgeInsets.only(top: 60.0),
+                        padding: const EdgeInsets.only(top: 60.0),
                         child: Text(
                           'No district reports yet. Be the first!',
                           style: TextStyle(
-                            color: Color(0xFF6B7280),
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 16,
                           ),
                         ),
@@ -159,28 +159,30 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   }
 
   AppBar _buildAppBar() {
+    final scheme = Theme.of(context).colorScheme;
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       elevation: 0,
       centerTitle: false,
       titleSpacing: 0,
       leading: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF0A4DDE),
+          decoration: BoxDecoration(
+            color: scheme.primary,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.person, color: Colors.white, size: 20),
+          child: Icon(Icons.person, color: scheme.onPrimary, size: 20),
         ),
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             'AMAHORO, JEAN',
             style: TextStyle(
-              color: Color(0xFF6B7280),
+              color: scheme.onSurfaceVariant,
               fontSize: 10,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
@@ -189,7 +191,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
           Text(
             'DistrictDirect',
             style: TextStyle(
-              color: Color(0xFF111827),
+              color: scheme.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -204,13 +206,13 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
               margin: const EdgeInsets.only(right: 16),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: scheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.notifications_none,
-                color: Color(0xFF374151),
+                color: scheme.onSurfaceVariant,
                 size: 20,
               ),
             ),
@@ -220,8 +222,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
               child: Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF59E0B),
+                decoration: BoxDecoration(
+                  color: scheme.tertiary,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -234,15 +236,17 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
 
   Widget _buildReportButton() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFF0A4DDE),
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0A4DDE).withOpacity(0.3),
+            color: scheme.primary.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -257,13 +261,13 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.add, color: Colors.white),
+            children: [
+              Icon(Icons.add, color: scheme.onPrimary),
               SizedBox(width: 8),
               Text(
                 'REPORT NEW ISSUE',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
@@ -357,6 +361,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     required Function(String?) onChanged,
     required VoidCallback onClear,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     bool isActive = value != null;
 
     return Container(
@@ -373,9 +379,13 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF0A4DDE) : Colors.white,
+            color: isActive
+                ? scheme.primary
+                : (isLight ? const Color(0xFFF3F4F6) : scheme.surface),
             borderRadius: BorderRadius.circular(20),
-            border: isActive ? null : Border.all(color: const Color(0xFFE5E7EB)),
+            border: isActive
+                ? null
+                : Border.all(color: scheme.outline.withValues(alpha: 0.45)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -383,13 +393,21 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
               Icon(
                 icon,
                 size: 14,
-                color: isActive ? Colors.white : (isDisabled ? Colors.grey : const Color(0xFF4B5563)),
+                color: isActive
+                    ? scheme.onPrimary
+                    : (isDisabled
+                        ? scheme.onSurfaceVariant.withValues(alpha: 0.65)
+                        : (isLight ? const Color(0xFF4B5563) : scheme.onSurfaceVariant)),
               ),
               const SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: isActive ? Colors.white : (isDisabled ? Colors.grey : const Color(0xFF4B5563)),
+                  color: isActive
+                      ? scheme.onPrimary
+                      : (isDisabled
+                          ? scheme.onSurfaceVariant.withValues(alpha: 0.65)
+                          : (isLight ? const Color(0xFF4B5563) : scheme.onSurfaceVariant)),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -398,14 +416,14 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                 const SizedBox(width: 4),
                 GestureDetector(
                   onTap: onClear,
-                  child: const Icon(Icons.close, size: 14, color: Colors.white),
+                  child: Icon(Icons.close, size: 14, color: scheme.onPrimary),
                 ),
               ] else if (!isDisabled) ...[
                 const SizedBox(width: 4),
                 Icon(
                   Icons.keyboard_arrow_down,
                   size: 14,
-                  color: const Color(0xFF4B5563),
+                  color: isLight ? const Color(0xFF4B5563) : scheme.onSurfaceVariant,
                 ),
               ],
             ],
@@ -417,31 +435,33 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
 
   Widget _buildFeedHeader() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
+        Text(
           'District Feed',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            color: scheme.onSurface,
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
+            color: scheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
-            children: const [
-              Icon(Icons.map, size: 16, color: Color(0xFF2563EB)),
+            children: [
+              Icon(Icons.map, size: 16, color: scheme.primary),
               SizedBox(width: 6),
               Text(
                 'View Map',
                 style: TextStyle(
-                  color: Color(0xFF2563EB),
+                  color: scheme.primary,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -454,6 +474,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   }
 
   Widget _buildFeedCard(DocumentSnapshot doc) {
+    final scheme = Theme.of(context).colorScheme;
     final data = doc.data() as Map<String, dynamic>;
     final String category = (data['category'] ?? 'Issue')
         .toString()
@@ -476,8 +497,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     final bool showAvatars = likes >= 5;
 
     // Derived UI info
-    Color categoryBgColor = const Color(0xFFF3F4F6);
-    Color categoryColor = const Color(0xFF4B5563);
+    Color categoryBgColor = scheme.surfaceContainerHighest;
+    Color categoryColor = scheme.onSurfaceVariant;
     IconData iconData = _getCategoryIcon(category);
 
     if (category == 'INFRASTRUCTURE' || category == 'LAND') {
@@ -486,22 +507,23 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     } else if (category == 'UTILITIES' ||
         category == 'EDUCATION' ||
         category == 'HEALTH' ||
-        category == 'SOCIAL WELFARE') {
+        category == 'SOCIAL WELFARE' ||
+        category == 'JUSTICE') {
       categoryBgColor = const Color(0xFFDBEAFE);
       categoryColor = const Color(0xFF2563EB);
-    } else if (category == 'ENVIRONMENT' || category == 'SECURITY' || category == 'JUSTICE') {
+    } else if (category == 'ENVIRONMENT' || category == 'SECURITY') {
       categoryBgColor = const Color(0xFFD1FAE5);
       categoryColor = const Color(0xFF10B981);
     }
 
-    Color statusColor = const Color(0xFF6B7280);
+    Color statusColor = scheme.onSurfaceVariant;
     IconData statusIcon = Icons.info;
 
     if (status == 'RESOLVED') {
       statusColor = const Color(0xFF10B981);
       statusIcon = Icons.check_circle;
     } else if (status == 'Submitted' || status == 'Open') {
-      statusColor = const Color(0xFF2563EB); // Blue
+      statusColor = const Color(0xFF2563EB);
       statusIcon = Icons.send_outlined;
     } else if (status != 'Submitted' && status != 'Resolved') {
       // Any step in between (Received, Assigned, etc.)
@@ -524,11 +546,11 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: scheme.shadow.withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -595,19 +617,19 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                       const SizedBox(height: 8),
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
+                          color: scheme.onSurface,
                           height: 1.2,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '$dateStr • $district',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF6B7280),
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -618,9 +640,9 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
             const SizedBox(height: 12),
             Text(
               description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF4B5563),
+                color: scheme.onSurfaceVariant,
                 height: 1.5,
               ),
             ),
@@ -661,8 +683,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                               upvotes.contains(
                                 FirebaseAuth.instance.currentUser?.uid,
                               )
-                              ? const Color(0xFFE0E7FF)
-                              : const Color(0xFFF3F4F6),
+                              ? scheme.primary.withValues(alpha: 0.14)
+                              : scheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -674,8 +696,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                                   upvotes.contains(
                                     FirebaseAuth.instance.currentUser?.uid,
                                   )
-                                  ? const Color(0xFF4338CA)
-                                  : const Color(0xFF6B7280),
+                                  ? scheme.primary
+                                  : scheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -685,8 +707,8 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                                     upvotes.contains(
                                       FirebaseAuth.instance.currentUser?.uid,
                                     )
-                                    ? const Color(0xFF4338CA)
-                                    : const Color(0xFF6B7280),
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -714,21 +736,21 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
+                          color: scheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.chat_bubble_outline,
                               size: 14,
-                              color: Color(0xFF4B5563),
+                              color: scheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               '$comments',
-                              style: const TextStyle(
-                                color: Color(0xFF4B5563),
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -749,18 +771,18 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                   )
                 else
                   Row(
-                    children: const [
+                    children: [
                       Text(
                         'Details',
                         style: TextStyle(
-                          color: Color(0xFF2563EB),
+                          color: scheme.primary,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: Color(0xFF2563EB),
+                        color: scheme.primary,
                         size: 16,
                       ),
                     ],
@@ -774,12 +796,14 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   }
 
   Widget _buildAvatarOverlap(String url, int index) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Transform.translate(
       offset: Offset(-index * 8.0, 0),
       child: Container(
         padding: const EdgeInsets.all(1.5),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: scheme.surface,
           shape: BoxShape.circle,
         ),
         child: CircleAvatar(radius: 12, backgroundImage: NetworkImage(url)),
@@ -788,23 +812,25 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   }
 
   Widget _buildAvatarOverlapCount(String text, int index) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Transform.translate(
       offset: Offset(-index * 8.0, 0),
       child: Container(
         padding: const EdgeInsets.all(1.5),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: scheme.surface,
           shape: BoxShape.circle,
         ),
         child: CircleAvatar(
           radius: 12,
-          backgroundColor: const Color(0xFFE5E7EB),
+          backgroundColor: scheme.surfaceContainerHighest,
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF4B5563),
+              color: scheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -813,10 +839,14 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
   }
 
   Widget _buildBottomNav() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: scheme.surface,
+        border: Border(
+          top: BorderSide(color: scheme.outline.withValues(alpha: 0.45)),
+        ),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -833,9 +863,9 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF0A4DDE),
-        unselectedItemColor: const Color(0xFF9CA3AF),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

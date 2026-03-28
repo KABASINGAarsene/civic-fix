@@ -76,11 +76,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF111827), // Dark background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)))
+        ? Center(child: CircularProgressIndicator(color: scheme.primary))
         : StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('issues')
@@ -88,7 +89,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+                return Center(child: CircularProgressIndicator(color: scheme.primary));
               }
 
               final docs = snapshot.data?.docs ?? [];
@@ -122,8 +123,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
               return RefreshIndicator(
                 onRefresh: _loadDashboardData,
-                color: const Color(0xFF3B82F6),
-                backgroundColor: const Color(0xFF1F2937),
+                color: scheme.primary,
+                backgroundColor: scheme.surface,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
@@ -157,29 +158,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final scheme = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
-            decoration: const BoxDecoration(
-              color: Color(0xFF2563EB),
+            decoration: BoxDecoration(
+              color: scheme.primary,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.shield, color: Colors.white, size: 20),
+            child: Icon(Icons.shield, color: scheme.onPrimary, size: 20),
           ),
           const SizedBox(width: 12),
           Flexible(
             child: RichText(
               overflow: TextOverflow.ellipsis,
-              text: const TextSpan(
+              text: TextSpan(
                 children: [
                   TextSpan(
                     text: 'DistrictDirect ',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -187,7 +189,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   TextSpan(
                     text: 'Rwanda',
                     style: TextStyle(
-                      color: Color(0xFF60A5FA),
+                      color: scheme.primary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -200,11 +202,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh, color: Colors.white),
+          icon: Icon(Icons.refresh, color: scheme.onSurface),
           onPressed: _loadDashboardData,
         ),
         IconButton(
-          icon: const Icon(Icons.notifications_none, color: Colors.white),
+          icon: Icon(Icons.notifications_none, color: scheme.onSurface),
           onPressed: () {},
         ),
       ],
@@ -286,7 +288,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           trend: 'Safe',
           trendColor: const Color(0xFF60A5FA),
           icon: Icons.location_city,
-          iconBgColor: const Color(0xFF6B7280),
+          iconBgColor: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ],
     );
@@ -300,10 +302,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required IconData icon,
     required Color iconBgColor,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -330,8 +333,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF9CA3AF),
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
@@ -340,8 +343,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: scheme.onSurface,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -354,22 +357,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Color _getPriorityColor(dynamic priority) {
+    final scheme = Theme.of(context).colorScheme;
     if (priority is num) {
       if (priority >= 2) return const Color(0xFFEF4444); // Critical
       if (priority >= 1) return const Color(0xFFF59E0B); // Medium
       return const Color(0xFF10B981); // Low
     }
-    return const Color(0xFF3B82F6);
+    return scheme.primary;
   }
 
   Widget _buildSectionHeader(String title, String action) {
+    final scheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: scheme.onSurface,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -377,8 +382,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         if (action.isNotEmpty)
           Text(
             action,
-            style: const TextStyle(
-              color: Color(0xFF60A5FA),
+            style: TextStyle(
+              color: scheme.primary,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -388,6 +393,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildHeatmapCard() {
+    final scheme = Theme.of(context).colorScheme;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('issues')
@@ -487,19 +493,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF111827).withOpacity(0.95),
+                      color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: const Color(0xFF3B82F6).withOpacity(0.5),
+                        color: scheme.primary.withOpacity(0.5),
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'CURRENT HOTSPOT',
                           style: TextStyle(
-                            color: Color(0xFF9CA3AF),
+                            color: scheme.onSurfaceVariant,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -508,8 +514,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(height: 2),
                         Text(
                           _adminDistrict ?? 'Current District',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: scheme.onSurface,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -536,16 +542,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildCategoryDistributionCard() {
+    final scheme = Theme.of(context).colorScheme;
     // 1. Define category colors mapping
     final categoryColors = {
-      'Infrastructure': const Color(0xFF3B82F6),
+      'Infrastructure': scheme.primary,
       'Health': const Color(0xFF10B981),
       'Security': const Color(0xFFF59E0B),
       'Land': const Color(0xFF8B5CF6),
       'Education': const Color(0xFFEC4899),
       'Justice': const Color(0xFF14B8A6),
       'Social Welfare': const Color(0xFF6366F1),
-      'Other': const Color(0xFF6B7280),
+      'Other': scheme.onSurfaceVariant,
     };
 
     final allCategories = categoryColors.keys.toList();
@@ -568,13 +575,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         }
       }
     } else {
-      segments.add(_buildDonutSegment(1.0, const Color(0xFF374151), isBase: true));
+      segments.add(_buildDonutSegment(1.0, scheme.surfaceContainerHighest, isBase: true));
     }
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -589,18 +596,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'TOTAL',
                       style: TextStyle(
-                        color: Color(0xFF9CA3AF),
+                        color: scheme.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       total.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: scheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -643,12 +650,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         value: value > 0 ? value : 0.05, // Show minor segment even if zero for visual placeholder
         strokeWidth: 16,
         color: color,
-        backgroundColor: isBase ? const Color(0xFF111827) : Colors.transparent,
+        backgroundColor: isBase ? Theme.of(context).scaffoldBackgroundColor : Colors.transparent,
       ),
     );
   }
 
   Widget _buildCategoryLegend(String name, Color color, String count, String percent) {
+    final scheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -666,14 +674,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Text(
                 name,
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(color: scheme.onSurface, fontSize: 13, fontWeight: FontWeight.bold),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
                 '$count ($percent)',
-                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 11),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -685,6 +693,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildMonthlyPerformanceCard(List<QueryDocumentSnapshot> docs) {
+    final scheme = Theme.of(context).colorScheme;
     final stats = _calculateMonthlyPerformance(docs);
     final monthKeys = stats.keys.toList();
 
@@ -698,7 +707,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -721,15 +730,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 8),
               const Text(
                 'Received',
-                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                style: TextStyle(fontSize: 12),
               ),
               const SizedBox(width: 24),
               Container(
@@ -743,7 +752,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: 8),
               const Text(
                 'Solved',
-                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                style: TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -753,6 +762,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildBarGroup(double receivedHeight, double solvedHeight, String month) {
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Row(
@@ -761,9 +771,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Container(
               width: 8,
               height: receivedHeight,
-              decoration: const BoxDecoration(
-                color: Color(0xFF3B82F6),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
               ),
             ),
             const SizedBox(width: 4),
@@ -780,8 +790,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         const SizedBox(height: 12),
         Text(
           month,
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
+          style: TextStyle(
+            color: scheme.onSurfaceVariant,
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
@@ -791,10 +801,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildBottomNav() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        border: Border(top: BorderSide(color: Color(0xFF374151))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.35))),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -815,9 +826,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           // We will wire this to other admin routes later
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F2937),
-        selectedItemColor: const Color(0xFF3B82F6),
-        unselectedItemColor: const Color(0xFF6B7280),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

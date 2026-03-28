@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
 import 'package:provider/provider.dart';
@@ -62,7 +61,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.toString().replaceAll("Exception:", "").trim()),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -91,11 +90,11 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
                 'Account created! Please check your spam folder for the link to verify your sign up.',
               ),
-              backgroundColor: AppColors.success,
+              backgroundColor: Theme.of(context).colorScheme.tertiary,
               duration: Duration(seconds: 5),
             ),
           );
@@ -114,7 +113,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.toString().replaceAll("Exception:", "").trim()),
-              backgroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -147,7 +146,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll("Exception:", "").trim()),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -161,13 +160,15 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildInfoCard() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryBlue.withOpacity(0.1),
+        color: scheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primaryBlue.withOpacity(0.3),
+          color: scheme.primary.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -176,12 +177,12 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
+              color: scheme.primary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.verified_user,
-              color: AppColors.textWhite,
+              color: scheme.onPrimary,
               size: 24,
             ),
           ),
@@ -194,7 +195,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                   'Zero-Trip Guarantee',
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
+                    color: scheme.primary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -211,10 +212,15 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildPhoneField() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Phone Number', style: AppTextStyles.inputLabel),
+        Text(
+          'Phone Number',
+          style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _phoneController,
@@ -225,10 +231,12 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             LengthLimitingTextInputFormatter(9),
             _PhoneNumberFormatter(),
           ],
-          style: AppTextStyles.inputText,
+          style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: '78 XXX XXXX',
-            hintStyle: AppTextStyles.inputHint,
+            hintStyle: AppTextStyles.inputHint.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
             prefixIcon: Padding(
               padding: const EdgeInsets.only(left: 12, right: 8),
               child: Row(
@@ -252,7 +260,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                           '+250',
                           style: AppTextStyles.inputText.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: scheme.onSurface,
                           ),
                         ),
                       ],
@@ -263,39 +271,39 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             ),
             errorStyle: AppTextStyles.inputError,
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: scheme.surface,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorderFocused,
+              borderSide: BorderSide(
+                color: scheme.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: scheme.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
           ),
         ),
@@ -304,10 +312,15 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildNameField() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Full Name', style: AppTextStyles.inputLabel),
+        Text(
+          'Full Name',
+          style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _nameController,
@@ -322,45 +335,47 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           },
           keyboardType: TextInputType.name,
           textCapitalization: TextCapitalization.words,
-          style: AppTextStyles.inputText,
+          style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Enter your full name',
-            hintStyle: AppTextStyles.inputHint,
+            hintStyle: AppTextStyles.inputHint.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
             errorStyle: AppTextStyles.inputError,
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: scheme.surface,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorderFocused,
+              borderSide: BorderSide(
+                color: scheme.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: scheme.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
           ),
         ),
@@ -369,10 +384,15 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildEmailField() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Email', style: AppTextStyles.inputLabel),
+        Text(
+          'Email',
+          style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _emailController,
@@ -386,45 +406,47 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             return null;
           },
           keyboardType: TextInputType.emailAddress,
-          style: AppTextStyles.inputText,
+          style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: 'your@email.com',
-            hintStyle: AppTextStyles.inputHint,
+            hintStyle: AppTextStyles.inputHint.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
             errorStyle: AppTextStyles.inputError,
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: scheme.surface,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorderFocused,
+              borderSide: BorderSide(
+                color: scheme.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: scheme.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
           ),
         ),
@@ -433,10 +455,15 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildPasswordField() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Password', style: AppTextStyles.inputLabel),
+        Text(
+          'Password',
+          style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _passwordController,
@@ -450,14 +477,16 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             return null;
           },
           obscureText: _obscurePassword,
-          style: AppTextStyles.inputText,
+          style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Enter your password',
-            hintStyle: AppTextStyles.inputHint,
+            hintStyle: AppTextStyles.inputHint.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: AppColors.textSecondary,
+                color: scheme.onSurfaceVariant,
               ),
               onPressed: () {
                 setState(() {
@@ -467,39 +496,39 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             ),
             errorStyle: AppTextStyles.inputError,
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: scheme.surface,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorderFocused,
+              borderSide: BorderSide(
+                color: scheme.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: scheme.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
           ),
         ),
@@ -511,7 +540,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
               child: Text(
                 'Forgot Password?',
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primaryBlue,
+                  color: scheme.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -522,6 +551,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Future<void> _showForgotPasswordDialog() async {
+    final scheme = Theme.of(context).colorScheme;
     final emailController = TextEditingController();
     bool isSending = false;
 
@@ -544,7 +574,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                     decoration: InputDecoration(
                       hintText: 'your@email.com',
                       filled: true,
-                      fillColor: AppColors.inputBackground,
+                      fillColor: scheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -555,14 +585,14 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryBlue,
+                    backgroundColor: scheme.primary,
                   ),
                   onPressed: isSending
                       ? null
@@ -623,6 +653,8 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildNationalIDField() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -633,7 +665,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             Text(
               '(Optional)',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textSecondary,
+                color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -645,46 +677,48 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           validator: (value) =>
               Validators.validateNationalID(value, isOptional: true),
           keyboardType: TextInputType.number,
-          style: AppTextStyles.inputText,
+          style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Enter your 16-digit NID',
-            hintStyle: AppTextStyles.inputHint,
+            hintStyle: AppTextStyles.inputHint.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
             counterText: '',
             errorStyle: AppTextStyles.inputError,
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: scheme.surface,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorder,
+              borderSide: BorderSide(
+                color: scheme.outline,
                 width: 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.inputBorderFocused,
+              borderSide: BorderSide(
+                color: scheme.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 1),
+              borderSide: BorderSide(color: scheme.error, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
           ),
         ),
@@ -693,6 +727,8 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildLoginButton() {
+    final scheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -701,9 +737,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             ? null
             : (_isLoginMode ? _handleLogin : _handleSignup),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
-          disabledBackgroundColor: AppColors.inputBorder,
-          foregroundColor: AppColors.textWhite,
+          backgroundColor: scheme.primary,
+          disabledBackgroundColor: scheme.outline,
+          foregroundColor: scheme.onPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -711,19 +747,19 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
         child: _isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.textWhite,
+                    scheme.onPrimary,
                   ),
                 ),
               )
             : Text(
                 _isLoginMode ? 'Login' : 'Create Account',
-                style: AppTextStyles.button,
+                style: AppTextStyles.button.copyWith(color: scheme.onPrimary),
               ),
       ),
     );
@@ -731,15 +767,17 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundWhite,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Header with Logo
           SafeArea(
             bottom: false,
             child: Container(
-              color: AppColors.backgroundWhite,
+              color: Theme.of(context).scaffoldBackgroundColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -751,14 +789,14 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
+                      color: scheme.primary,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_city,
-                          color: AppColors.textWhite,
+                          color: scheme.onPrimary,
                           size: 20,
                         ),
                         const SizedBox(width: 6),
@@ -767,7 +805,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textWhite,
+                            color: scheme.onPrimary,
                           ),
                         ),
                       ],
@@ -839,14 +877,16 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         Text(
                           'Access your district services directly',
                           style: AppTextStyles.subtitle.copyWith(
-                            color: AppColors.textPrimary,
+                            color: scheme.onSurface,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Join thousands of citizens saving time daily.',
-                          style: AppTextStyles.caption,
+                          style: AppTextStyles.caption.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 32),
                         // Form
@@ -883,7 +923,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                       _isLoginMode
                                           ? "Don't have an account? "
                                           : 'Already have an account? ',
-                                      style: AppTextStyles.bodySmall,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -905,7 +947,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                       ),
                                       child: Text(
                                         _isLoginMode ? 'Sign Up' : 'Login',
-                                        style: AppTextStyles.link,
+                                        style: AppTextStyles.link.copyWith(
+                                          color: scheme.primary,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -915,12 +959,17 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               // OR Divider
                               Row(
                                 children: [
-                                  Expanded(child: Divider(color: AppColors.inputBorder)),
+                                  Expanded(child: Divider(color: scheme.outline)),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    child: Text('OR', style: AppTextStyles.caption),
+                                    child: Text(
+                                      'OR',
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ),
-                                  Expanded(child: Divider(color: AppColors.inputBorder)),
+                                  Expanded(child: Divider(color: scheme.outline)),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -931,10 +980,11 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                 child: OutlinedButton.icon(
                                   onPressed: _isLoading ? null : _handleGoogleSignIn,
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: AppColors.inputBorder),
+                                    side: BorderSide(color: scheme.outline),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
+                                    foregroundColor: scheme.onSurface,
                                   ),
                                   icon: SvgPicture.string(
                                     '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
@@ -947,10 +997,10 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                     height: 24,
                                     width: 24,
                                   ),
-                                  label: const Text(
+                                  label: Text(
                                     'Continue with Google',
                                     style: TextStyle(
-                                      color: AppColors.textPrimary,
+                                      color: scheme.onSurface,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16,
                                     ),
@@ -969,15 +1019,17 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.shield_outlined,
-                                color: AppColors.textSecondary,
+                                color: scheme.onSurfaceVariant,
                                 size: 16,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 'Privacy Shield: Your data is protected',
-                                style: AppTextStyles.caption,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -988,7 +1040,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                             'DISTRICTDIRECT RWANDA\n© 2026 Government Service Portal',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textSecondary,
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                         ),

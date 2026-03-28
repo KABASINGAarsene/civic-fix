@@ -16,11 +16,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: _adminUid == null 
-        ? const Center(child: Text('Please log in as admin', style: TextStyle(color: Colors.white)))
+        ? Center(child: Text('Please log in as admin', style: TextStyle(color: scheme.onSurface)))
         : StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('chats')
@@ -29,7 +30,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(child: CircularProgressIndicator(color: scheme.primary));
               }
 
               if (snapshot.hasError) {
@@ -43,12 +44,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 48),
                           const SizedBox(height: 16),
-                          const Text('Index Required', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('Index Required', style: TextStyle(color: scheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'To sort chats by time, Firestore needs a composite index. Please click the link in your console or check the project documentation to enable it.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
                           ),
                         ],
                       ),
@@ -66,8 +67,8 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
               return ListView.separated(
                 itemCount: docs.length,
-                separatorBuilder: (context, index) => const Divider(
-                  color: Color(0xFF374151),
+                separatorBuilder: (context, index) => Divider(
+                  color: scheme.outline.withValues(alpha: 0.35),
                   height: 1,
                   indent: 80,
                 ),
@@ -83,13 +84,14 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final scheme = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
-      title: const Text(
+      title: Text(
         'Citizen Messages',
         style: TextStyle(
-          color: Colors.white,
+          color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -97,7 +99,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
       centerTitle: true,
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.white),
+          icon: Icon(Icons.search, color: scheme.onSurface),
           onPressed: () {},
         ),
       ],
@@ -105,6 +107,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
   }
 
   Widget _buildChatTile(Map<String, dynamic> data) {
+    final scheme = Theme.of(context).colorScheme;
     final ticketId = data['ticketId'] ?? '';
     final citizenName = data['citizenName'] ?? 'Citizen';
     final lastMessage = data['lastMessage'] ?? '';
@@ -129,10 +132,10 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
         child: Row(
           children: [
             // Avatar Placeholder
-            const CircleAvatar(
+            CircleAvatar(
               radius: 26,
-              backgroundColor: Color(0xFF374151),
-              child: Icon(Icons.person, color: Colors.white, size: 28),
+              backgroundColor: scheme.surfaceContainerHigh,
+              child: Icon(Icons.person, color: scheme.onSurface, size: 28),
             ),
             const SizedBox(width: 16),
             // Info text
@@ -145,8 +148,8 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                     children: [
                       Text(
                         citizenName,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: scheme.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -155,8 +158,8 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                         timeStr,
                         style: TextStyle(
                           color: unread > 0
-                              ? const Color(0xFF3B82F6)
-                              : const Color(0xFF9CA3AF),
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
                           fontSize: 12,
                           fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal,
                         ),
@@ -169,13 +172,13 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF374151),
+                          color: scheme.surfaceContainerHigh,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           ticketId.length > 8 ? ticketId.substring(0, 8).toUpperCase() : (ticketId.isEmpty ? 'TICKET' : ticketId),
-                          style: const TextStyle(
-                            color: Color(0xFFD1D5DB),
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -186,7 +189,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                         child: Text(
                           lastMessage,
                           style: TextStyle(
-                            color: unread > 0 ? Colors.white : const Color(0xFF9CA3AF),
+                            color: unread > 0 ? scheme.onSurface : scheme.onSurfaceVariant,
                             fontSize: 14,
                             fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -198,14 +201,14 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                         Container(
                           margin: const EdgeInsets.only(left: 8),
                           padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF3B82F6),
+                          decoration: BoxDecoration(
+                            color: scheme.primary,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             unread.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: scheme.onPrimary,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -223,20 +226,21 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final scheme = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.chat_bubble_outline, size: 60, color: Color(0xFF374151)),
-          SizedBox(height: 16),
+        children: [
+          Icon(Icons.chat_bubble_outline, size: 60, color: scheme.surfaceContainerHigh),
+          const SizedBox(height: 16),
           Text(
             'No active conversations',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(color: scheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Send an update from a ticket to start a chat.',
-            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
           ),
         ],
       ),
@@ -244,10 +248,11 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        border: Border(top: BorderSide(color: Color(0xFF374151))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.35))),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -269,9 +274,9 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F2937),
-        selectedItemColor: const Color(0xFF3B82F6),
-        unselectedItemColor: const Color(0xFF6B7280),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

@@ -85,11 +85,12 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: _isLoadingDistrict
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)))
+          ? Center(child: CircularProgressIndicator(color: scheme.primary))
           : Column(
               children: [
                 _buildCategoryFilters(),
@@ -107,17 +108,18 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final scheme = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: const Color(0xFF111827),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.search, color: Colors.white),
+        icon: Icon(Icons.search, color: scheme.onSurface),
         onPressed: () {},
       ),
-      title: const Text(
+      title: Text(
         'Issues Management',
         style: TextStyle(
-          color: Colors.white,
+          color: scheme.onSurface,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
@@ -130,6 +132,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildCategoryFilters() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -150,9 +153,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+                  color: isSelected ? scheme.primary : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF374151),
+                    color: isSelected ? scheme.primary : scheme.outline.withValues(alpha: 0.45),
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -160,7 +163,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                 child: Text(
                   _categories[index],
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                    color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 14,
                   ),
@@ -174,19 +177,20 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildStatusTabBar() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Color(0xFF374151), width: 1),
+          bottom: BorderSide(color: scheme.outline.withValues(alpha: 0.45), width: 1),
         ),
       ),
       child: TabBar(
         isScrollable: true,
         controller: _tabController,
-        indicatorColor: const Color(0xFF3B82F6),
+        indicatorColor: scheme.primary,
         indicatorWeight: 3,
-        labelColor: const Color(0xFF3B82F6),
-        unselectedLabelColor: const Color(0xFF9CA3AF),
+        labelColor: scheme.primary,
+        unselectedLabelColor: scheme.onSurfaceVariant,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         tabs: _statuses.map((s) => Tab(text: s)).toList(),
       ),
@@ -194,8 +198,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildIssuesList(String status) {
+    final scheme = Theme.of(context).colorScheme;
     if (_adminDistrict == null) {
-      return const Center(child: Text('No district assigned to your profile.', style: TextStyle(color: Colors.red)));
+      return Center(child: Text('No district assigned to your profile.', style: TextStyle(color: scheme.error)));
     }
 
     // ── FALLBACK FOR LEGACY DATA ──
@@ -222,10 +227,10 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
       stream: query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+          return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: scheme.error)));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+          return Center(child: CircularProgressIndicator(color: scheme.primary));
         }
 
         final docs = snapshot.data?.docs ?? [];
@@ -234,9 +239,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.assignment_turned_in_outlined, size: 48, color: const Color(0xFF374151)),
+                Icon(Icons.assignment_turned_in_outlined, size: 48, color: scheme.surfaceContainerHigh),
                 const SizedBox(height: 16),
-                Text('No issues in $status', style: const TextStyle(color: Color(0xFF9CA3AF))),
+                Text('No issues in $status', style: TextStyle(color: scheme.onSurfaceVariant)),
               ],
             ),
           );
@@ -257,6 +262,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildIssueCard(Map<String, dynamic> data, String ticketId) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -272,7 +278,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F2937),
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -317,8 +323,8 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                       ),
                       Text(
                         'Recent',
-                        style: const TextStyle(
-                          color: Color(0xFF9CA3AF),
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
                       ),
@@ -327,8 +333,8 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                   const SizedBox(height: 10),
                   Text(
                     data['title'] ?? 'Untitled Issue',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: scheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -341,12 +347,12 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                     children: [
                       Text(
                         '${data['district'] ?? ''} / ${data['sector'] ?? ''}',
-                        style: const TextStyle(
-                          color: Color(0xFF9CA3AF),
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
                           fontSize: 13,
                         ),
                       ),
-                      const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF), size: 20),
+                      Icon(Icons.chevron_right, color: scheme.onSurfaceVariant, size: 20),
                     ],
                   ),
                 ],
@@ -359,11 +365,12 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildItemPlaceholder(String? category) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: 80,
       height: 80,
-      color: const Color(0xFF374151),
-      child: Icon(_getCategoryIcon(category), color: Colors.blue.withOpacity(0.5), size: 30),
+      color: scheme.surfaceContainerHigh,
+      child: Icon(_getCategoryIcon(category), color: scheme.primary.withOpacity(0.5), size: 30),
     );
   }
 
@@ -401,10 +408,11 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1F2937),
-        border: Border(top: BorderSide(color: Color(0xFF374151))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.outline.withValues(alpha: 0.35))),
       ),
       child: BottomNavigationBar(
         currentIndex: _bottomNavIndex,
@@ -426,9 +434,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
           }
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFF1F2937),
-        selectedItemColor: const Color(0xFF3B82F6),
-        unselectedItemColor: const Color(0xFF6B7280),
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: scheme.onSurfaceVariant,
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,

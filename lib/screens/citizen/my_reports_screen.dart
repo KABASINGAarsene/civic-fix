@@ -17,23 +17,31 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   String _formatDate(DateTime date) => DateFormat('MMM d, yyyy').format(date);
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, ColorScheme scheme) {
     switch (status) {
-      case 'Submitted':   return const Color(0xFF2563EB); // Blue
-      case 'Received':    return const Color(0xFF7C3AED); // Purple
-      case 'Assigned':    return const Color(0xFFF59E0B); // Amber
-      case 'Field Visit': return const Color(0xFFD97706); // Orange
-      case 'Resolved':    return const Color(0xFF10B981); // Green
-      case 'Open':        return const Color(0xFF2563EB); // Legacy support
-      case 'In Progress': return const Color(0xFFF59E0B); // Legacy support
-      default:            return const Color(0xFF6B7280); // Gray
+      case 'Submitted':
+      case 'Open':
+        return scheme.primary;
+      case 'Received':
+        return scheme.secondary;
+      case 'Assigned':
+      case 'In Progress':
+        return scheme.tertiary;
+      case 'Field Visit':
+        return scheme.secondary.withValues(alpha: 0.8);
+      case 'Resolved':
+        return scheme.primary.withValues(alpha: 0.85);
+      default:
+        return scheme.onSurfaceVariant;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -70,15 +78,32 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                 }
 
                 if (docs.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.receipt_long_outlined, size: 64, color: Color(0xFFD1D5DB)),
-                        SizedBox(height: 16),
-                        Text('No reports yet', style: TextStyle(color: Color(0xFF6B7280), fontSize: 16, fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('Tap + to submit a new issue', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 64,
+                          color: scheme.outline,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No reports yet',
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tap + to submit a new issue',
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -101,6 +126,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   }
 
   Widget _buildCompactCard(DocumentSnapshot doc) {
+    final scheme = Theme.of(context).colorScheme;
     final data          = doc.data() as Map<String, dynamic>;
     final String title  = data['title'] ?? data['description'] ?? 'No title';
     final String status = data['status'] ?? 'Open';
@@ -127,10 +153,16 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFF3F4F6)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.35)),
+          boxShadow: [
+            BoxShadow(
+              color: scheme.shadow.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,31 +176,50 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(status).withOpacity(0.12),
+                        color: _getStatusColor(status, scheme).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(status.toUpperCase(),
                         style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold,
-                          color: _getStatusColor(status), letterSpacing: 0.8)),
+                          color: _getStatusColor(status, scheme), letterSpacing: 0.8)),
                     ),
                     const SizedBox(width: 8),
-                    Text(shortId, style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                    Text(
+                      shortId,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
                   ]),
                   const SizedBox(height: 6),
                   Text(title,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Row(children: [
                     Container(width: 6, height: 6,
                       margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: _getStatusColor(status))),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _getStatusColor(status, scheme),
+                      )),
                     Expanded(child: Text(statusNote,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                      style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
                   ]),
                   const SizedBox(height: 4),
-                  Text(dateStr, style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                  Text(
+                    dateStr,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -190,8 +241,15 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   Widget _placeholder(String? category) => Container(
     width: 64, height: 64,
-    decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(8)),
-    child: Icon(_getCategoryIcon(category), color: const Color(0xFFD1D5DB), size: 28));
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(
+      _getCategoryIcon(category),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      size: 28,
+    ));
 
   IconData _getCategoryIcon(String? category) {
     switch (category) {
@@ -207,21 +265,33 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF111827)),
+        icon: Icon(Icons.arrow_back_ios_new, color: scheme.onSurface),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text('My Reports',
-        style: TextStyle(color: Color(0xFF111827), fontSize: 18, fontWeight: FontWeight.bold)),
+      title: Text(
+        'My Reports',
+        style: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       centerTitle: true,
-      actions: [IconButton(icon: const Icon(Icons.search, color: Color(0xFF111827)), onPressed: () {})],
+      actions: [
+        IconButton(icon: Icon(Icons.search, color: scheme.onSurface), onPressed: () {})
+      ],
     );
   }
 
   Widget _buildFilterPills() {
+    final scheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       height: 36,
       child: ListView.builder(
@@ -235,12 +305,14 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
               margin: const EdgeInsets.only(right: 10),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF0A4DDE) : const Color(0xFFF3F4F6),
+                color: isSelected
+                    ? scheme.primary
+                    : scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(_filters[index],
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                  color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   fontSize: 13)),
             ),
@@ -251,23 +323,40 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   }
 
   Widget _buildCustomFAB() {
+    final scheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/capture-evidence'),
       child: Container(
         width: 50, height: 50,
         margin: const EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF0A4DDE), shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: const Color(0xFF0A4DDE).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))]),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+          color: scheme.primary,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: scheme.primary.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Icon(Icons.add, color: scheme.onPrimary, size: 28),
       ),
     );
   }
 
   Widget _buildBottomNav() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       height: 70,
-      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(
+          top: BorderSide(color: scheme.outline.withValues(alpha: 0.45)),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -282,16 +371,27 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   }
 
   Widget _navItem(IconData icon, String label, bool active, VoidCallback onTap) {
+    final scheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: active ? const Color(0xFF0A4DDE) : const Color(0xFF9CA3AF), size: 24),
+          Icon(
+            icon,
+            color: active ? scheme.primary : scheme.onSurfaceVariant,
+            size: 24,
+          ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 10,
-            fontWeight: active ? FontWeight.bold : FontWeight.w500,
-            color: active ? const Color(0xFF0A4DDE) : const Color(0xFF9CA3AF))),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: active ? FontWeight.bold : FontWeight.w500,
+              color: active ? scheme.primary : scheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
