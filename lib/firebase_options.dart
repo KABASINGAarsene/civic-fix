@@ -23,11 +23,20 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,49 +49,21 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDWyUi2XoysrpVIJimRoBYYr8jrigWkDmc',
-    appId: '1:561467418674:web:138ce5b63809bc7ddc742b',
-    messagingSenderId: '561467418674',
-    projectId: 'civic-fix-93ac5',
-    authDomain: 'civic-fix-93ac5.firebaseapp.com',
-    storageBucket: 'civic-fix-93ac5.firebasestorage.app',
-    measurementId: 'G-7G36FL1DY0',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDMKHu-vo9XRGYMsIre2rnVmfLpOZnpPWQ',
-    appId: '1:561467418674:android:ed18cbfeeedb6458dc742b',
-    messagingSenderId: '561467418674',
-    projectId: 'civic-fix-93ac5',
-    storageBucket: 'civic-fix-93ac5.firebasestorage.app',
+    apiKey: 'AIzaSyBurLlWByCg9HCxCaH8hdewalQrhMvowZs',
+    appId: '1:180208394444:android:d01f25732316c1858b2269',
+    messagingSenderId: '180208394444',
+    projectId: 'civic-fix-c84e7',
+    storageBucket: 'civic-fix-c84e7.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB8XmS_cdI_P-z8IkSpYw-3bPp74fx1XOw',
-    appId: '1:561467418674:ios:86c566010372372edc742b',
-    messagingSenderId: '561467418674',
-    projectId: 'civic-fix-93ac5',
-    storageBucket: 'civic-fix-93ac5.firebasestorage.app',
-    iosBundleId: 'com.districtdirect.districtDirect',
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCFDeT3xiZfHgy1LVZEeDhENgxhu3ZAsLk',
+    appId: '1:180208394444:web:263ad6a1d63749a68b2269',
+    messagingSenderId: '180208394444',
+    projectId: 'civic-fix-c84e7',
+    authDomain: 'civic-fix-c84e7.firebaseapp.com',
+    storageBucket: 'civic-fix-c84e7.firebasestorage.app',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyB8XmS_cdI_P-z8IkSpYw-3bPp74fx1XOw',
-    appId: '1:561467418674:ios:86c566010372372edc742b',
-    messagingSenderId: '561467418674',
-    projectId: 'civic-fix-93ac5',
-    storageBucket: 'civic-fix-93ac5.firebasestorage.app',
-    iosBundleId: 'com.districtdirect.districtDirect',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDWyUi2XoysrpVIJimRoBYYr8jrigWkDmc',
-    appId: '1:561467418674:web:85b413fdbeb3a81edc742b',
-    messagingSenderId: '561467418674',
-    projectId: 'civic-fix-93ac5',
-    authDomain: 'civic-fix-93ac5.firebaseapp.com',
-    storageBucket: 'civic-fix-93ac5.firebasestorage.app',
-    measurementId: 'G-TFWXYD68TP',
-  );
 }

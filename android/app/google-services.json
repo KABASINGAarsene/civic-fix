@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "561467418674",
-    "project_id": "civic-fix-93ac5",
-    "storage_bucket": "civic-fix-93ac5.firebasestorage.app"
+    "project_number": "180208394444",
+    "project_id": "civic-fix-c84e7",
+    "storage_bucket": "civic-fix-c84e7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:561467418674:android:ed18cbfeeedb6458dc742b",
+        "mobilesdk_app_id": "1:180208394444:android:d01f25732316c1858b2269",
         "android_client_info": {
           "package_name": "com.districtdirect.district_direct"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDMKHu-vo9XRGYMsIre2rnVmfLpOZnpPWQ"
+          "current_key": "AIzaSyBurLlWByCg9HCxCaH8hdewalQrhMvowZs"
         }
       ],
       "services": {

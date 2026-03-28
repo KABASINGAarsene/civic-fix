@@ -1,19 +1,16 @@
-import 'package:district_direct/screens/home/citizen_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
-import 'otp_verification_screen.dart';
-import 'how_it_works_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 /// Citizen Login Screen
 /// Login page for regular citizens with Rwanda landscape background
 
 class CitizenLoginScreen extends StatefulWidget {
-  const CitizenLoginScreen({super.key});
+  const CitizenLoginScreen({Key? key}) : super(key: key);
 
   @override
   State<CitizenLoginScreen> createState() => _CitizenLoginScreenState();
@@ -28,10 +25,8 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   final _nidController = TextEditingController();
 
   bool _isLoading = false;
-  bool _isGoogleLoading = false;
   bool _isLoginMode = true;
   bool _obscurePassword = true;
-  String _selectedLanguage = 'EN';
 
   @override
   void dispose() {
@@ -49,49 +44,34 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement login logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const CitizenHomeScreen()),
+      try {
+        await context.read<AuthProvider>().loginCitizen(
+          phone: _phoneController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/citizen-home',
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isGoogleLoading = true);
-    try {
-      final googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return; // user cancelled
-      final googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const CitizenHomeScreen()),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Google sign-in failed: $e'),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
@@ -101,66 +81,50 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         _isLoading = true;
       });
 
-      // TODO: Implement signup logic with backend API
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Navigate to OTP verification
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(
-              email: _emailController.text.trim(),
-              phoneNumber: _phoneController.text.trim(),
-              isAdmin: false,
-            ),
-          ),
+      try {
+        await context.read<AuthProvider>().signUpCitizen(
+          phone: _phoneController.text.trim(),
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Account created! Please check your spam folder for the link to verify your sign up.',
+              ),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          // Switch back to login mode
+          setState(() {
+            _isLoginMode = true;
+            _nameController.clear();
+            _emailController.clear();
+            _passwordController.clear();
+            _nidController.clear();
+            _formKey.currentState?.reset();
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll("Exception:", "").trim()),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
-  }
-
-  Widget _buildLanguageSwitcher() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: ['KN', 'EN', 'FR'].map((lang) {
-        final isSelected = _selectedLanguage == lang;
-        return GestureDetector(
-          onTap: () {
-            setState(() {
-              _selectedLanguage = lang;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primaryBlue.withOpacity(0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: isSelected
-                  ? Border.all(color: AppColors.primaryBlue, width: 2)
-                  : null,
-            ),
-            child: Text(
-              lang,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected
-                    ? AppColors.primaryBlue
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
   }
 
   Widget _buildInfoCard() {
@@ -506,7 +470,122 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             ),
           ),
         ),
+        if (_isLoginMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _showForgotPasswordDialog,
+              child: Text(
+                'Forgot Password?',
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
+    );
+  }
+
+  Future<void> _showForgotPasswordDialog() async {
+    final emailController = TextEditingController();
+    bool isSending = false;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Reset Password'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Enter your email address and we will send you a link to reset your password.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      hintText: 'your@email.com',
+                      filled: true,
+                      fillColor: AppColors.inputBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                  ),
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          if (emailController.text.trim().isEmpty) return;
+                          setDialogState(() => isSending = true);
+                          try {
+                            await context
+                                .read<AuthProvider>()
+                                .sendPasswordResetEmail(
+                                  emailController.text.trim(),
+                                );
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password reset email sent! Check your inbox (and spam).',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to send email. Check if the address is correct.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isSending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Send Link',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -623,13 +702,46 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       backgroundColor: AppColors.backgroundWhite,
       body: Column(
         children: [
-          // Language Switcher - Above the image
+          // Header with Logo
           SafeArea(
             bottom: false,
             child: Container(
               color: AppColors.backgroundWhite,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: _buildLanguageSwitcher(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Logo
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city,
+                          color: AppColors.textWhite,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DistrictDirect',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textWhite,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           // Scrollable content
@@ -729,50 +841,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               // Login/Signup Button
                               _buildLoginButton(),
                               const SizedBox(height: 16),
-                              // OR divider
-                              Row(
-                                children: [
-                                  const Expanded(child: Divider()),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text('OR', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
-                                  ),
-                                  const Expanded(child: Divider()),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Google Sign-In Button
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: OutlinedButton(
-                                  onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: AppColors.inputBorder),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: _isGoogleLoading
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.network(
-                                              'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                                              height: 22,
-                                              width: 22,
-                                              errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 24),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Text('Continue with Google', style: AppTextStyles.button.copyWith(color: AppColors.textPrimary)),
-                                          ],
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
                               // Mode Toggle Link
                               Center(
                                 child: Row(
@@ -813,25 +881,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               const SizedBox(height: 16),
                               // Info Card
                               _buildInfoCard(),
-                              const SizedBox(height: 20),
-                              // How it works link
-                              Center(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const HowItWorksScreen(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'How it works',
-                                    style: AppTextStyles.link,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -857,7 +906,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         const SizedBox(height: 16),
                         Center(
                           child: Text(
-                            'DISTRICTDIRECT RWANDA\n© 2024 Government Service Portal',
+                            'DISTRICTDIRECT RWANDA\n© 2026 Government Service Portal',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,
