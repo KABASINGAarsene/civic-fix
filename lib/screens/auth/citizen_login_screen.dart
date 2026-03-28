@@ -1,6 +1,8 @@
 import 'package:district_direct/screens/home/citizen_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
@@ -26,6 +28,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   final _nidController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _isLoginMode = true;
   bool _obscurePassword = true;
   String _selectedLanguage = 'EN';
@@ -59,6 +62,36 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           MaterialPageRoute(builder: (context) => const CitizenHomeScreen()),
         );
       }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return; // user cancelled
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CitizenHomeScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Google sign-in failed: $e'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
@@ -695,6 +728,50 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               if (!_isLoginMode) const SizedBox(height: 24),
                               // Login/Signup Button
                               _buildLoginButton(),
+                              const SizedBox(height: 16),
+                              // OR divider
+                              Row(
+                                children: [
+                                  const Expanded(child: Divider()),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text('OR', style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
+                                  ),
+                                  const Expanded(child: Divider()),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // Google Sign-In Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: OutlinedButton(
+                                  onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: AppColors.inputBorder),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: _isGoogleLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.network(
+                                              'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                                              height: 22,
+                                              width: 22,
+                                              errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 24),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text('Continue with Google', style: AppTextStyles.button.copyWith(color: AppColors.textPrimary)),
+                                          ],
+                                        ),
+                                ),
+                              ),
                               const SizedBox(height: 16),
                               // Mode Toggle Link
                               Center(
