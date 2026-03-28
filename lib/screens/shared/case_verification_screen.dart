@@ -136,8 +136,19 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
 
   Widget _buildMessageBubble(Map<String, dynamic> data) {
     final senderId = data['senderId'];
+    final receiverId = data['receiverId'];
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    final isMe = senderId == currentUserId;
+    
+    // Determine who sent the message based on receiverId to fix the UI issue
+    // when testing on the same browser (which shares the same FirebaseAuth currentUser).
+    bool isMe;
+    if (receiverId != null) {
+      bool isSentByAdmin = receiverId != 'admin';
+      isMe = _isAdmin ? isSentByAdmin : !isSentByAdmin;
+    } else {
+      isMe = senderId == currentUserId;
+    }
+
     final type = data['type'] ?? 'text';
     final text = data['text'] ?? '';
     final attachmentUrl = data['attachmentUrl'];

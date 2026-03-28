@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
@@ -126,6 +128,70 @@ class AuthService {
       return credential;
     } catch (e) {
       print('Admin Signup Error: $e');
+      rethrow;
+    }
+  }
+
+  // Sign in with Google
+  Future<auth.UserCredential?> signInWithGoogle() async {
+    try {
+      // For Flutter Web, Google Sign-In strictly requires the Web Client ID
+      // to be passed explicitly if it wasn't auto-configured in firebase_options.
+      // Replace the string below with your actual Web Client ID from the Firebase Console:
+      // Project Settings > General > Web apps > your app > Web Client ID
+      // (or from Google Cloud Console's Credentials page)
+      const String webClientId = '180208394444-8jmbo2kvv8johktl8jta0k8g0ma54sel.apps.googleusercontent.com';
+
+      // Only pass the Web Client ID when running on Flutter Web.
+      // Android auto-detects it through `google-services.json`.
+      final String? clientId = kIsWeb && webClientId != 'REPLACE_ME_WITH_YOUR_WEB_CLIENT_ID.apps.googleusercontent.com' 
+          ? webClientId 
+          : null;
+
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: clientId,
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return null; // User canceled the sign-in flow
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final auth.OAuthCredential credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user;
+
+      if (user != null) {
+        // Check if user exists in Firestore
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (!doc.exists) {
+          // Create a new citizen profile for the Google user
+          await _firestore.collection('users').doc(user.uid).set({
+            'uid': user.uid,
+            'name': user.displayName ?? 'Citizen User',
+            'email': user.email,
+            'phone': '', // Optional or omitted for Google users
+            'role': 'citizen',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          
+          if (user.email != null) {
+            // Mapping for consistency with phone mappings logic, though phone is empty
+            await _firestore.collection('phoneMappings').doc(user.uid).set({
+              'email': user.email,
+            });
+          }
+        }
+      }
+
+      return userCredential;
+    } catch (e) {
+      print('Google Sign-In Error: $e');
       rethrow;
     }
   }
