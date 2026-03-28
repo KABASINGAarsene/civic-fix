@@ -75,41 +75,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
     }
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final credential = await context.read<AuthProvider>().signInWithGoogle(
-        role: _isLoginMode ? 'citizen' : 'citizen', // Both modes use citizen role here
-      );
-
-      if (credential != null && mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/citizen-home',
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll("Exception:", "").trim()),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   Future<void> _handleSignup() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
