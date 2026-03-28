@@ -127,6 +127,38 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final credential = await context.read<AuthProvider>().signInWithGoogle();
+      if (credential != null && mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/citizen-home',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll("Exception:", "").trim()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   Widget _buildInfoCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -660,39 +692,87 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   }
 
   Widget _buildLoginButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _isLoading
-            ? null
-            : (_isLoginMode ? _handleLogin : _handleSignup),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
-          disabledBackgroundColor: AppColors.inputBorder,
-          foregroundColor: AppColors.textWhite,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading
+                ? null
+                : (_isLoginMode ? _handleLogin : _handleSignup),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              disabledBackgroundColor: AppColors.inputBorder,
+              foregroundColor: AppColors.textWhite,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.textWhite,
+                      ),
+                    ),
+                  )
+                : Text(
+                    _isLoginMode ? 'Login' : 'Create Account',
+                    style: AppTextStyles.button,
+                  ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.textWhite,
+        if (_isLoginMode) ..[
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: Divider(color: AppColors.inputBorder)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'OR',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
-              )
-            : Text(
-                _isLoginMode ? 'Login' : 'Create Account',
-                style: AppTextStyles.button,
               ),
-      ),
+              Expanded(child: Divider(color: AppColors.inputBorder)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: OutlinedButton.icon(
+              onPressed: _isLoading ? null : _handleGoogleSignIn,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: AppColors.inputBorder, width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
+              icon: Image.network(
+                'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                height: 24,
+                width: 24,
+              ),
+              label: Text(
+                'Continue with Google',
+                style: AppTextStyles.button.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

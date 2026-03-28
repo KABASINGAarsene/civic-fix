@@ -75,6 +75,10 @@ class AuthProvider extends ChangeNotifier {
     await _runWithLoading(() => _authService.sendPasswordResetEmail(email));
   }
 
+  Future<auth.UserCredential?> signInWithGoogle() async {
+    return _runWithLoading(() => _authService.signInWithGoogle());
+  }
+
   Future<T> _runWithLoading<T>(Future<T> Function() action) async {
     _isLoading = true;
     notifyListeners();

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final auth.FirebaseAuth _firebaseAuth = auth.FirebaseAuth.instance;
@@ -146,6 +147,53 @@ class AuthService {
       await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
     } catch (e) {
       print('Password Reset Error: $e');
+      rethrow;
+    }
+  }
+
+  // Google Sign-In
+  Future<auth.UserCredential?> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        // User canceled the sign-in
+        return null;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+      // Check if this is a new user and create Firestore document
+      if (userCredential.user != null) {
+        final userDoc = await _firestore.collection('users').doc(userCredential.user!.uid).get();
+        
+        if (!userDoc.exists) {
+          // New user - create Firestore document
+          await _firestore.collection('users').doc(userCredential.user!.uid).set({
+            'uid': userCredential.user!.uid,
+            'name': userCredential.user!.displayName ?? 'User',
+            'email': userCredential.user!.email,
+            'phone': userCredential.user!.phoneNumber ?? '',
+            'role': 'citizen',
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      return userCredential;
+    } catch (e) {
+      print('Google Sign-In Error: $e');
       rethrow;
     }
   }
