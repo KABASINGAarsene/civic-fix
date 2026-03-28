@@ -75,6 +75,41 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final credential = await context.read<AuthProvider>().signInWithGoogle(
+        role: _isLoginMode ? 'citizen' : 'citizen', // Both modes use citizen role here
+      );
+
+      if (credential != null && mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/citizen-home',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll("Exception:", "").trim()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   Future<void> _handleSignup() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() {
@@ -658,7 +693,6 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
       ],
     );
   }
-
   Widget _buildLoginButton() {
     return SizedBox(
       width: double.infinity,
@@ -692,6 +726,32 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                 _isLoginMode ? 'Login' : 'Create Account',
                 style: AppTextStyles.button,
               ),
+      ),
+    );
+  }
+
+  Widget _buildGoogleButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton.icon(
+        onPressed: _isLoading ? null : _handleGoogleSignIn,
+        icon: Image.network(
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png',
+          height: 24,
+          errorBuilder: (context, error, stackTrace) => const Icon(Icons.login, color: Colors.blue),
+        ),
+        label: Text(
+          _isLoginMode ? 'Sign in with Google' : 'Sign up with Google',
+          style: AppTextStyles.button.copyWith(color: AppColors.textPrimary),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.inputBorder),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        ),
       ),
     );
   }
@@ -840,6 +900,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               if (!_isLoginMode) const SizedBox(height: 24),
                               // Login/Signup Button
                               _buildLoginButton(),
+                              const SizedBox(height: 16),
+                              // Google Sign-In Button
+                              _buildGoogleButton(),
                               const SizedBox(height: 16),
                               // Mode Toggle Link
                               Center(

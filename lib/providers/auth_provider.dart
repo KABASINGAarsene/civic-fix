@@ -33,6 +33,12 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
+  Future<auth.UserCredential?> signInWithGoogle({required String role}) async {
+    return _runWithLoading(
+      () => _authService.signInWithGoogle(role: role),
+    );
+  }
+
   Future<auth.UserCredential?> signUpCitizen({
     required String phone,
     required String name,

@@ -12,7 +12,20 @@
           "package_name": "com.districtdirect.district_direct"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "180208394444-gv5po49l4b2fi6ksbgc7st0s7l841m8h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.districtdirect.district_direct",
+            "certificate_hash": "489211138c807e4615d3a87bce459c173da6c282"
+          }
+        },
+        {
+          "client_id": "180208394444-8jmbo2kvv8johktl8jta0k8g0ma54sel.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBurLlWByCg9HCxCaH8hdewalQrhMvowZs"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "180208394444-2tfhbk11phbkhfugem3pcpngr1nn9job.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
