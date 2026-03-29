@@ -107,7 +107,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         );
         final user = credential?.user;
         if (user == null) {
-          throw Exception(l10n.unexpectedError);
+          throw Exception('An unexpected error occurred. Please try again.');
         }
 
         final userDoc = await FirebaseFirestore.instance
@@ -119,7 +119,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         final role = (userData?['role'] ?? '').toString().toLowerCase();
         if (role != 'admin') {
           await context.read<AuthProvider>().signOut();
-          throw Exception(l10n.adminLoginOnlyMessage);
+          throw Exception('This login page is for administrators only.');
         }
 
         if (_extractDistrict(userData) == null && mounted) {
