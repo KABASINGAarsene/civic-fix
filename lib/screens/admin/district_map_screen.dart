@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class DistrictMapScreen extends StatefulWidget {
   const DistrictMapScreen({Key? key}) : super(key: key);
@@ -42,9 +43,27 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
     }
   }
 
+  Color _statusSemanticColor(String status, ColorScheme scheme) {
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
+        return scheme.primary;
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
+        return scheme.tertiary;
+      default:
+        return scheme.onSurfaceVariant;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
@@ -80,7 +99,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           child: Icon(Icons.layers, color: scheme.onSurface),
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Toggling Heatmap Layer...')),
+              SnackBar(content: Text(l10n.togglingHeatmapLayer)),
             );
           },
         ),
@@ -90,11 +109,12 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       title: Text(
-        'District Field Map',
+        l10n.districtFieldMapTitle,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 18,
@@ -179,6 +199,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
 
   Widget _buildTerritoryBanner() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -209,7 +230,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Exclusive Territory View',
+                  l10n.exclusiveTerritoryView,
                   style: TextStyle(
                     color: scheme.onSurfaceVariant,
                     fontSize: 11,
@@ -219,7 +240,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Viewing issues assigned to ${_adminDistrict ?? 'N/A'}',
+                  '${l10n.viewingIssuesAssignedTo} ${_adminDistrict ?? l10n.unknownDistrict}',
                   style: TextStyle(
                     color: scheme.onSurface,
                     fontSize: 13,
@@ -280,6 +301,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
 
   Widget _buildBottomMapCard() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('issues')
@@ -318,7 +340,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Active Field Teams',
+                    l10n.activeFieldTeams,
                     style: TextStyle(
                       color: scheme.onSurface,
                       fontSize: 16,
@@ -326,9 +348,9 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
                     ),
                   ),
                   Text(
-                    '$fieldVisits Active visits',
+                    '$fieldVisits ${l10n.activeVisits}',
                     style: TextStyle(
-                      color: Colors.green,
+                      color: _statusSemanticColor('Field Visit', scheme),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -336,9 +358,17 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildTeamRow('Field Support Teams', '$fieldVisits Active in ${_adminDistrict ?? ''}', true),
+                _buildTeamRow(
+                  l10n.fieldSupportTeams,
+                  '$fieldVisits ${l10n.activeVisits} ${_adminDistrict ?? ''}',
+                  _statusSemanticColor('Field Visit', scheme),
+                ),
               const SizedBox(height: 12),
-              _buildTeamRow('Resolved Issues', '$resolved Closed today', true),
+                _buildTeamRow(
+                  l10n.resolvedIssues,
+                  '$resolved ${l10n.closedToday}',
+                  _statusSemanticColor('Resolved', scheme),
+                ),
             ],
           ),
         );
@@ -346,7 +376,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
     );
   }
 
-  Widget _buildTeamRow(String name, String location, bool isOnline) {
+    Widget _buildTeamRow(String name, String location, Color statusColor) {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
@@ -354,7 +384,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isOnline ? scheme.tertiary : scheme.onSurfaceVariant,
+              color: statusColor,
             shape: BoxShape.circle,
           ),
         ),
@@ -363,7 +393,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
           child: Text(
             name,
             style: TextStyle(
-              color: isOnline ? scheme.onSurface : scheme.onSurfaceVariant,
+              color: scheme.onSurface,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -382,6 +412,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
 
   Widget _buildBottomNav(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
@@ -413,12 +444,12 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.dashboard), label: l10n.adminDashboardLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.list_alt), label: l10n.adminIssuesLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.map), label: l10n.adminMapLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.forum), label: l10n.chatsLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.settings), label: l10n.profileLabel),
         ],
       ),
     );

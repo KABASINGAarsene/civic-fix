@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class IssuesManagementScreen extends StatefulWidget {
   const IssuesManagementScreen({Key? key}) : super(key: key);
@@ -32,10 +33,52 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
     'Social Welfare'
   ];
 
+  String _statusLabel(String status, AppLocalizations l10n) {
+    switch (status) {
+      case 'Submitted':
+        return l10n.submittedStatus;
+      case 'Received':
+        return l10n.receivedStatus;
+      case 'Assigned':
+        return l10n.assignedStatus;
+      case 'Field Visit':
+        return l10n.fieldVisitStatus;
+      case 'Resolved':
+        return l10n.resolvedStatus;
+      default:
+        return status;
+    }
+  }
+
+  String _categoryLabel(String category, AppLocalizations l10n) {
+    if (category == 'All') return l10n.allFilter;
+    return category;
+  }
+
+  Color _statusSemanticColor(String status, ColorScheme scheme) {
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
+        return scheme.primary;
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
+        return scheme.tertiary;
+      default:
+        return scheme.onSurfaceVariant;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _statuses.length, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadAdminDistrict();
   }
 
@@ -109,6 +152,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   PreferredSizeWidget _buildAppBar() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
@@ -117,7 +161,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
         onPressed: () {},
       ),
       title: Text(
-        'Issues Management',
+        l10n.issuesManagementTitle,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 18,
@@ -133,6 +177,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   Widget _buildCategoryFilters() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -161,7 +206,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  _categories[index],
+                  _categoryLabel(_categories[index], l10n),
                   style: TextStyle(
                     color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -178,6 +223,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   Widget _buildStatusTabBar() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final selectedStatus = _statuses[_tabController.index.clamp(0, _statuses.length - 1)];
+    final selectedColor = _statusSemanticColor(selectedStatus, scheme);
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -187,20 +235,21 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
       child: TabBar(
         isScrollable: true,
         controller: _tabController,
-        indicatorColor: scheme.primary,
+        indicatorColor: selectedColor,
         indicatorWeight: 3,
-        labelColor: scheme.primary,
+        labelColor: selectedColor,
         unselectedLabelColor: scheme.onSurfaceVariant,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        tabs: _statuses.map((s) => Tab(text: s)).toList(),
+        tabs: _statuses.map((s) => Tab(text: _statusLabel(s, l10n))).toList(),
       ),
     );
   }
 
   Widget _buildIssuesList(String status) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     if (_adminDistrict == null) {
-      return Center(child: Text('No district assigned to your profile.', style: TextStyle(color: scheme.error)));
+      return Center(child: Text(l10n.noDistrictAssigned, style: TextStyle(color: scheme.error)));
     }
 
     // ── FALLBACK FOR LEGACY DATA ──
@@ -241,7 +290,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
               children: [
                 Icon(Icons.assignment_turned_in_outlined, size: 48, color: scheme.surfaceContainerHigh),
                 const SizedBox(height: 16),
-                Text('No issues in $status', style: TextStyle(color: scheme.onSurfaceVariant)),
+                Text('${l10n.noIssuesIn} ${_statusLabel(status, l10n)}', style: TextStyle(color: scheme.onSurfaceVariant)),
               ],
             ),
           );
@@ -263,6 +312,9 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   Widget _buildIssueCard(Map<String, dynamic> data, String ticketId) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final status = (data['status'] ?? 'Submitted').toString();
+    final statusColor = _statusSemanticColor(status, scheme);
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -312,7 +364,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          _getPriorityLabel(data['priority']).toUpperCase() + ' PRIORITY',
+                          '${_getPriorityLabel(data['priority']).toUpperCase()} ${l10n.prioritySuffix}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -322,17 +374,19 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
                         ),
                       ),
                       Text(
-                        'Recent',
+                        status.toUpperCase(),
                         style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: 12,
+                          color: statusColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    data['title'] ?? 'Untitled Issue',
+                    data['title'] ?? l10n.untitledIssue,
                     style: TextStyle(
                       color: scheme.onSurface,
                       fontSize: 16,
@@ -409,6 +463,7 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
 
   Widget _buildBottomNav(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
@@ -440,12 +495,12 @@ class _IssuesManagementScreenState extends State<IssuesManagementScreen>
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.dashboard), label: l10n.adminDashboardLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.list_alt), label: l10n.adminIssuesLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.map), label: l10n.adminMapLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.forum), label: l10n.chatsLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.settings), label: l10n.profileLabel),
         ],
       ),
     );

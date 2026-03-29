@@ -5,6 +5,7 @@ import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 /// Admin Login Screen
 /// Login page for district officials with city illustration background
@@ -125,12 +126,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Account created! Please check your spam folder for the link to verify your sign up.',
-              ),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.accountCreatedVerify),
               backgroundColor: AppColors.success,
-              duration: Duration(seconds: 5),
+              duration: const Duration(seconds: 5),
             ),
           );
           // Switch back to login mode
@@ -163,6 +162,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildInfoCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -182,7 +182,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Save time, skip the trip',
+                  l10n.zeroTripGuarantee,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
@@ -190,7 +190,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Report community issues and track your requests seamlessly without visiting the district office.',
+                  l10n.zeroTripDescription,
                   style: AppTextStyles.caption,
                 ),
               ],
@@ -202,6 +202,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildSecureBadge() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -218,7 +219,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            'SECURE & ENCRYPTED',
+            l10n.privacyShield.toUpperCase(),
             style: AppTextStyles.badge.copyWith(letterSpacing: 1.0),
           ),
         ],
@@ -227,10 +228,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildPhoneField() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Phone Number', style: AppTextStyles.inputLabel),
+        Text(l10n.phoneNumber, style: AppTextStyles.inputLabel),
         const SizedBox(height: 8),
         TextFormField(
           controller: _phoneController,
@@ -243,7 +245,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ],
           style: AppTextStyles.inputText,
           decoration: InputDecoration(
-            hintText: '78 XXX XXXX',
+            hintText: l10n.phoneHint,
             hintStyle: AppTextStyles.inputHint,
             prefixIcon: Padding(
               padding: const EdgeInsets.only(left: 12, right: 8),
@@ -320,10 +322,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildNameField() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Full Name', style: AppTextStyles.inputLabel),
+        Text(l10n.fullName, style: AppTextStyles.inputLabel),
         const SizedBox(height: 8),
         TextFormField(
           controller: _nameController,
@@ -340,7 +343,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           textCapitalization: TextCapitalization.words,
           style: AppTextStyles.inputText,
           decoration: InputDecoration(
-            hintText: 'Enter your full name',
+            hintText: l10n.fullNameHint,
             hintStyle: AppTextStyles.inputHint,
             errorStyle: AppTextStyles.inputError,
             filled: true,
@@ -385,10 +388,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildEmailField() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Email', style: AppTextStyles.inputLabel),
+        Text(l10n.emailAddress, style: AppTextStyles.inputLabel),
         const SizedBox(height: 8),
         TextFormField(
           controller: _emailController,
@@ -404,7 +408,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           keyboardType: TextInputType.emailAddress,
           style: AppTextStyles.inputText,
           decoration: InputDecoration(
-            hintText: 'your@email.com',
+            hintText: l10n.emailHint,
             hintStyle: AppTextStyles.inputHint,
             errorStyle: AppTextStyles.inputError,
             filled: true,
@@ -449,10 +453,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildPasswordField() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Password', style: AppTextStyles.inputLabel),
+        Text(l10n.password, style: AppTextStyles.inputLabel),
         const SizedBox(height: 8),
         TextFormField(
           controller: _passwordController,
@@ -468,7 +473,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           obscureText: _obscurePassword,
           style: AppTextStyles.inputText,
           decoration: InputDecoration(
-            hintText: 'Enter your password',
+            hintText: l10n.password,
             hintStyle: AppTextStyles.inputHint,
             suffixIcon: IconButton(
               icon: Icon(
@@ -525,7 +530,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             child: TextButton(
               onPressed: _showForgotPasswordDialog,
               child: Text(
-                'Forgot Password?',
+                l10n.forgotPassword,
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.primaryBlue,
                   fontWeight: FontWeight.w600,
@@ -538,6 +543,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Future<void> _showForgotPasswordDialog() async {
+    final l10n = AppLocalizations.of(context)!;
     final emailController = TextEditingController(text: _emailController.text);
     bool isSending = false;
 
@@ -547,18 +553,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Reset Password'),
+              title: Text(l10n.resetPassword),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Enter your email address and we will send you a link to reset your password.',
-                  ),
+                  Text(l10n.resetPasswordPrompt),
                   const SizedBox(height: 16),
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
-                      hintText: 'your@email.com',
+                      hintText: l10n.emailHint,
                       filled: true,
                       fillColor: AppColors.inputBackground,
                       border: OutlineInputBorder(
@@ -571,8 +575,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
+                  child: Text(
+                    l10n.cancel,
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
@@ -594,10 +598,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Password reset email sent! Check your inbox (and spam).',
-                                  ),
+                                SnackBar(
+                                  content: Text(l10n.passwordResetEmailSent),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -607,7 +609,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Failed to send email: $e'),
+                                  content: Text('${l10n.failedToSendEmail}: $e'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -623,9 +625,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Send Link',
-                          style: TextStyle(color: Colors.white),
+                        : Text(
+                          l10n.sendLink,
+                          style: const TextStyle(color: Colors.white),
                         ),
                 ),
               ],
@@ -637,15 +639,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildDistrictField() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Assigned District', style: AppTextStyles.inputLabel),
+        Text(l10n.assignedDistrict, style: AppTextStyles.inputLabel),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedDistrict,
           decoration: InputDecoration(
-            hintText: 'Select your district',
+            hintText: l10n.selectYourDistrict,
             hintStyle: AppTextStyles.inputHint,
             errorStyle: AppTextStyles.inputError,
             filled: true,
@@ -697,6 +700,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   }
 
   Widget _buildLoginButton() {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -726,7 +730,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
               )
             : Text(
-                _isLoginMode ? 'Login' : 'Create Account',
+                _isLoginMode ? l10n.login : l10n.createAccount,
                 style: AppTextStyles.button,
               ),
       ),
@@ -735,6 +739,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.backgroundWhite,
       body: Column(
@@ -767,7 +772,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'DistrictDirect',
+                          l10n.rolePortalTitle,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -820,7 +825,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Official Government Portal',
+                              l10n.officialGovernmentPortal,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -830,7 +835,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Empowering Communities',
+                              l10n.empoweringCommunities,
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -840,7 +845,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Welcome to DistrictDirect',
+                              l10n.welcomeDistrictDirect,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -849,7 +854,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Access local services and report issues instantly',
+                              l10n.accessServicesInstantly,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.white.withOpacity(0.85),
@@ -897,8 +902,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   children: [
                                     Text(
                                       _isLoginMode
-                                          ? "Don't have an account? "
-                                          : 'Already have an account? ',
+                                          ? '${l10n.dontHaveAccount} '
+                                          : '${l10n.alreadyHaveAccount} ',
                                       style: AppTextStyles.bodySmall,
                                     ),
                                     TextButton(
@@ -920,7 +925,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
                                       child: Text(
-                                        _isLoginMode ? 'Sign Up' : 'Login',
+                                        _isLoginMode ? l10n.signUp : l10n.login,
                                         style: AppTextStyles.link,
                                       ),
                                     ),
@@ -940,7 +945,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         // Footer
                         Center(
                           child: Text(
-                            'Official Government of the Republic of Rwanda\n© 2026 Government Service Portal',
+                            l10n.officialGovFooter,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary,

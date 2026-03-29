@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? data;
@@ -33,11 +34,22 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   XFile? _imageFile;
   bool _isUpdating = false;
 
-  final List<String> _quickReplies = [
-    'Team Dispatched',
-    'Awaiting Parts',
-    'Inspection Scheduled',
-  ];
+  Color _statusSemanticColor(String status, ColorScheme scheme) {
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
+        return scheme.primary;
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
+        return scheme.tertiary;
+      default:
+        return scheme.onSurfaceVariant;
+    }
+  }
 
   @override
   void initState() {
@@ -172,15 +184,17 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Future<void> _openInMaps(double lat, double lng) async {
+    final l10n = AppLocalizations.of(context)!;
     final Uri url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not launch maps.')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.couldNotLaunchMaps)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     if (_isFetching) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -193,7 +207,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(backgroundColor: Theme.of(context).scaffoldBackgroundColor, elevation: 0),
         body: Center(
-          child: Text('Ticket not found or session expired.', style: TextStyle(color: scheme.onSurface)),
+          child: Text(l10n.ticketNotFoundOrExpired, style: TextStyle(color: scheme.onSurface)),
         ),
       );
     }
@@ -240,6 +254,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Widget _buildImageHeader() {
     final String? imageUrl = _currentData?['photo_url'];
+    final l10n = AppLocalizations.of(context)!;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -249,9 +264,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             width: double.infinity,
             height: 220,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder('Image could not be loaded'),
+            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(l10n.imageCouldNotLoad),
           )
-        : _buildImagePlaceholder('No photo provided'),
+        : _buildImagePlaceholder(l10n.noPhotoProvided),
     );
   }
 
@@ -274,6 +289,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Widget _buildCitizenDetailsPanel() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -285,7 +301,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'CITIZEN DETAILS',
+            l10n.citizenDetailsLabel,
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontSize: 10,
@@ -306,7 +322,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _currentData?['userName'] ?? 'Citizen User',
+                      _currentData?['userName'] ?? l10n.citizenUser,
                       style: TextStyle(
                         color: scheme.onSurface,
                         fontSize: 15,
@@ -317,7 +333,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _currentData?['phone'] ?? 'Phone Private',
+                      _currentData?['phone'] ?? l10n.phonePrivate,
                       style: TextStyle(
                         color: scheme.secondary,
                         fontSize: 13,
@@ -360,6 +376,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Widget _buildVoiceNotePlayer() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final audioUrl = _currentData?['audio_url'];
     if (audioUrl == null) return const SizedBox.shrink();
 
@@ -388,7 +405,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Citizen Voice Note',
+                      l10n.citizenVoiceNote,
                       style: TextStyle(
                         color: scheme.onSurface,
                         fontSize: 16,
@@ -397,7 +414,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_formatDuration(_duration)} Duration • ${_currentData?['sector'] ?? 'Unknown'}',
+                      '${_formatDuration(_duration)} • ${_currentData?['sector'] ?? l10n.unknownLabel}',
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 12,
@@ -457,6 +474,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Widget _buildLocationSection() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final double? lat = _currentData?['latitude'];
     final double? lng = _currentData?['longitude'];
     final String manualLoc = _currentData?['manual_location'] ?? '';
@@ -511,9 +529,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       children: [
                         const Icon(Icons.map, color: Colors.white, size: 14),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Open in Google Maps',
-                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        Text(
+                          l10n.openInGoogleMaps,
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -543,7 +561,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Citizen Provided Location',
+                      l10n.citizenProvidedLocation,
                       style: TextStyle(
                         color: scheme.onSurface,
                         fontSize: 14,
@@ -571,9 +589,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Future<void> _updateTicketStatus() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedStatus == 'Resolved' && _imageFile == null && _currentData?['resolution_photo_url'] == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload a resolution photo to complete this ticket.'), backgroundColor: Colors.orange),
+        SnackBar(content: Text(l10n.uploadResolutionPhotoRequired), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -620,8 +639,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           'adminUid': adminUid,
           'lastMessage': messageText.isNotEmpty ? messageText : 'Status updated to $_selectedStatus',
           'lastTimestamp': FieldValue.serverTimestamp(),
-          'citizenName': _currentData?['reporter_name'] ?? 'Citizen User',
-          'ticketTitle': _currentData?['title'] ?? 'Ticket Update',
+          'citizenName': _currentData?['reporter_name'] ?? l10n.citizenUser,
+          'ticketTitle': _currentData?['title'] ?? l10n.ticketUpdate,
           'status': _selectedStatus,
         }, SetOptions(merge: true));
 
@@ -642,7 +661,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           await messagesRef.add({
             'senderId': adminUid,
             'receiverId': citizenUid,
-            'text': 'Proof of Resolution',
+            'text': l10n.proofOfResolution,
             'attachmentUrl': resolutionPhotoUrl,
             'timestamp': FieldValue.serverTimestamp(),
             'isRead': false,
@@ -654,7 +673,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
       if (mounted) {
         _updateController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status updated and citizen notified!'), backgroundColor: Colors.green),
+          SnackBar(
+            content: Text(l10n.statusUpdatedCitizenNotified),
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
+          ),
         );
       }
     } catch (e) {
@@ -670,6 +692,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Widget _buildActionPanel() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final selectedStatusColor = _statusSemanticColor(_selectedStatus, scheme);
+    final quickReplies = [
+      l10n.fieldTeamAssigned,
+      l10n.awaitingDistrictReview,
+      l10n.recentPerformance,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -690,9 +719,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               children: [
                 _isUpdating
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text(
-                      'Send Update',
-                      style: TextStyle(
+                    : Text(
+                      l10n.sendUpdate,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -711,19 +740,23 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           decoration: BoxDecoration(
             color: scheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: scheme.outline.withValues(alpha: 0.45)),
+            border: Border.all(color: selectedStatusColor.withValues(alpha: 0.55)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: (_selectedStatus == 'Received') ? 'Submitted' : _selectedStatus,
               isExpanded: true,
               dropdownColor: scheme.surface,
-              icon: Icon(Icons.keyboard_arrow_down, color: scheme.onSurface),
-              style: TextStyle(color: scheme.onSurface, fontSize: 16),
+              icon: Icon(Icons.keyboard_arrow_down, color: selectedStatusColor),
+              style: TextStyle(color: selectedStatusColor, fontSize: 16, fontWeight: FontWeight.w600),
               items: <String>['Submitted', 'Assigned', 'Field Visit', 'Resolved'].map((String value) {
+                final itemColor = _statusSemanticColor(value, scheme);
                 return DropdownMenuItem<String>(
                   value: value,
-                  child: Text(value),
+                  child: Text(
+                    value,
+                    style: TextStyle(color: itemColor, fontWeight: FontWeight.w600),
+                  ),
                 );
               }).toList(),
               onChanged: (newValue) {
@@ -737,7 +770,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         const SizedBox(height: 24),
         // Message to Citizen
         Text(
-          'MESSAGE TO CITIZEN',
+          l10n.messageToCitizen,
           style: TextStyle(
             color: scheme.onSurfaceVariant,
             fontSize: 10,
@@ -749,7 +782,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: _quickReplies.map((reply) {
+            children: quickReplies.map((reply) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: InkWell(
@@ -781,7 +814,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           maxLines: 4,
           style: TextStyle(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Describe the action taken or progress update...',
+            hintText: l10n.describeActionHint,
             hintStyle: TextStyle(color: scheme.onSurfaceVariant),
             filled: true,
             fillColor: scheme.surface,
@@ -804,7 +837,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         if (_selectedStatus == 'Resolved') ...[
           const SizedBox(height: 24),
           Text(
-            'RESOLUTION SECTION',
+            l10n.resolutionSection,
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontSize: 10,
@@ -846,9 +879,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                           ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Photo Selected ✅',
-                      style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold),
+                    Text(
+                      '${l10n.photoSelected} ✅',
+                      style: TextStyle(color: scheme.tertiary, fontWeight: FontWeight.bold),
                     ),
                   ] else ...[
                     Container(
@@ -861,7 +894,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Upload Resolution Photo',
+                      l10n.uploadResolutionPhoto,
                       style: TextStyle(
                         color: scheme.onSurface,
                         fontSize: 14,
@@ -870,7 +903,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Mandatory for ticket completion',
+                      l10n.mandatoryForCompletion,
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 12,

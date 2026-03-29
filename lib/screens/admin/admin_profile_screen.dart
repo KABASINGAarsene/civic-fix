@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +47,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   Widget build(BuildContext context) {
     final appSettings = context.watch<AppSettingsProvider>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -53,7 +55,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
-          'Admin Profile',
+          l10n.adminProfileTitle,
           style: TextStyle(
             color: scheme.onSurface,
             fontSize: 18,
@@ -71,11 +73,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             const SizedBox(height: 32),
 
             _buildSettingsGroup(
-              title: 'PREFERENCES',
+              title: l10n.preferences,
               children: [
                 _buildSwitchTile(
                   icon: Icons.notifications_active_outlined,
-                  title: 'Push Notifications',
+                  title: l10n.pushNotifications,
                   value: appSettings.notificationsEnabled,
                   onChanged: (val) {
                     appSettings.setNotificationsEnabled(val);
@@ -83,7 +85,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 ),
                 _buildSwitchTile(
                   icon: Icons.dark_mode_outlined,
-                  title: 'Dark Theme',
+                  title: l10n.darkTheme,
                   value: appSettings.isDarkMode,
                   onChanged: (val) {
                     appSettings.setThemeMode(
@@ -96,11 +98,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             ),
             const SizedBox(height: 24),
             _buildSettingsGroup(
-              title: 'SECURITY',
+              title: l10n.security,
               children: [
                 _buildSettingsTile(
                   icon: Icons.lock_outline,
-                  title: 'Change Password',
+                  title: l10n.changePassword,
                   onTap: _showChangePasswordConfirmation,
                 ),
               ],
@@ -117,15 +119,16 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   Widget _buildProfileHeader() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(color: scheme.primary),
       );
     }
 
-    final name = _userData?['name'] ?? 'Admin User';
-    final district = _userData?['district'] ?? 'Unknown District';
-    final email = _userData?['email'] ?? 'No email available';
+    final name = _userData?['name'] ?? l10n.adminUserFallback;
+    final district = _userData?['district'] ?? l10n.unknownDistrict;
+    final email = _userData?['email'] ?? l10n.noEmailAvailable;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -178,7 +181,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    'District Admin',
+                    l10n.districtAdmin,
                     style: TextStyle(
                       color: scheme.onPrimary,
                       fontSize: 12,
@@ -335,6 +338,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   Widget _buildLanguageDropdownTile() {
     final appSettings = context.watch<AppSettingsProvider>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final languageNames = {
+      'en': l10n.english,
+      'fr': l10n.french,
+      'rw': l10n.kinyarwanda,
+    };
 
     return ListTile(
       leading: Container(
@@ -346,7 +355,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         child: Icon(Icons.language, color: scheme.onSurfaceVariant, size: 18),
       ),
       title: Text(
-        'Language',
+        l10n.language,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 15,
@@ -354,7 +363,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         ),
       ),
       trailing: DropdownButton<String>(
-        value: appSettings.selectedLanguageLabel,
+        value: appSettings.languageCode,
         dropdownColor: scheme.surface,
         icon: Icon(Icons.arrow_drop_down, color: scheme.onSurfaceVariant),
         underline: const SizedBox(),
@@ -365,12 +374,15 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         ),
         onChanged: (String? newValue) {
           if (newValue != null) {
-            appSettings.setLanguageFromLabel(newValue);
+            appSettings.setLanguageCode(newValue);
           }
         },
-        items: appSettings.supportedLanguageLabels
+        items: AppSettingsProvider.supportedLanguageCodes
             .map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(value: value, child: Text(value));
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(languageNames[value] ?? value),
+              );
             })
             .toList(),
       ),
@@ -379,6 +391,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   Widget _buildLogoutButton() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       height: 54,
@@ -391,7 +404,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         },
         icon: Icon(Icons.logout, color: scheme.error),
         label: Text(
-          'Log Out',
+          l10n.logOut,
           style: TextStyle(
             color: scheme.error,
             fontSize: 16,
@@ -413,6 +426,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     final emailController = TextEditingController(text: _userData?['email']);
     bool isSaving = false;
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     await showDialog(
       context: context,
@@ -422,7 +436,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             return AlertDialog(
               backgroundColor: scheme.surface,
               title: Text(
-                'Edit Profile',
+                l10n.editProfile,
                 style: TextStyle(color: scheme.onSurface),
               ),
               content: Column(
@@ -432,7 +446,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     controller: nameController,
                     style: TextStyle(color: scheme.onSurface),
                     decoration: InputDecoration(
-                      labelText: 'Full Name',
+                      labelText: l10n.fullName,
                       labelStyle: TextStyle(color: scheme.onSurfaceVariant),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
@@ -447,7 +461,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     controller: emailController,
                     style: TextStyle(color: scheme.onSurface),
                     decoration: InputDecoration(
-                      labelText: 'Email Address',
+                      labelText: l10n.emailAddress,
                       labelStyle: TextStyle(color: scheme.onSurfaceVariant),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
@@ -463,7 +477,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    l10n.cancel,
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
@@ -494,10 +508,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                               if (mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Profile updated successfully',
-                                    ),
+                                  SnackBar(
+                                    content: Text(l10n.profileUpdated),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -525,7 +537,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                           ),
                         )
                       : Text(
-                          'Save',
+                          l10n.save,
                           style: TextStyle(color: scheme.onPrimary),
                         ),
                 ),
@@ -551,6 +563,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
     bool isSending = false;
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
       builder: (context) {
@@ -559,18 +572,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             return AlertDialog(
               backgroundColor: scheme.surface,
               title: Text(
-                'Change Password',
+                l10n.changePassword,
                 style: TextStyle(color: scheme.onSurface),
               ),
               content: Text(
-                'We will send a secure password reset link to your email address. Do you want to proceed?',
+                l10n.passwordResetPrompt,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    l10n.cancel,
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
@@ -588,10 +601,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Password reset link sent to your email! (Check your spam)',
-                                  ),
+                                SnackBar(
+                                  content: Text(l10n.passwordResetSent),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -618,7 +629,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                           ),
                         )
                       : Text(
-                          'Send Link',
+                          l10n.sendLink,
                           style: TextStyle(color: scheme.onPrimary),
                         ),
                 ),
@@ -632,6 +643,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   Widget _buildBottomNav(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
@@ -659,15 +671,27 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: const Icon(Icons.dashboard),
+            label: l10n.adminDashboardLabel,
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.list_alt),
+            label: l10n.adminIssuesLabel,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.map),
+            label: l10n.adminMapLabel,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.forum),
+            label: l10n.chatsLabel,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.settings),
+            label: l10n.profileLabel,
+          ),
         ],
       ),
     );

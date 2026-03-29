@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class CreateReportScreen extends StatefulWidget {
   const CreateReportScreen({Key? key}) : super(key: key);
@@ -103,6 +104,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -114,7 +116,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Create Report',
+          l10n.createReportTitle,
           style: TextStyle(
             color: scheme.onSurface,
             fontSize: 18,
@@ -136,7 +138,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'STEP 1 OF 2',
+                      l10n.step1Of2,
                       style: TextStyle(
                         color: scheme.primary,
                         fontSize: 12,
@@ -145,7 +147,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                       ),
                     ),
                     Text(
-                      'Capture Evidence',
+                      l10n.captureEvidence,
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 12,
@@ -174,7 +176,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             children: [
               const SizedBox(height: 16),
               Text(
-                'Issue Title',
+                l10n.issueTitle,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -186,7 +188,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 controller: _titleController,
                 maxLength: 60,
                 decoration: InputDecoration(
-                  hintText: 'e.g. Broken pipe on KG 11 Ave',
+                  hintText: l10n.issueTitleHint,
                   hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                   filled: true,
                   fillColor: scheme.surface,
@@ -218,7 +220,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Short Description',
+                l10n.shortDescription,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -229,7 +231,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               _buildDescriptionInput(),
               const SizedBox(height: 32),
               Text(
-                'Add supporting media',
+                l10n.addSupportingMedia,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -238,7 +240,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'DistrictDirect uses media to ensure transparency and faster resolution. Attach photos or record a voice memo.',
+                l10n.supportingMediaHelp,
                 style: TextStyle(
                   fontSize: 16,
                   color: scheme.onSurfaceVariant,
@@ -259,6 +261,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   }
 
   Future<void> _takePhoto() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
@@ -272,7 +275,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to open camera: $e')));
+      ).showSnackBar(SnackBar(content: Text('${l10n.cameraOpenFailed}: $e')));
     }
   }
 
@@ -316,9 +319,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               color: Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'Tap to Change Photo',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.tapToChangePhoto,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -351,7 +354,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Take Photo or Video',
+                AppLocalizations.of(context)!.takePhotoOrVideo,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -360,7 +363,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'High quality preferred',
+                AppLocalizations.of(context)!.highQualityPreferred,
                 style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
               ),
             ],
@@ -419,7 +422,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission denied.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.microphonePermissionDenied)),
         );
       }
     } catch (e) {
@@ -463,6 +466,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Widget _buildVoiceRecordContainer() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -518,10 +522,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                         Expanded(
                           child: Text(
                             _audioPath != null
-                                ? 'Voice Memo Saved'
+                              ? l10n.voiceMemoSaved
                                 : (_isRecording
-                                      ? 'Recording...'
-                                      : 'Voice Recording'),
+                                ? l10n.recording
+                                : l10n.voiceRecording),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -545,7 +549,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                             _existingAudioUrl != null &&
                                     _audioPath == null &&
                                     _playbackDuration == Duration.zero
-                                ? 'Ready to play'
+                                ? l10n.readyToPlay
                                 : '${_formatDuration(_playbackPosition.inSeconds)} / ${_formatDuration(_playbackDuration.inSeconds > 0 ? _playbackDuration.inSeconds : _recordDuration)}',
                             style: TextStyle(
                               fontSize: 12,
@@ -555,7 +559,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                           )
                         else
                           Text(
-                            '05:00 limit',
+                            l10n.limit5Minutes,
                             style: TextStyle(
                               fontSize: 12,
                               color: scheme.onSurfaceVariant,
@@ -605,6 +609,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Widget _buildDescriptionInput() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -617,8 +622,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         maxLines: 4,
         maxLength: 140,
         decoration: InputDecoration(
-          hintText:
-              'Briefly describe the issue (e.g. Broken\nstreetlight on KG 201 St)...',
+          hintText: l10n.descriptionHint,
           hintStyle: TextStyle(
             color: scheme.onSurfaceVariant,
             fontSize: 15,
@@ -637,6 +641,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Widget _buildBottomActions() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       child: Container(
@@ -659,7 +664,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   backgroundColor: scheme.surfaceContainerHighest,
                 ),
                 child: Text(
-                  'Save Draft',
+                  l10n.saveDraft,
                   style: TextStyle(
                     color: scheme.onSurface,
                     fontSize: 16,
@@ -677,9 +682,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                       _audioPath == null &&
                       _descriptionController.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text(
-                          'Please capture a photo, audio, or write a description.',
+                          l10n.provideEvidencePrompt,
                         ),
                       ),
                     );
@@ -718,7 +723,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Continue',
+                      l10n.continueLabel,
                       style: TextStyle(
                         color: scheme.onPrimary,
                         fontSize: 16,

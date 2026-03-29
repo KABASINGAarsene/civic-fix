@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class ReportIncidentScreen extends StatefulWidget {
   const ReportIncidentScreen({Key? key}) : super(key: key);
@@ -287,6 +288,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -295,7 +297,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     if (!serviceEnabled) {
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location services are disabled.')),
+          SnackBar(content: Text(l10n.locationServicesDisabled)),
         );
       return;
     }
@@ -306,7 +308,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       if (permission == LocationPermission.denied) {
         if (mounted)
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied.')),
+            SnackBar(content: Text(l10n.locationPermissionsDenied)),
           );
         return;
       }
@@ -315,9 +317,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     if (permission == LocationPermission.deniedForever) {
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location permissions are permanently denied.'),
-          ),
+          SnackBar(content: Text(l10n.locationPermissionsDeniedForever)),
         );
       return;
     }
@@ -330,8 +330,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       });
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location acquired successfully!'),
+          SnackBar(
+            content: Text(l10n.locationAcquiredSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -339,7 +339,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error getting location: $e'),
+            content: Text('${l10n.locationError}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -354,6 +354,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -370,7 +371,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Select Category',
+                    l10n.selectCategory,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -387,7 +388,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'REQUIRED',
+                      l10n.requiredLabel,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -403,7 +404,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               _buildLocationSelectors(),
               const SizedBox(height: 32),
               Text(
-                'Priority Level',
+                l10n.priorityLevel,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -427,6 +428,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -436,7 +438,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'Create Report',
+        l10n.createReportTitle,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 18,
@@ -455,7 +457,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'STEP 2 OF 2',
+                    l10n.step2Of2,
                     style: TextStyle(
                       color: scheme.primary,
                       fontSize: 12,
@@ -464,7 +466,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                     ),
                   ),
                   Text(
-                    'Incident Details',
+                    l10n.incidentDetails,
                     style: TextStyle(
                       color: scheme.onSurfaceVariant,
                       fontSize: 12,
@@ -509,6 +511,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildLocationSection() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -528,7 +531,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Incident Location',
+            l10n.incidentLocation,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -548,8 +551,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               ),
               label: Text(
                 _isLocationFound
-                    ? 'Location Acquired'
-                    : 'Get My Current Location',
+                    ? l10n.locationAcquired
+                    : l10n.getCurrentLocation,
                 style: TextStyle(
                   color: _isLocationFound
                       ? scheme.tertiary
@@ -575,7 +578,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Use this if you are currently at the place where the incident or issue is located.',
+            l10n.locationUseHelp,
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontSize: 13,
@@ -585,7 +588,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              'OR',
+              l10n.orLabel,
               style: TextStyle(
                 color: scheme.onSurfaceVariant,
                 fontWeight: FontWeight.bold,
@@ -604,8 +607,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               controller: _manualLocationController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText:
-                    'Enter street address or describe the exact location (e.g. near the high school, 500m after the first turn)...',
+                hintText: l10n.manualLocationHint,
                 hintStyle: TextStyle(
                   color: scheme.onSurfaceVariant,
                   height: 1.4,
@@ -709,6 +711,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildLocationSelectors() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -725,7 +728,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               Icon(Icons.location_city, color: scheme.primary, size: 20),
               SizedBox(width: 8),
               Text(
-                'Incident Location Details',
+                l10n.incidentLocationDetails,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -747,7 +750,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedProvince,
-                hint: const Text('Select Province'),
+                hint: Text(l10n.selectProvince),
                 isExpanded: true,
                 icon: Icon(Icons.arrow_drop_down, color: scheme.onSurface),
                 items: _provinces.map((String province) {
@@ -781,7 +784,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedDistrict,
-                hint: const Text('Select Target District'),
+                hint: Text(l10n.selectTargetDistrict),
                 isExpanded: true,
                 icon: Icon(
                   Icons.arrow_drop_down,
@@ -824,7 +827,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedSector,
-                hint: const Text('Select Sector'),
+                hint: Text(l10n.selectSector),
                 isExpanded: true,
                 icon: Icon(
                   Icons.arrow_drop_down,
@@ -891,17 +894,17 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildPriorityLabel(
-                'LOW',
+                AppLocalizations.of(context)!.low,
                 scheme.tertiary,
                 _priorityLevel == 0,
               ),
               _buildPriorityLabel(
-                'MEDIUM',
+                AppLocalizations.of(context)!.medium,
                 scheme.secondary,
                 _priorityLevel == 1,
               ),
               _buildPriorityLabel(
-                'CRITICAL',
+                AppLocalizations.of(context)!.critical,
                 scheme.error,
                 _priorityLevel == 2,
               ),
@@ -948,7 +951,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
       ),
       child: Text(
-        '"Medium urgency reports are typically reviewed within 24-48 business hours."',
+        AppLocalizations.of(context)!.priorityInfo,
         style: TextStyle(
           color: scheme.primary,
           fontSize: 13,
@@ -961,6 +964,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildAnonymousToggle() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -969,7 +973,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Report Anonymously',
+              l10n.reportAnonymously,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -978,7 +982,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             ),
             SizedBox(height: 4),
             Text(
-              'Hide my identity from the public community feed.',
+              l10n.anonymousHelp,
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ],
@@ -1039,15 +1043,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Future<void> _submitReport() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isSubmitting = true);
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null)
-        throw Exception('User not logged in. Please sign in again.');
+        throw Exception(l10n.userNotLoggedIn);
 
       if (_selectedDistrict == null || _selectedSector == null) {
-        throw Exception('Please select a Target District and Sector.');
+        throw Exception(l10n.selectDistrictSectorPrompt);
       }
 
       String? imageUrl;
@@ -1124,8 +1129,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           SnackBar(
             content: Text(
               _editDocId != null
-                  ? 'Report updated!'
-                  : 'Incident reported successfully!',
+              ? l10n.reportUpdated
+              : l10n.incidentReportedSuccess,
             ),
             backgroundColor: Colors.green,
           ),
@@ -1140,7 +1145,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to submit: $e'),
+            content: Text('${l10n.failedToSubmit}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -1152,6 +1157,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildSubmitButton() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       child: Container(
@@ -1179,9 +1185,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
-                      'Submit to District',
+                      l10n.submitToDistrict,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -59,10 +60,63 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     return DateFormat('MMM d, yyyy').format(date);
   }
 
+  Color _statusAccentColor(String status, ColorScheme scheme) {
+    final normalized = status.trim().toLowerCase();
+    if (normalized == 'resolved') {
+      return scheme.tertiary;
+    }
+    if (normalized == 'submitted' || normalized == 'open') {
+      return scheme.primary;
+    }
+    if (normalized == 'received' ||
+        normalized == 'assigned' ||
+        normalized == 'field visit' ||
+        normalized == 'in progress') {
+      return const Color(0xFFF59E0B);
+    }
+    return scheme.onSurfaceVariant;
+  }
+
+  IconData _statusIcon(String status) {
+    final normalized = status.trim().toLowerCase();
+    if (normalized == 'resolved') return Icons.check_circle;
+    if (normalized == 'submitted' || normalized == 'open') {
+      return Icons.send_outlined;
+    }
+    if (normalized == 'received' ||
+        normalized == 'assigned' ||
+        normalized == 'field visit' ||
+        normalized == 'in progress') {
+      return Icons.pending_actions;
+    }
+    return Icons.info;
+  }
+
+  Color _statusChipBackground(
+    String status,
+    ColorScheme scheme,
+    Brightness brightness,
+  ) {
+    final accent = _statusAccentColor(status, scheme);
+    final alpha = brightness == Brightness.dark ? 0.22 : 0.12;
+    return accent.withValues(alpha: alpha);
+  }
+
+  Color _statusIconBackground(
+    String status,
+    ColorScheme scheme,
+    Brightness brightness,
+  ) {
+    final accent = _statusAccentColor(status, scheme);
+    final alpha = brightness == Brightness.dark ? 0.16 : 0.08;
+    return accent.withValues(alpha: alpha);
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
@@ -125,7 +179,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 60.0),
                         child: Text(
-                          'No district reports yet. Be the first!',
+                          l10n.homeNoDistrictReports,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 16,
@@ -237,6 +291,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
   Widget _buildReportButton() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -265,7 +320,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
               Icon(Icons.add, color: scheme.onPrimary),
               SizedBox(width: 8),
               Text(
-                'REPORT NEW ISSUE',
+                l10n.homeReportNewIssue,
                 style: TextStyle(
                   color: scheme.onPrimary,
                   fontSize: 14,
@@ -280,13 +335,14 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     );
   }
   Widget _buildFiltersRow() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
           // Province Filter
           _buildDropdownFilter(
-            label: _selectedProvince ?? 'Province',
+            label: _selectedProvince ?? l10n.homeProvince,
             icon: Icons.map,
             items: _provinces,
             value: _selectedProvince,
@@ -309,7 +365,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
           // District Filter
           _buildDropdownFilter(
-            label: _selectedDistrict ?? 'District',
+            label: _selectedDistrict ?? l10n.homeDistrict,
             icon: Icons.location_on,
             items: _selectedProvince == null ? [] : (_provinceToDistricts[_selectedProvince] ?? []),
             value: _selectedDistrict,
@@ -331,7 +387,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
           // Sector Filter
           _buildDropdownFilter(
-            label: _selectedSector ?? 'Sector',
+            label: _selectedSector ?? l10n.homeSector,
             icon: Icons.business,
             items: _selectedDistrict == null ? [] : (_districtsAndSectors[_selectedDistrict] ?? ['Main Sector']),
             value: _selectedSector,
@@ -436,12 +492,13 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
   Widget _buildFeedHeader() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'District Feed',
+          l10n.homeDistrictFeed,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -459,7 +516,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
               Icon(Icons.map, size: 16, color: scheme.primary),
               SizedBox(width: 6),
               Text(
-                'View Map',
+                l10n.homeViewMap,
                 style: TextStyle(
                   color: scheme.primary,
                   fontSize: 13,
@@ -475,6 +532,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
   Widget _buildFeedCard(DocumentSnapshot doc) {
     final scheme = Theme.of(context).colorScheme;
+    final brightness = Theme.of(context).brightness;
     final data = doc.data() as Map<String, dynamic>;
     final String category = (data['category'] ?? 'Issue')
         .toString()
@@ -497,39 +555,12 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
     final bool showAvatars = likes >= 5;
 
     // Derived UI info
-    Color categoryBgColor = scheme.surfaceContainerHighest;
-    Color categoryColor = scheme.onSurfaceVariant;
+    final Color statusColor = _statusAccentColor(status, scheme);
+    final Color categoryBgColor = _statusChipBackground(status, scheme, brightness);
+    final Color iconBgColor = _statusIconBackground(status, scheme, brightness);
+    final Color categoryColor = statusColor;
     IconData iconData = _getCategoryIcon(category);
-
-    if (category == 'INFRASTRUCTURE' || category == 'LAND') {
-      categoryBgColor = const Color(0xFFFEF3C7);
-      categoryColor = const Color(0xFFF59E0B);
-    } else if (category == 'UTILITIES' ||
-        category == 'EDUCATION' ||
-        category == 'HEALTH' ||
-        category == 'SOCIAL WELFARE' ||
-        category == 'JUSTICE') {
-      categoryBgColor = const Color(0xFFDBEAFE);
-      categoryColor = const Color(0xFF2563EB);
-    } else if (category == 'ENVIRONMENT' || category == 'SECURITY') {
-      categoryBgColor = const Color(0xFFD1FAE5);
-      categoryColor = const Color(0xFF10B981);
-    }
-
-    Color statusColor = scheme.onSurfaceVariant;
-    IconData statusIcon = Icons.info;
-
-    if (status == 'RESOLVED') {
-      statusColor = const Color(0xFF10B981);
-      statusIcon = Icons.check_circle;
-    } else if (status == 'Submitted' || status == 'Open') {
-      statusColor = const Color(0xFF2563EB);
-      statusIcon = Icons.send_outlined;
-    } else if (status != 'Submitted' && status != 'Resolved') {
-      // Any step in between (Received, Assigned, etc.)
-      statusColor = const Color(0xFFF59E0B);
-      statusIcon = Icons.pending_actions;
-    }
+    final IconData statusIcon = _statusIcon(status);
 
     return GestureDetector(
       onTap: () {
@@ -566,7 +597,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: categoryBgColor.withOpacity(0.5),
+                    color: iconBgColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(iconData, color: categoryColor, size: 32),
@@ -773,7 +804,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
                   Row(
                     children: [
                       Text(
-                        'Details',
+                        AppLocalizations.of(context)!.homeDetails,
                         style: TextStyle(
                           color: scheme.primary,
                           fontWeight: FontWeight.bold,
@@ -840,6 +871,7 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
 
   Widget _buildBottomNav() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -869,17 +901,17 @@ class _DistrictFeedScreenState extends State<DistrictFeedScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: l10n.homeLabel),
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'REPORTS',
+            icon: const Icon(Icons.receipt_long),
+            label: l10n.reportsLabel,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'CHATS',
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: l10n.chatsLabel,
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
+          BottomNavigationBarItem(icon: const Icon(Icons.person), label: l10n.profileLabel),
         ],
       ),
     );

@@ -5,6 +5,7 @@ import '../../utils/validators.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 /// Citizen Login Screen
 /// Login page for regular citizens with Rwanda landscape background
@@ -91,11 +92,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Account created! Please check your spam folder for the link to verify your sign up.',
-              ),
+              content: Text(AppLocalizations.of(context)!.accountCreatedVerify),
               backgroundColor: Theme.of(context).colorScheme.tertiary,
-              duration: Duration(seconds: 5),
+              duration: const Duration(seconds: 5),
             ),
           );
           // Switch back to login mode
@@ -161,6 +160,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildInfoCard() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -192,7 +192,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Zero-Trip Guarantee',
+                  l10n.zeroTripGuarantee,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                     color: scheme.primary,
@@ -200,7 +200,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Save time. No more traveling to the office.',
+                  l10n.zeroTripDescription,
                   style: AppTextStyles.caption,
                 ),
               ],
@@ -213,12 +213,13 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildPhoneField() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Phone Number',
+          l10n.phoneNumber,
           style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
         ),
         const SizedBox(height: 8),
@@ -233,7 +234,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           ],
           style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: '78 XXX XXXX',
+            hintText: l10n.phoneHint,
             hintStyle: AppTextStyles.inputHint.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -313,12 +314,13 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildNameField() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Full Name',
+          l10n.fullName,
           style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
         ),
         const SizedBox(height: 8),
@@ -337,7 +339,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           textCapitalization: TextCapitalization.words,
           style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Enter your full name',
+            hintText: l10n.fullNameHint,
             hintStyle: AppTextStyles.inputHint.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -385,12 +387,13 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildEmailField() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Email',
+          l10n.emailAddress,
           style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
         ),
         const SizedBox(height: 8),
@@ -408,7 +411,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           keyboardType: TextInputType.emailAddress,
           style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'your@email.com',
+            hintText: l10n.emailHint,
             hintStyle: AppTextStyles.inputHint.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -456,12 +459,13 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildPasswordField() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Password',
+          l10n.password,
           style: AppTextStyles.inputLabel.copyWith(color: scheme.onSurface),
         ),
         const SizedBox(height: 8),
@@ -479,7 +483,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           obscureText: _obscurePassword,
           style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Enter your password',
+            hintText: l10n.password,
             hintStyle: AppTextStyles.inputHint.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -538,7 +542,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
             child: TextButton(
               onPressed: _showForgotPasswordDialog,
               child: Text(
-                'Forgot Password?',
+                l10n.forgotPassword,
                 style: AppTextStyles.caption.copyWith(
                   color: scheme.primary,
                   fontWeight: FontWeight.w600,
@@ -552,6 +556,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Future<void> _showForgotPasswordDialog() async {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final emailController = TextEditingController();
     bool isSending = false;
 
@@ -561,18 +566,16 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Reset Password'),
+              title: Text(l10n.resetPassword),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Enter your email address and we will send you a link to reset your password.',
-                  ),
+                  Text(l10n.resetPasswordPrompt),
                   const SizedBox(height: 16),
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
-                      hintText: 'your@email.com',
+                      hintText: l10n.emailHint,
                       filled: true,
                       fillColor: scheme.surface,
                       border: OutlineInputBorder(
@@ -586,7 +589,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    l10n.cancel,
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ),
@@ -608,10 +611,8 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Password reset email sent! Check your inbox (and spam).',
-                                  ),
+                                SnackBar(
+                                  content: Text(l10n.passwordResetEmailSent),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -621,9 +622,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    'Failed to send email. Check if the address is correct.',
-                                  ),
+                                  content: Text(l10n.failedToSendEmail),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -639,9 +638,9 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Send Link',
-                          style: TextStyle(color: Colors.white),
+                        : Text(
+                          l10n.sendLink,
+                          style: const TextStyle(color: Colors.white),
                         ),
                 ),
               ],
@@ -654,16 +653,17 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildNationalIDField() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text('National ID', style: AppTextStyles.inputLabel),
+            Text(l10n.nationalId, style: AppTextStyles.inputLabel),
             const SizedBox(width: 8),
             Text(
-              '(Optional)',
+              l10n.optional,
               style: AppTextStyles.caption.copyWith(
                 color: scheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -679,7 +679,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
           keyboardType: TextInputType.number,
           style: AppTextStyles.inputText.copyWith(color: scheme.onSurface),
           decoration: InputDecoration(
-            hintText: 'Enter your 16-digit NID',
+            hintText: l10n.enterNidHint,
             hintStyle: AppTextStyles.inputHint.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -728,6 +728,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
 
   Widget _buildLoginButton() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
       width: double.infinity,
@@ -758,7 +759,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                 ),
               )
             : Text(
-                _isLoginMode ? 'Login' : 'Create Account',
+                _isLoginMode ? l10n.login : l10n.createAccount,
                 style: AppTextStyles.button.copyWith(color: scheme.onPrimary),
               ),
       ),
@@ -768,6 +769,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -801,7 +803,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'DistrictDirect',
+                          l10n.rolePortalTitle,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -851,7 +853,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         alignment: Alignment.bottomLeft,
                         padding: const EdgeInsets.all(24.0),
                         child: Text(
-                          'Hello! Muraho!',
+                          l10n.helloMuraho,
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -875,7 +877,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                       children: [
                         // Subtitle
                         Text(
-                          'Access your district services directly',
+                          l10n.accessDistrictServicesDirectly,
                           style: AppTextStyles.subtitle.copyWith(
                             color: scheme.onSurface,
                             fontSize: 16,
@@ -883,7 +885,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Join thousands of citizens saving time daily.',
+                          l10n.joinThousandsDaily,
                           style: AppTextStyles.caption.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
@@ -921,8 +923,8 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                   children: [
                                     Text(
                                       _isLoginMode
-                                          ? "Don't have an account? "
-                                          : 'Already have an account? ',
+                                          ? '${l10n.dontHaveAccount} '
+                                          : '${l10n.alreadyHaveAccount} ',
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: scheme.onSurfaceVariant,
                                       ),
@@ -946,7 +948,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
                                       child: Text(
-                                        _isLoginMode ? 'Sign Up' : 'Login',
+                                        _isLoginMode ? l10n.signUp : l10n.login,
                                         style: AppTextStyles.link.copyWith(
                                           color: scheme.primary,
                                         ),
@@ -963,7 +965,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16),
                                     child: Text(
-                                      'OR',
+                                      l10n.orLabel,
                                       style: AppTextStyles.caption.copyWith(
                                         color: scheme.onSurfaceVariant,
                                       ),
@@ -998,7 +1000,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                                     width: 24,
                                   ),
                                   label: Text(
-                                    'Continue with Google',
+                                    l10n.continueWithGoogle,
                                     style: TextStyle(
                                       color: scheme.onSurface,
                                       fontWeight: FontWeight.w600,
@@ -1026,7 +1028,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Privacy Shield: Your data is protected',
+                                l10n.privacyShield,
                                 style: AppTextStyles.caption.copyWith(
                                   color: scheme.onSurfaceVariant,
                                 ),
@@ -1037,7 +1039,7 @@ class _CitizenLoginScreenState extends State<CitizenLoginScreen> {
                         const SizedBox(height: 16),
                         Center(
                           child: Text(
-                            'DISTRICTDIRECT RWANDA\n© 2026 Government Service Portal',
+                            l10n.districtDirectFooter,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.caption.copyWith(
                               color: scheme.onSurfaceVariant,

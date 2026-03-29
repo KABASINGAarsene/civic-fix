@@ -16,6 +16,8 @@ class AppSettingsProvider extends ChangeNotifier {
     Locale('rw'),
   ];
 
+  static const List<String> supportedLanguageCodes = ['en', 'fr', 'rw'];
+
   static const Map<String, String> _languageLabelToCode = {
     'English': 'en',
     'French': 'fr',
@@ -35,6 +37,7 @@ class AppSettingsProvider extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
   Locale get locale => Locale(_languageCode);
+  String get languageCode => _languageCode;
   bool get notificationsEnabled => _notificationsEnabled;
 
   String get selectedLanguageLabel {
@@ -78,11 +81,20 @@ class AppSettingsProvider extends ChangeNotifier {
 
   Future<void> setLanguageFromLabel(String languageLabel) async {
     final normalizedCode = _languageLabelToCode[languageLabel];
-    if (normalizedCode == null || _languageCode == normalizedCode) {
+    if (normalizedCode == null) {
       return;
     }
 
-    _languageCode = normalizedCode;
+    await setLanguageCode(normalizedCode);
+  }
+
+  Future<void> setLanguageCode(String languageCode) async {
+    if (!supportedLanguageCodes.contains(languageCode) ||
+        _languageCode == languageCode) {
+      return;
+    }
+
+    _languageCode = languageCode;
     notifyListeners();
     await _preferences.setString(_languageCodeKey, _languageCode);
   }
@@ -112,7 +124,7 @@ class AppSettingsProvider extends ChangeNotifier {
       return 'en';
     }
 
-    if (_languageLabelToCode.containsValue(storedLanguageCode)) {
+    if (supportedLanguageCodes.contains(storedLanguageCode)) {
       return storedLanguageCode;
     }
 

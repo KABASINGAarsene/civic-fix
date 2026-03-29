@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 import '../shared/issue_detail_screen.dart';
 
 class MyReportsScreen extends StatefulWidget {
@@ -13,24 +14,41 @@ class MyReportsScreen extends StatefulWidget {
 
 class _MyReportsScreenState extends State<MyReportsScreen> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = ['All', 'Submitted', 'Received', 'Assigned', 'Field Visit', 'Resolved'];
+  final List<String> _filters = ['all', 'Submitted', 'Received', 'Assigned', 'Field Visit', 'Resolved'];
+
+  String _filterLabel(String filter, AppLocalizations l10n) {
+    switch (filter) {
+      case 'all':
+        return l10n.allFilter;
+      case 'Submitted':
+        return l10n.submittedStatus;
+      case 'Received':
+        return l10n.receivedStatus;
+      case 'Assigned':
+        return l10n.assignedStatus;
+      case 'Field Visit':
+        return l10n.fieldVisitStatus;
+      case 'Resolved':
+        return l10n.resolvedStatus;
+      default:
+        return filter;
+    }
+  }
 
   String _formatDate(DateTime date) => DateFormat('MMM d, yyyy').format(date);
 
   Color _getStatusColor(String status, ColorScheme scheme) {
-    switch (status) {
-      case 'Submitted':
-      case 'Open':
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
         return scheme.primary;
-      case 'Received':
-        return scheme.secondary;
-      case 'Assigned':
-      case 'In Progress':
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
         return scheme.tertiary;
-      case 'Field Visit':
-        return scheme.secondary.withValues(alpha: 0.8);
-      case 'Resolved':
-        return scheme.primary.withValues(alpha: 0.85);
       default:
         return scheme.onSurfaceVariant;
     }
@@ -39,6 +57,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -89,7 +108,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No reports yet',
+                          l10n.noReportsYet,
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 16,
@@ -98,7 +117,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tap + to submit a new issue',
+                          l10n.tapPlusToSubmitIssue,
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 14,
@@ -127,20 +146,21 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   Widget _buildCompactCard(DocumentSnapshot doc) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final data          = doc.data() as Map<String, dynamic>;
-    final String title  = data['title'] ?? data['description'] ?? 'No title';
+    final String title  = data['title'] ?? data['description'] ?? l10n.noTitle;
     final String status = data['status'] ?? 'Open';
     final String? imageUrl = data['photo_url'];
     final Timestamp? ts = data['timestamp'] as Timestamp?;
-    final dateStr       = ts != null ? _formatDate(ts.toDate()) : 'Recently';
+    final dateStr       = ts != null ? _formatDate(ts.toDate()) : l10n.recently;
     final String shortId = '#${doc.id.substring(0, 8).toUpperCase()}';
 
     String statusNote = '';
-    if (status == 'Received')    statusNote = 'Acknowledged by District';
-    if (status == 'Assigned')    statusNote = 'Field team assigned';
-    if (status == 'Field Visit') statusNote = 'Team is on location';
-    if (status == 'Resolved')    statusNote = 'Issue has been resolved';
-    if (status == 'Submitted' || status == 'Open') statusNote = 'Awaiting district review';
+    if (status == 'Received') statusNote = l10n.acknowledgedByDistrict;
+    if (status == 'Assigned') statusNote = l10n.fieldTeamAssigned;
+    if (status == 'Field Visit') statusNote = l10n.teamOnLocation;
+    if (status == 'Resolved') statusNote = l10n.issueResolved;
+    if (status == 'Submitted' || status == 'Open') statusNote = l10n.awaitingDistrictReview;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -266,6 +286,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return AppBar(
       backgroundColor: scheme.surface,
@@ -275,7 +296,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'My Reports',
+        l10n.myReportsTitle,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 18,
@@ -291,6 +312,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   Widget _buildFilterPills() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
       height: 36,
@@ -310,7 +332,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
                     : scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text(_filters[index],
+              child: Text(_filterLabel(_filters[index], l10n),
                 style: TextStyle(
                   color: isSelected ? scheme.onPrimary : scheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
@@ -348,6 +370,7 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
 
   Widget _buildBottomNav() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       height: 70,
@@ -360,11 +383,11 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _navItem(Icons.home, 'Home', false, () => Navigator.pushNamed(context, '/citizen-home')),
-          _navItem(Icons.receipt_long, 'Reports', true, () {}),
+          _navItem(Icons.home, l10n.homeLabel, false, () => Navigator.pushNamed(context, '/citizen-home')),
+          _navItem(Icons.receipt_long, l10n.reportsLabel, true, () {}),
           const SizedBox(width: 48),
-          _navItem(Icons.chat_bubble_outline, 'Chats', false, () => Navigator.pushNamed(context, '/citizen-chats')),
-          _navItem(Icons.person, 'Profile', false, () => Navigator.pushNamed(context, '/profile')),
+          _navItem(Icons.chat_bubble_outline, l10n.chatsLabel, false, () => Navigator.pushNamed(context, '/citizen-chats')),
+          _navItem(Icons.person, l10n.profileLabel, false, () => Navigator.pushNamed(context, '/profile')),
         ],
       ),
     );

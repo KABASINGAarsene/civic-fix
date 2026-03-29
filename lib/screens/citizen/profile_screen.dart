@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -72,6 +73,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeaderCard(ColorScheme scheme) {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -159,7 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'TEL: $phone',
+              '${l10n.telPrefix} $phone',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -176,6 +178,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSettingsGrid() {
     final appSettings = context.watch<AppSettingsProvider>();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    final languageNames = {
+      'en': l10n.english,
+      'fr': l10n.french,
+      'rw': l10n.kinyarwanda,
+    };
 
     return GridView.count(
       crossAxisCount: 2,
@@ -187,8 +196,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         _buildGridOption(
           icon: appSettings.isDarkMode ? Icons.nightlight_round : Icons.wb_sunny,
-          title: 'App Theme',
-          subtitle: appSettings.isDarkMode ? 'Dark Mode' : 'Light Mode',
+          title: l10n.citizenAppTheme,
+          subtitle: appSettings.isDarkMode ? l10n.citizenDarkMode : l10n.citizenLightMode,
           color: scheme.secondary,
           onTap: () {
             appSettings.toggleThemeMode();
@@ -196,8 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         _buildGridOption(
           icon: Icons.notifications_active,
-          title: 'Notifications',
-          subtitle: appSettings.notificationsEnabled ? 'Enabled' : 'Disabled',
+          title: l10n.citizenNotifications,
+          subtitle: appSettings.notificationsEnabled ? l10n.enabled : l10n.disabled,
           color: scheme.tertiary,
           onTap: () {
             appSettings.setNotificationsEnabled(
@@ -207,15 +216,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         _buildGridOption(
           icon: Icons.language,
-          title: 'Language',
-          subtitle: appSettings.selectedLanguageLabel,
+          title: l10n.language,
+          subtitle: languageNames[appSettings.languageCode] ?? l10n.english,
           color: scheme.primary,
           onTap: _showLanguagePicker,
         ),
         _buildGridOption(
           icon: Icons.shield,
-          title: 'Security',
-          subtitle: 'Password, PIN',
+          title: l10n.citizenSecurity,
+          subtitle: l10n.citizenSecuritySubtitle,
           color: scheme.error,
           onTap: _showChangePasswordConfirmation,
         ),
@@ -225,7 +234,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _showLanguagePicker() async {
     final appSettings = context.read<AppSettingsProvider>();
-    final languages = appSettings.supportedLanguageLabels;
+    final l10n = AppLocalizations.of(context)!;
+    final languageNames = {
+      'en': l10n.english,
+      'fr': l10n.french,
+      'rw': l10n.kinyarwanda,
+    };
+    final languageCodes = AppSettingsProvider.supportedLanguageCodes;
 
     await showModalBottomSheet(
       context: context,
@@ -239,21 +254,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Select Language',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                '',
+              ),
+              Text(
+                l10n.selectLanguage,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              ...languages.map(
-                (lang) => ListTile(
-                  title: Text(lang),
-                    trailing: appSettings.selectedLanguageLabel == lang
+              ...languageCodes.map(
+                (code) => ListTile(
+                  title: Text(languageNames[code] ?? code),
+                    trailing: appSettings.languageCode == code
                       ? Icon(
                         Icons.check,
                         color: Theme.of(context).colorScheme.tertiary,
                       )
                       : null,
                   onTap: () {
-                    appSettings.setLanguageFromLabel(lang);
+                    appSettings.setLanguageCode(code);
                     Navigator.pop(context);
                   },
                 ),
@@ -269,6 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final nameController = TextEditingController(text: _userData?['name']);
     final phoneController = TextEditingController(text: _userData?['phone']);
     bool isSaving = false;
+    final l10n = AppLocalizations.of(context)!;
 
     await showDialog(
       context: context,
@@ -276,22 +295,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Edit Profile'),
+              title: Text(l10n.editProfile),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
+                    decoration: InputDecoration(
+                      labelText: l10n.fullName,
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
+                    decoration: InputDecoration(
+                      labelText: l10n.phoneNumber,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -301,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    l10n.cancel,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -332,10 +351,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (mounted) {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Profile updated successfully',
-                                    ),
+                                  SnackBar(
+                                    content: Text(l10n.profileUpdated),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -346,7 +363,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Error updating profile: $e'),
+                                  content: Text('${AppLocalizations.of(context)!.failedToSubmit}: $e'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -362,8 +379,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Save',
+                      : Text(
+                          l10n.save,
                           style: TextStyle(color: Colors.white),
                         ),
                 ),
@@ -378,9 +395,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _showChangePasswordConfirmation() async {
     final email = _userData?['email'] as String?;
     if (email == null || email.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Email not found. Cannot reset password.'),
+        SnackBar(
+          content: Text(l10n.emailNotFound),
           backgroundColor: Colors.red,
         ),
       );
@@ -388,22 +406,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     bool isSending = false;
+    final l10n = AppLocalizations.of(context)!;
     await showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Change Password'),
-              content: const Text(
-                'We will send a secure password reset link to your email address. Do you want to proceed?',
+              title: Text(l10n.changePassword),
+              content: Text(
+                l10n.passwordResetPrompt,
                 style: TextStyle(color: Colors.black87),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    l10n.cancel,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -423,10 +442,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Password reset link sent to your email! (Check your spam)',
-                                  ),
+                                SnackBar(
+                                  content: Text(l10n.passwordResetSent),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -436,7 +453,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Failed to send link: $e'),
+                                  content: Text('${AppLocalizations.of(context)!.failedToSendEmail}: $e'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -452,8 +469,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Send Link',
+                      : Text(
+                          l10n.sendLink,
                           style: TextStyle(color: Colors.white),
                         ),
                 ),
@@ -531,9 +548,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         },
         icon: const Icon(Icons.logout),
-        label: const Text(
-          'Log Out',
-          style: TextStyle(
+        label: Text(
+          AppLocalizations.of(context)!.logOut,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -579,17 +596,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'REPORTS',
+            icon: const Icon(Icons.home),
+            label: AppLocalizations.of(context)!.homeLabel,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'CHATS',
+            icon: const Icon(Icons.receipt_long),
+            label: AppLocalizations.of(context)!.reportsLabel,
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: AppLocalizations.of(context)!.chatsLabel,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: AppLocalizations.of(context)!.profileLabel,
+          ),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 import 'screens/auth/citizen_login_screen.dart';
 import 'screens/auth/admin_login_screen.dart';
 import 'screens/citizen/district_feed_screen.dart';
@@ -58,12 +59,13 @@ class DistrictDirectApp extends StatelessWidget {
       child: Consumer<AppSettingsProvider>(
         builder: (context, appSettings, _) {
           return MaterialApp(
-            title: 'DistrictDirect Rwanda',
+            onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
             debugShowCheckedModeBanner: false,
             themeMode: appSettings.themeMode,
             locale: appSettings.locale,
             supportedLocales: AppSettingsProvider.supportedLocales,
             localizationsDelegates: const [
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
@@ -161,6 +163,7 @@ class RoleSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Container(
@@ -210,7 +213,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Title
                   Text(
-                    'DistrictDirect',
+                    l10n.rolePortalTitle,
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -219,7 +222,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Government Service Portal',
+                    l10n.rolePortalSubtitle,
                     style: TextStyle(
                       fontSize: 15,
                       color: scheme.onPrimary.withValues(alpha: 0.9),
@@ -261,7 +264,7 @@ class RoleSelectionScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Citizen Login',
+                                l10n.roleCitizenTitle,
                                 style: TextStyle(
                                   fontSize: 19,
                                   fontWeight: FontWeight.bold,
@@ -270,7 +273,7 @@ class RoleSelectionScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Access your local district services',
+                                l10n.roleCitizenSubtitle,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
@@ -319,7 +322,7 @@ class RoleSelectionScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Admin Login',
+                                l10n.roleAdminTitle,
                                 style: TextStyle(
                                   fontSize: 19,
                                   fontWeight: FontWeight.bold,
@@ -328,7 +331,7 @@ class RoleSelectionScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'For empowering local district officials portal',
+                                l10n.roleAdminSubtitle,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
@@ -344,7 +347,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   const SizedBox(height: 36),
                   // Footer
                   Text(
-                    '© 2026 Government of Rwanda',
+                    l10n.copyright,
                     style: TextStyle(
                       fontSize: 12,
                       color: scheme.onPrimary.withValues(alpha: 0.9),

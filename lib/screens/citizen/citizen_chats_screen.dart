@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class CitizenChatsScreen extends StatelessWidget {
   const CitizenChatsScreen({Key? key}) : super(key: key);
@@ -18,6 +19,7 @@ class CitizenChatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -25,7 +27,7 @@ class CitizenChatsScreen extends StatelessWidget {
         backgroundColor: scheme.surface,
         elevation: 0,
         title: Text(
-          'My Conversations',
+          l10n.citizenChatsTitle,
           style: TextStyle(
             color: scheme.onSurface,
             fontWeight: FontWeight.bold,
@@ -39,7 +41,7 @@ class CitizenChatsScreen extends StatelessWidget {
         ),
       ),
       body: user == null
-          ? const Center(child: Text('Please login to view chats'))
+          ? Center(child: Text(l10n.pleaseLoginToViewChats))
           : StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('chats')
@@ -62,14 +64,14 @@ class CitizenChatsScreen extends StatelessWidget {
                           children: [
                             Icon(Icons.sync, size: 48, color: scheme.primary),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Syncing Conversations...',
+                            Text(
+                              l10n.syncingConversations,
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'The chat system is being synchronized. Please wait a few moments or try again later.',
+                              l10n.chatSystemSyncingMessage,
                               textAlign: TextAlign.center,
                               style: TextStyle(color: scheme.onSurfaceVariant),
                             ),
@@ -95,7 +97,7 @@ class CitizenChatsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No conversations yet',
+                          l10n.noConversationsYet,
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 16,
@@ -103,7 +105,7 @@ class CitizenChatsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Start a chat from your issue reports.',
+                          l10n.startChatFromReports,
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 14,
@@ -120,10 +122,10 @@ class CitizenChatsScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final chat = docs[index].data() as Map<String, dynamic>;
                     final ticketId = docs[index].id;
-                    final lastMsg = chat['lastMessage'] ?? 'Check updates...';
+                    final lastMsg = chat['lastMessage'] ?? l10n.checkUpdates;
                     final timestamp = chat['lastTimestamp'] as Timestamp?;
                     final timeStr = timestamp != null ? _formatDate(timestamp.toDate()) : '';
-                    final ticketTitle = chat['ticketTitle'] ?? 'District Official';
+                    final ticketTitle = chat['ticketTitle'] ?? l10n.districtOfficial;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),

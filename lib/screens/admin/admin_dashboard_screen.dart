@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:async';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
@@ -23,6 +24,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _inProgress = 0;
   int _resolved = 0;
   Map<String, int> _categoryCounts = {};
+
+  Color _statusSemanticColor(String status, ColorScheme scheme) {
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
+        return scheme.primary;
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
+        return scheme.tertiary;
+      default:
+        return scheme.onSurfaceVariant;
+    }
+  }
 
   @override
   void initState() {
@@ -77,6 +95,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
@@ -134,15 +153,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         _buildTopStatsGrid(),
                         const SizedBox(height: 24),
-                        _buildSectionHeader('District Activity', 'View Map'),
+                        _buildSectionHeader(l10n.districtActivity, l10n.viewMap),
                         const SizedBox(height: 12),
                         _buildHeatmapCard(),
                         const SizedBox(height: 24),
-                        _buildSectionHeader('Category Distribution', ''),
+                        _buildSectionHeader(l10n.categoryDistribution, ''),
                         const SizedBox(height: 12),
                         _buildCategoryDistributionCard(),
                         const SizedBox(height: 24),
-                        _buildSectionHeader('Recent Performance', ''),
+                        _buildSectionHeader(l10n.recentPerformance, ''),
                         const SizedBox(height: 12),
                         _buildMonthlyPerformanceCard(docs),
                         const SizedBox(height: 24),
@@ -250,6 +269,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildTopStatsGrid() {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final receivedColor = _statusSemanticColor('Submitted', scheme);
+    final inProgressColor = _statusSemanticColor('Assigned', scheme);
+    final resolvedColor = _statusSemanticColor('Resolved', scheme);
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 12,
@@ -259,33 +283,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       childAspectRatio: 1.5,
       children: [
         _buildStatCard(
-          title: 'RECEIVED',
+          title: l10n.receivedStat,
           value: _totalReceived.toString(),
-          trend: 'Live',
-          trendColor: const Color(0xFF10B981),
+          trend: l10n.liveTrend,
+          trendColor: receivedColor,
           icon: Icons.analytics,
-          iconBgColor: const Color(0xFF2563EB),
+          iconBgColor: receivedColor,
         ),
         _buildStatCard(
-          title: 'IN-PROGRESS',
+          title: l10n.inProgressStat,
           value: _inProgress.toString(),
-          trend: 'Active',
-          trendColor: const Color(0xFFF59E0B),
+          trend: l10n.activeTrend,
+          trendColor: inProgressColor,
           icon: Icons.assignment_late,
-          iconBgColor: const Color(0xFFF59E0B),
+          iconBgColor: inProgressColor,
         ),
         _buildStatCard(
-          title: 'RESOLVED TOTAL',
+          title: l10n.resolvedTotalStat,
           value: _resolved.toString(),
-          trend: 'Check',
-          trendColor: const Color(0xFF10B981),
+          trend: l10n.checkTrend,
+          trendColor: resolvedColor,
           icon: Icons.check_circle_outline,
-          iconBgColor: const Color(0xFF10B981),
+          iconBgColor: resolvedColor,
         ),
         _buildStatCard(
-          title: 'MY DISTRICT',
-          value: _adminDistrict ?? 'N/A',
-          trend: 'Safe',
+          title: l10n.myDistrictStat,
+          value: _adminDistrict ?? l10n.unknownDistrict,
+          trend: l10n.safeTrend,
           trendColor: const Color(0xFF60A5FA),
           icon: Icons.location_city,
           iconBgColor: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -394,6 +418,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildHeatmapCard() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('issues')
@@ -503,7 +528,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CURRENT HOTSPOT',
+                          l10n.currentHotspot,
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 10,
@@ -513,7 +538,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _adminDistrict ?? 'Current District',
+                          _adminDistrict ?? l10n.currentDistrict,
                           style: TextStyle(
                             color: scheme.onSurface,
                             fontSize: 14,
@@ -522,9 +547,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '$_totalReceived Reports Found',
-                          style: const TextStyle(
-                            color: Color(0xFFEF4444),
+                          '$_totalReceived ${l10n.reportsFound}',
+                          style: TextStyle(
+                            color: _statusSemanticColor('Submitted', scheme),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -543,6 +568,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildCategoryDistributionCard() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     // 1. Define category colors mapping
     final categoryColors = {
       'Infrastructure': scheme.primary,
@@ -597,7 +623,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'TOTAL',
+                      l10n.totalLabel,
                       style: TextStyle(
                         color: scheme.onSurfaceVariant,
                         fontSize: 12,
@@ -694,6 +720,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildMonthlyPerformanceCard(List<QueryDocumentSnapshot> docs) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final stats = _calculateMonthlyPerformance(docs);
     final monthKeys = stats.keys.toList();
 
@@ -736,23 +763,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Received',
-                style: TextStyle(fontSize: 12),
+              Text(
+                l10n.receivedStatus,
+                style: const TextStyle(fontSize: 12),
               ),
               const SizedBox(width: 24),
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
+                decoration: BoxDecoration(
+                  color: _statusSemanticColor('Resolved', scheme),
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Solved',
-                style: TextStyle(fontSize: 12),
+              Text(
+                l10n.resolvedStatus,
+                style: const TextStyle(fontSize: 12),
               ),
             ],
           ),
@@ -780,8 +807,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Container(
               width: 8,
               height: solvedHeight,
-              decoration: const BoxDecoration(
-                color: Color(0xFF10B981),
+              decoration: BoxDecoration(
+                color: _statusSemanticColor('Resolved', scheme),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
               ),
             ),
@@ -802,6 +829,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildBottomNav() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
@@ -832,12 +860,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.dashboard), label: l10n.adminDashboardLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.list_alt), label: l10n.adminIssuesLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.map), label: l10n.adminMapLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.forum), label: l10n.chatsLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.settings), label: l10n.profileLabel),
         ],
       ),
     );

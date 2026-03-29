@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class IssueDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? data;
@@ -74,16 +75,16 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
   }
 
   Color _getStatusColor(String status, ColorScheme scheme) {
-    switch (status) {
-      case 'Submitted':
+    switch (status.trim().toLowerCase()) {
+      case 'submitted':
+      case 'open':
         return scheme.primary;
-      case 'Received':
-        return scheme.secondary;
-      case 'Assigned':
-        return scheme.tertiary;
-      case 'Field Visit':
-        return scheme.secondary.withValues(alpha: 0.8);
-      case 'Resolved':
+      case 'received':
+      case 'assigned':
+      case 'field visit':
+      case 'in progress':
+        return const Color(0xFFF59E0B);
+      case 'resolved':
         return scheme.tertiary;
       default:
         return scheme.onSurfaceVariant;
@@ -92,23 +93,24 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
 
   Future<void> _deleteReport() async {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Report'),
-        content: const Text('Are you sure you want to delete this report? This action cannot be undone.'),
+        title: Text(l10n.deleteReportTitle),
+        content: Text(l10n.deleteReportConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
-              'Cancel',
+              l10n.cancel,
               style: TextStyle(color: scheme.onSurfaceVariant),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: Text(l10n.deleteReportTitle, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -118,16 +120,17 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
       try {
         await FirebaseFirestore.instance.collection('issues').doc(widget.docId).delete();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report deleted successfully.')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.reportDeletedSuccess)));
           Navigator.pop(context);
         }
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.deleteReportTitle}: $e')));
       }
     }
   }
 
   Future<void> _addComment() async {
+    final l10n = AppLocalizations.of(context)!;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || _commentController.text.trim().isEmpty) return;
 
@@ -143,7 +146,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
           .add({
         'text': text,
         'uid': user.uid,
-        'userName': user.displayName ?? 'Citizen',
+        'userName': user.displayName ?? l10n.citizenPrefix,
         'timestamp': FieldValue.serverTimestamp(),
       });
       
@@ -155,13 +158,14 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
         'comment_count': FieldValue.increment(1),
       });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to comment: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${AppLocalizations.of(context)!.comments}: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_isFetching) {
       return Scaffold(
@@ -172,22 +176,22 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
     final data = _currentData;
     if (data == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Issue Details')),
-        body: const Center(child: Text('Report not found.')),
+        appBar: AppBar(title: Text(l10n.issueDetailsTitle)),
+        body: Center(child: Text(l10n.reportNotFound)),
       );
     }
 
-    final String title   = data['title'] ?? data['description'] ?? 'No title';
+    final String title   = data['title'] ?? data['description'] ?? l10n.noTitle;
     final String desc    = data['description'] ?? '';
     final String status  = data['status'] ?? 'Submitted';
-    final String cat     = data['category'] ?? 'Unknown';
-    final String dist    = data['district'] ?? 'Unknown';
-    final String sec     = data['sector'] ?? 'Unknown';
+    final String cat     = data['category'] ?? l10n.unknownLabel;
+    final String dist    = data['district'] ?? l10n.unknownLabel;
+    final String sec     = data['sector'] ?? l10n.unknownLabel;
     final String? photo  = data['photo_url'];
     final String? audio  = data['audio_url'];
     final ts             = data['timestamp'];
     final String dateStr = ts != null
-        ? '${ts.toDate().day}/${ts.toDate().month}/${ts.toDate().year}' : 'Recently';
+      ? '${ts.toDate().day}/${ts.toDate().month}/${ts.toDate().year}' : l10n.recently;
     final String shortId = '#${widget.docId.substring(0, 8).toUpperCase()}';
 
     final bool isReceived = status == 'Received' || status == 'Assigned' || status == 'Field Visit' || status == 'Resolved';
@@ -226,7 +230,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
               ),
             ),
             title: Text(
-              'Issue Details',
+              l10n.issueDetailsTitle,
               style: TextStyle(
                 color: scheme.onSurface,
                 fontWeight: FontWeight.bold,
@@ -293,7 +297,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Submitted on $dateStr',
+                    '${l10n.submittedOn} $dateStr',
                     style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
                   ),
 
@@ -302,19 +306,19 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   const SizedBox(height: 16),
 
                   // ── Details ──
-                  _sectionTitle('Issue Details'),
+                  _sectionTitle(l10n.issueDetailsTitle),
                   const SizedBox(height: 12),
-                  _row(Icons.category_outlined, 'Category', cat),
-                  _row(Icons.location_city_outlined, 'District', dist),
-                  _row(Icons.place_outlined, 'Sector', sec),
-                  if (desc.isNotEmpty) _row(Icons.notes_outlined, 'Description', desc),
+                  _row(Icons.category_outlined, l10n.categoryDistribution, cat),
+                  _row(Icons.location_city_outlined, l10n.homeDistrict, dist),
+                  _row(Icons.place_outlined, l10n.homeSector, sec),
+                  if (desc.isNotEmpty) _row(Icons.notes_outlined, l10n.homeDetails, desc),
 
                   // ── Audio ──
                   if (audio != null) ...[
                     const SizedBox(height: 20),
                     Divider(color: scheme.outline.withValues(alpha: 0.3)),
                     const SizedBox(height: 16),
-                    _sectionTitle('Voice Note'),
+                    _sectionTitle(l10n.voiceNote),
                     const SizedBox(height: 12),
                     _buildAudioPlayer(audio),
                   ],
@@ -324,13 +328,13 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   const SizedBox(height: 16),
 
                   // ── Tracker ──
-                  _sectionTitle('Report Progress'),
+                  _sectionTitle(l10n.reportProgress),
                   const SizedBox(height: 16),
-                   _step('Submitted', dateStr, true, false),
-                   _step('Received', isReceived ? 'Confirmed by District' : 'Awaiting confirmation', isReceived, false),
-                   _step('Assigned', isAssigned ? 'Field team dispatched' : '', isAssigned, false),
-                   _step('Field Visit', isFieldVisit ? 'Team on location' : '', isFieldVisit, false),
-                   _step('Resolved', isResolved ? 'Issue closed' : '', isResolved, true),
+                   _step(l10n.submittedStatus, dateStr, true, false),
+                   _step(l10n.receivedStatus, isReceived ? l10n.confirmedByDistrict : l10n.awaitingConfirmation, isReceived, false),
+                   _step(l10n.assignedStatus, isAssigned ? l10n.fieldTeamDispatched : '', isAssigned, false),
+                   _step(l10n.fieldVisitStatus, isFieldVisit ? l10n.teamOnSite : '', isFieldVisit, false),
+                   _step(l10n.resolvedStatus, isResolved ? l10n.issueClosed : '', isResolved, true),
 
                   // ── Edit & Delete ──
                   if (status == 'Submitted' || status == 'Open') ...[
@@ -358,7 +362,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                           );
                         },
                         icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Edit Report', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        label: Text(l10n.editReport, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: scheme.primary,
                           foregroundColor: scheme.onPrimary,
@@ -374,7 +378,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _deleteReport,
                         icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                        label: const Text('Delete Report', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
+                        label: Text(l10n.deleteReportTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red)),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.red, width: 1.5),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -395,7 +399,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                         });
                       },
                       icon: const Icon(Icons.chat_outlined, size: 18),
-                      label: const Text('Message District Official', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      label: Text(l10n.messageDistrictOfficial, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: scheme.tertiary,
                         foregroundColor: scheme.onTertiary,
@@ -408,7 +412,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   const SizedBox(height: 32),
                   Divider(color: scheme.outline.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
-                  _sectionTitle('Comments'),
+                  _sectionTitle(l10n.comments),
                   const SizedBox(height: 12),
                   
                   // Comments List
@@ -426,7 +430,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
                           child: Text(
-                            'No comments yet. Be the first to comment!',
+                            l10n.noCommentsYet,
                             style: TextStyle(
                               color: scheme.onSurfaceVariant,
                               fontSize: 13,
@@ -459,7 +463,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(cdata['userName'] ?? 'Citizen',
+                                        Text(cdata['userName'] ?? l10n.citizenPrefix,
                                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scheme.onSurface)),
                                       const SizedBox(height: 2),
                                       Text(cdata['text'] ?? '',
@@ -482,7 +486,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                         child: TextField(
                           controller: _commentController,
                           decoration: InputDecoration(
-                            hintText: 'Add a comment...',
+                            hintText: l10n.addCommentHint,
                             hintStyle: TextStyle(
                               fontSize: 13,
                               color: scheme.onSurfaceVariant,

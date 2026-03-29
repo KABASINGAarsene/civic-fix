@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class CaseVerificationScreen extends StatefulWidget {
   const CaseVerificationScreen({Key? key}) : super(key: key);
@@ -19,17 +20,18 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     _ticketId = args?['ticketId'];
     _isAdmin = args?['isAdmin'] ?? false;
     
     // In a real app, we'd fetch these from the Chat metadata doc if not provided
-    _citizenName = args?['citizenName'] ?? 'Citizen';
+    _citizenName = args?['citizenName'] ?? l10n.citizenPrefix;
 
     if (_ticketId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Chat')),
-        body: const Center(child: Text('Error: No Ticket ID provided')),
+        appBar: AppBar(title: Text(l10n.chatTitle)),
+        body: Center(child: Text(l10n.errorNoTicketId)),
       );
     }
 
@@ -78,6 +80,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -93,7 +96,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
       title: Column(
         children: [
           Text(
-            _isAdmin ? 'Citizen: $_citizenName' : 'District Official',
+            _isAdmin ? '${l10n.citizenPrefix}: $_citizenName' : l10n.districtOfficial,
             style: TextStyle(
               color: scheme.onSurface,
               fontSize: 16,
@@ -101,7 +104,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
             ),
           ),
           Text(
-            'Ticket: ${_ticketId!.substring(0, 8).toUpperCase()}',
+            '${l10n.ticketLabel}: ${_ticketId!.substring(0, 8).toUpperCase()}',
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
           ),
         ],
@@ -123,6 +126,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
 
   Widget _buildEmptyState() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Column(
@@ -135,7 +139,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Start the conversation...',
+            l10n.startConversation,
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
           ),
         ],
@@ -316,6 +320,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
 
   Widget _buildChatInput() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -342,7 +347,7 @@ class _CaseVerificationScreenState extends State<CaseVerificationScreen> {
                   controller: _messageController,
                   style: TextStyle(color: scheme.onSurface),
                   decoration: InputDecoration(
-                    hintText: 'Type your message...',
+                    hintText: l10n.typeYourMessage,
                     hintStyle: TextStyle(color: scheme.onSurfaceVariant),
                     border: InputBorder.none,
                   ),

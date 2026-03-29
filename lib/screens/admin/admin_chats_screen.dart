@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:district_direct/l10n/app_localizations.dart';
 
 class AdminChatsScreen extends StatefulWidget {
   const AdminChatsScreen({Key? key}) : super(key: key);
@@ -17,11 +18,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: _adminUid == null 
-        ? Center(child: Text('Please log in as admin', style: TextStyle(color: scheme.onSurface)))
+        ? Center(child: Text(l10n.pleaseLogInAsAdmin, style: TextStyle(color: scheme.onSurface)))
         : StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('chats')
@@ -44,10 +46,10 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                         children: [
                           const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 48),
                           const SizedBox(height: 16),
-                          Text('Index Required', style: TextStyle(color: scheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(l10n.indexRequired, style: TextStyle(color: scheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           Text(
-                            'To sort chats by time, Firestore needs a composite index. Please click the link in your console or check the project documentation to enable it.',
+                            l10n.indexRequiredDescription,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
                           ),
@@ -85,11 +87,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
       title: Text(
-        'Citizen Messages',
+        l10n.citizenMessagesTitle,
         style: TextStyle(
           color: scheme.onSurface,
           fontSize: 18,
@@ -108,6 +111,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
   Widget _buildChatTile(Map<String, dynamic> data) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final ticketId = data['ticketId'] ?? '';
     final citizenName = data['citizenName'] ?? 'Citizen';
     final lastMessage = data['lastMessage'] ?? '';
@@ -176,7 +180,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          ticketId.length > 8 ? ticketId.substring(0, 8).toUpperCase() : (ticketId.isEmpty ? 'TICKET' : ticketId),
+                          ticketId.length > 8 ? ticketId.substring(0, 8).toUpperCase() : (ticketId.isEmpty ? l10n.ticketFallback : ticketId),
                           style: TextStyle(
                             color: scheme.onSurfaceVariant,
                             fontSize: 10,
@@ -227,6 +231,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
   Widget _buildEmptyState() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -234,12 +239,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
           Icon(Icons.chat_bubble_outline, size: 60, color: scheme.surfaceContainerHigh),
           const SizedBox(height: 16),
           Text(
-            'No active conversations',
+            l10n.noActiveConversations,
             style: TextStyle(color: scheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Send an update from a ticket to start a chat.',
+            l10n.sendUpdateToStartChat,
             style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
           ),
         ],
@@ -249,6 +254,7 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
 
   Widget _buildBottomNav(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
@@ -280,12 +286,12 @@ class _AdminChatsScreenState extends State<AdminChatsScreen> {
         selectedFontSize: 10,
         unselectedFontSize: 10,
         elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: 'Issues'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.forum), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.dashboard), label: l10n.adminDashboardLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.list_alt), label: l10n.adminIssuesLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.map), label: l10n.adminMapLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.forum), label: l10n.chatsLabel),
+          BottomNavigationBarItem(icon: const Icon(Icons.settings), label: l10n.profileLabel),
         ],
       ),
     );
