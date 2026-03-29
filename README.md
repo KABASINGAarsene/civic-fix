@@ -1,4 +1,4 @@
-# CivicFix (DistrictDirect)
+# DistrictDirect
 
 A mobile-first civic engagement platform built with Flutter that helps citizens report local issues and track progress, while district officials manage incidents and communicate updates.
 
@@ -6,8 +6,8 @@ A mobile-first civic engagement platform built with Flutter that helps citizens 
 
 CivicFix connects two user roles in one app:
 
-- Citizen experience: report incidents, view district feed, track issue status, and chat with district teams.
-- Admin experience: district-level workflows for issue review, field progress updates, and communication.
+- **Citizen experience**: report incidents, view district feed, track issue status, and chat with district teams.
+- **Admin experience**: district-level workflows for issue review, field progress updates, and communication.
 
 The app uses Firebase for authentication and backend data, and supports multilingual UI with English, French, and Kinyarwanda.
 
@@ -106,33 +106,54 @@ flutter build web
 
 ### Auth
 
-- Citizen Login
-![citizen login screen](image.png)
-- Admin Login
-![admin login screen](image-1.png)
+**Citizen Login**
+
+![citizen login screen](assets/screenshots/image.png)
+
+**Admin Login**
+
+![admin login screen](assets/screenshots/image-1.png)
 
 ### Citizen Flow
 
-- Home / District Feed
-![home screen](image-2.png)
-- Create Report
-![create report screen](image-3.png)
-- My Reports
-![my reports screen](image-4.png)
-- Chats
-![chats screen](image-5.png)
-- Profile / Preferences
-![profile screen](image-6.png)
+**Home / District Feed**
+
+![home screen](assets/screenshots/image-2.png)
+
+**Create Report**
+
+![create report screen](assets/screenshots/image-3.png)
+
+**My Reports**
+
+![my reports screen](assets/screenshots/image-4.png)
+
+**Chats**
+
+![chats screen](assets/screenshots/image-5.png)
+
+**Profile / Preferences**
+
+![profile screen](assets/screenshots/image-6.png)
 
 ### Admin Flow
 
-- Dashboard
-![admin home screen](image-7.png)
-- Issue Management
-![issues screen](image-8.png)
-- District Field Map
-![map screen](image-9.png)
-- Chat Center
-![chats screen](image-10.png)
-- Profile
-![profile screen](image-11.png)
+**Dashboard**
+
+![admin dashboard screen](assets/screenshots/image-7.png)
+
+**Issue Management**
+
+![issues screen](assets/screenshots/image-8.png)
+
+**District Field Map**
+
+![map screen](assets/screenshots/image-9.png)
+
+**Chat Center**
+
+![chats screen](assets/screenshots/image-10.png)
+
+**Profile**
+
+![profile screen](assets/screenshots/image-11.png)
