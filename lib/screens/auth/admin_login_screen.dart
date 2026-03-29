@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
 import '../../utils/validators.dart';
@@ -62,6 +63,25 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     'Rutsiro',
   ];
 
+  String? _extractDistrict(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    const candidateKeys = [
+      'district',
+      'assignedDistrict',
+      'assigned_district',
+      'adminDistrict',
+      'districtName',
+      'district_name',
+    ];
+    for (final key in candidateKeys) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
   @override
   void dispose() {
     _phoneController.dispose();
@@ -73,6 +93,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isLoading = true;
       });
@@ -80,10 +101,36 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       try {
         // Technically login process is identical for Admin and Citizen
         // because we just do phone->email mapping lookup and firebase login.
-        await context.read<AuthProvider>().loginCitizen(
+        final credential = await context.read<AuthProvider>().loginCitizen(
           phone: _phoneController.text.trim(),
           password: _passwordController.text,
         );
+        final user = credential?.user;
+        if (user == null) {
+          throw Exception(l10n.unexpectedError);
+        }
+
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        final userData = userDoc.data();
+        final role = (userData?['role'] ?? '').toString().toLowerCase();
+        if (role != 'admin') {
+          await context.read<AuthProvider>().signOut();
+          throw Exception(l10n.adminLoginOnlyMessage);
+        }
+
+        if (_extractDistrict(userData) == null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.noDistrictAssigned),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(
             context,

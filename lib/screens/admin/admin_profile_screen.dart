@@ -18,6 +18,57 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
+  final List<String> _districts = const [
+    'Gasabo',
+    'Kicukiro',
+    'Nyarugenge',
+    'Burera',
+    'Gakenke',
+    'Gicumbi',
+    'Musanze',
+    'Rulindo',
+    'Gisagara',
+    'Huye',
+    'Kamonyi',
+    'Muhanga',
+    'Nyamagabe',
+    'Nyanza',
+    'Nyaruguru',
+    'Ruhango',
+    'Bugesera',
+    'Gatsibo',
+    'Kayonza',
+    'Kirehe',
+    'Ngoma',
+    'Nyagatare',
+    'Rwamagana',
+    'Karongi',
+    'Ngororero',
+    'Nyabihu',
+    'Nyamasheke',
+    'Rubavu',
+    'Rusizi',
+    'Rutsiro',
+  ];
+
+  String? _extractDistrict(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    const candidateKeys = [
+      'district',
+      'assignedDistrict',
+      'assigned_district',
+      'adminDistrict',
+      'districtName',
+      'district_name',
+    ];
+    for (final key in candidateKeys) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -127,7 +178,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
 
     final name = _userData?['name'] ?? l10n.adminUserFallback;
-    final district = _userData?['district'] ?? l10n.unknownDistrict;
+    final district = _extractDistrict(_userData) ?? l10n.unknownDistrict;
     final email = _userData?['email'] ?? l10n.noEmailAvailable;
 
     return Container(
@@ -424,6 +475,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   Future<void> _showEditProfileDialog() async {
     final nameController = TextEditingController(text: _userData?['name']);
     final emailController = TextEditingController(text: _userData?['email']);
+    String? selectedDistrict = _extractDistrict(_userData);
     bool isSaving = false;
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
@@ -439,39 +491,66 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 l10n.editProfile,
                 style: TextStyle(color: scheme.onSurface),
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    style: TextStyle(color: scheme.onSurface),
-                    decoration: InputDecoration(
-                      labelText: l10n.fullName,
-                      labelStyle: TextStyle(color: scheme.onSurfaceVariant),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: scheme.primary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: emailController,
-                    style: TextStyle(color: scheme.onSurface),
-                    decoration: InputDecoration(
-                      labelText: l10n.emailAddress,
-                      labelStyle: TextStyle(color: scheme.onSurfaceVariant),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: scheme.primary),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      style: TextStyle(color: scheme.onSurface),
+                      decoration: InputDecoration(
+                        labelText: l10n.fullName,
+                        labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.primary),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: emailController,
+                      style: TextStyle(color: scheme.onSurface),
+                      decoration: InputDecoration(
+                        labelText: l10n.emailAddress,
+                        labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedDistrict,
+                      decoration: InputDecoration(
+                        labelText: l10n.assignedDistrict,
+                        labelStyle: TextStyle(color: scheme.onSurfaceVariant),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: scheme.primary),
+                        ),
+                      ),
+                      items: _districts
+                          .map(
+                            (district) => DropdownMenuItem<String>(
+                              value: district,
+                              child: Text(district),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setDialogState(() => selectedDistrict = value);
+                      },
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -500,6 +579,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                                   .update({
                                     'name': nameController.text.trim(),
                                     'email': emailController.text.trim(),
+                                    'district': selectedDistrict,
+                                    'assignedDistrict': selectedDistrict,
                                   });
 
                               // Refresh local data

@@ -17,6 +17,25 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
   String? _adminDistrict;
   bool _isLoading = true;
 
+  String? _extractDistrict(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    const candidateKeys = [
+      'district',
+      'assignedDistrict',
+      'assigned_district',
+      'adminDistrict',
+      'districtName',
+      'district_name',
+    ];
+    for (final key in candidateKeys) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +49,7 @@ class _DistrictMapScreenState extends State<DistrictMapScreen> {
         final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         if (doc.exists) {
           setState(() {
-            _adminDistrict = doc.data()?['district'];
+            _adminDistrict = _extractDistrict(doc.data());
             _isLoading = false;
           });
         } else {

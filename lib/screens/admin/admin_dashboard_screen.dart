@@ -42,6 +42,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
   }
 
+  String? _extractDistrict(Map<String, dynamic>? data) {
+    if (data == null) return null;
+    const candidateKeys = [
+      'district',
+      'assignedDistrict',
+      'assigned_district',
+      'adminDistrict',
+      'districtName',
+      'district_name',
+    ];
+    for (final key in candidateKeys) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +75,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         if (userDoc.exists) {
           setState(() {
-            _adminDistrict = userDoc.data()?['district'];
+            _adminDistrict = _extractDistrict(userDoc.data());
             _isLoading = false;
           });
           _setupStatusAutomation();
@@ -99,9 +118,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(),
-      body: _isLoading 
+      body: _isLoading
         ? Center(child: CircularProgressIndicator(color: scheme.primary))
-        : StreamBuilder<QuerySnapshot>(
+        : (_adminDistrict == null
+            ? _buildNoDistrictState(l10n)
+            : StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('issues')
                 .where('district', isEqualTo: _adminDistrict)
@@ -171,8 +192,41 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               );
             },
-          ),
+          )),
       bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildNoDistrictState(AppLocalizations l10n) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_off, size: 52, color: scheme.error),
+            const SizedBox(height: 12),
+            Text(
+              l10n.noDistrictAssigned,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/admin-profile');
+              },
+              icon: const Icon(Icons.settings),
+              label: Text(l10n.profileLabel),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -313,6 +367,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           trendColor: const Color(0xFF60A5FA),
           icon: Icons.location_city,
           iconBgColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          valueFontSize: 14,
+          valueMaxLines: 2,
         ),
       ],
     );
@@ -325,6 +381,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required Color trendColor,
     required IconData icon,
     required Color iconBgColor,
+    double valueFontSize = 24,
+    int valueMaxLines = 1,
   }) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
@@ -369,9 +427,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 value,
                 style: TextStyle(
                   color: scheme.onSurface,
-                  fontSize: 24,
+                  fontSize: valueFontSize,
                   fontWeight: FontWeight.bold,
                 ),
+                maxLines: valueMaxLines,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:district_direct/l10n/app_localizations.dart';
@@ -22,6 +23,24 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'providers/app_settings_provider.dart';
 import 'providers/auth_provider.dart';
+
+class _RwMaterialLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const _RwMaterialLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'rw';
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) {
+    return SynchronousFuture<MaterialLocalizations>(
+      const DefaultMaterialLocalizations(),
+    );
+  }
+
+  @override
+  bool shouldReload(_RwMaterialLocalizationsDelegate old) => false;
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,8 +83,18 @@ class DistrictDirectApp extends StatelessWidget {
             themeMode: appSettings.themeMode,
             locale: appSettings.locale,
             supportedLocales: AppSettingsProvider.supportedLocales,
+            localeResolutionCallback: (locale, supportedLocales) {
+              if (locale == null) return supportedLocales.first;
+              for (final supported in supportedLocales) {
+                if (supported.languageCode == locale.languageCode) {
+                  return supported;
+                }
+              }
+              return supportedLocales.first;
+            },
             localizationsDelegates: const [
               AppLocalizations.delegate,
+              _RwMaterialLocalizationsDelegate(),
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
