@@ -270,5 +270,7 @@
   "phoneHint": "78 XXX XXXX",
   "emailHint": "your@email.com",
   "fullNameHint": "Entrez votre nom complet",
-  "accountCreatedVerify": "Compte cree! Veuillez verifier votre dossier spam pour le lien de verification."
+  "accountCreatedVerify": "Compte cree! Veuillez verifier votre dossier spam pour le lien de verification.",
+  "unexpectedError": "Une erreur inattendue s'est produite. Veuillez reessayer.",
+  "adminLoginOnlyMessage": "Ce portail est reserve aux administrateurs. Veuillez utiliser la connexion citoyen."
 }

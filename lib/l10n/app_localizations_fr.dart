@@ -772,4 +772,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountCreatedVerify => 'Compte cree! Veuillez verifier votre dossier spam pour le lien de verification.';
+
+  @override
+  String get unexpectedError => 'Une erreur inattendue s\'est produite. Veuillez reessayer.';
+
+  @override
+  String get adminLoginOnlyMessage => 'Ce portail est reserve aux administrateurs. Veuillez utiliser la connexion citoyen.';
 }

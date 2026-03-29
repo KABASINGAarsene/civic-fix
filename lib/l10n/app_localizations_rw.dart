@@ -772,4 +772,10 @@ class AppLocalizationsRw extends AppLocalizations {
 
   @override
   String get accountCreatedVerify => 'Konti yakozwe! Reba spam kugira ubone umurongo wo kwemeza kwiyandikisha.';
+
+  @override
+  String get unexpectedError => 'Habaye ikosa ritateganijwe. Ongera ugerageze.';
+
+  @override
+  String get adminLoginOnlyMessage => 'Urubuga rw\'uyu ni rw\'abagenzuzi gusa. Nyamuneka koresha kwinjira kw\'umuturage.';
 }

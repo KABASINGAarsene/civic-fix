@@ -1626,6 +1626,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account created! Please check your spam folder for the link to verify your sign up.'**
   String get accountCreatedVerify;
+
+  /// No description provided for @unexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get unexpectedError;
+
+  /// No description provided for @adminLoginOnlyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This portal is for administrators only. Please use the citizen login.'**
+  String get adminLoginOnlyMessage;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

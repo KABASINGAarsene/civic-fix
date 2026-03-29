@@ -270,5 +270,7 @@
   "phoneHint": "78 XXX XXXX",
   "emailHint": "your@email.com",
   "fullNameHint": "Andika amazina yawe yuzuye",
-  "accountCreatedVerify": "Konti yakozwe! Reba spam kugira ubone umurongo wo kwemeza kwiyandikisha."
+  "accountCreatedVerify": "Konti yakozwe! Reba spam kugira ubone umurongo wo kwemeza kwiyandikisha.",
+  "unexpectedError": "Habaye ikosa ritateganijwe. Ongera ugerageze.",
+  "adminLoginOnlyMessage": "Urubuga rw'uyu ni rw'abagenzuzi gusa. Nyamuneka koresha kwinjira kw'umuturage."
 }

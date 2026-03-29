@@ -772,4 +772,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountCreatedVerify => 'Account created! Please check your spam folder for the link to verify your sign up.';
+
+  @override
+  String get unexpectedError => 'An unexpected error occurred. Please try again.';
+
+  @override
+  String get adminLoginOnlyMessage => 'This portal is for administrators only. Please use the citizen login.';
 }

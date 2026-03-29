@@ -270,5 +270,7 @@
   "phoneHint": "78 XXX XXXX",
   "emailHint": "your@email.com",
   "fullNameHint": "Enter your full name",
-  "accountCreatedVerify": "Account created! Please check your spam folder for the link to verify your sign up."
+  "accountCreatedVerify": "Account created! Please check your spam folder for the link to verify your sign up.",
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "adminLoginOnlyMessage": "This portal is for administrators only. Please use the citizen login."
 }
